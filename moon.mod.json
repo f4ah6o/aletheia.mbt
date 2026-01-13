@@ -1,0 +1,10 @@
+{
+  "name": "f4ah6o/aletheia",
+  "version": "0.1.0",
+  "readme": "README.mbt.md",
+  "repository": "https://github.com/f4ah6o/aletheia.mbt.git",
+  "license": "Apache-2.0",
+  "keywords": ["Property-Based Testing", "PBT"],
+  "description": "",
+  "source": "src"
+}
