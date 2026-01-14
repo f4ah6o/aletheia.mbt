@@ -8,6 +8,7 @@
 pub enum Command {
   Analyze(String) // パスを解析
   Generate(String) // テストを生成
+  Sync(String) // PBT markdownを同期
   Help
 }
 
@@ -30,6 +31,12 @@ pub fn parse_args(args : Array[String]) -> Command {
       } else {
         Help
       }
+    } else if cmd == "sync" || cmd == "s" {
+      if Array::length(args) >= 3 {
+        Sync(args[2])
+      } else {
+        Sync(@pbt_sync.default_pbt_markdown_path())
+      }
     } else {
       Help
     }
@@ -42,6 +49,7 @@ pub fn command_to_args(cmd : Command) -> Array[String] {
   match cmd {
     Analyze(path) => ["moon-pbt-gen", "analyze", path]
     Generate(path) => ["moon-pbt-gen", "generate", path]
+    Sync(path) => ["moon-pbt-gen", "sync", path]
     Help => ["moon-pbt-gen", "help"]
   }
 }
@@ -52,8 +60,9 @@ pub fn help_message() -> String {
   let lines = [
     "moon-pbt-gen - Property-Based Testing code generator", "", "Usage:", "  moon-pbt-gen <command> [arguments]",
     "", "Commands:", "  analyze <path>     Analyze MoonBit source files", "  generate <path>   Collect PBT targets into <module>.pbt.mbt.md",
-    "  help              Show this help message", "", "Examples:", "  moon-pbt-gen analyze ./src",
-    "  moon-pbt-gen generate ./src",
+    "  sync [path]       Sync PBT markdown into per-package tests", "  help              Show this help message",
+    "", "Examples:", "  moon-pbt-gen analyze ./src", "  moon-pbt-gen generate ./src",
+    "  moon-pbt-gen sync",
   ]
   let mut result = ""
   let mut i = 0
@@ -71,6 +80,7 @@ pub fn run_command(cmd : Command) -> String {
     Analyze(path) => "Analyzing: " + path + "\n" + analyze_source(path)
     Generate(path) =>
       "Collecting PBT targets for: " + path + "\n" + generate_tests(path)
+    Sync(path) => "Syncing PBT markdown: " + path + "\n" + sync_targets(path)
     Help => help_message()
   }
 }
@@ -319,6 +329,36 @@ fn generate_tests(path : String) -> String {
 }
 
 ///|
+/// PBT markdownを同期
+fn sync_targets(markdown_path : String) -> String {
+  let result = @pbt_sync.sync(markdown_path)
+  match result {
+    Err(errors) => {
+      let mut output = "=== PBT Sync Failed ===\n"
+      output = output + errors.join("\n") + "\n"
+      output
+    }
+    Ok(report) => {
+      let mut output = "=== PBT Sync ===\n"
+      output = output + "Markdown: " + markdown_path + "\n"
+      output = output +
+        "Written: " +
+        int_to_string(report.written.length()) +
+        "\n"
+      output = output +
+        "Removed: " +
+        int_to_string(report.removed.length()) +
+        "\n"
+      output = output +
+        "Unchanged: " +
+        int_to_string(report.unchanged.length()) +
+        "\n"
+      output
+    }
+  }
+}
+
+///|
 /// パターンを配列に追加
 fn append_pattern(
   arr : Array[@patterns.PatternCandidate],
@@ -391,6 +431,17 @@ test "parse_args_generate" {
 }
 
 ///|
+test "parse_args_sync_default" {
+  let args = ["prog", "sync"]
+  let result = parse_args(args)
+  let expected = @pbt_sync.default_pbt_markdown_path()
+  match result {
+    Sync(p) => inspect(p, content=expected)
+    _ => inspect("fail", content="fail")
+  }
+}
+
+///|
 test "run_command_analyze" {
   let cmd = Analyze("./src")
   let result = run_command(cmd)
@@ -409,6 +460,7 @@ test "help_message_contains_commands" {
   let msg = help_message()
   inspect(msg.contains("analyze"), content="true")
   inspect(msg.contains("generate"), content="true")
+  inspect(msg.contains("sync"), content="true")
 }
 
 ///|

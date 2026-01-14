@@ -1,0 +1,6 @@
+{
+  "import": [
+    { "path": "moonbitlang/x/fs", "alias": "fs" },
+    { "path": "moonbitlang/x/path", "alias": "path" }
+  ]
+}

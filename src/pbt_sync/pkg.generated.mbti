@@ -1,0 +1,24 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "f4ah6o/aletheia/pbt_sync"
+
+// Values
+pub fn check_sync(String) -> Result[Unit, Array[String]]
+
+pub fn default_pbt_markdown_path() -> String
+
+pub fn sync(String) -> Result[SyncReport, Array[String]]
+
+// Errors
+
+// Types and methods
+pub struct SyncReport {
+  written : Array[String]
+  removed : Array[String]
+  unchanged : Array[String]
+}
+
+// Type aliases
+pub type SyncError = Array[String]
+
+// Traits
+
