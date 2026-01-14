@@ -2,6 +2,7 @@
   "import": [
     { "path": "f4ah6o/aletheia/patterns", "alias": "patterns" },
     { "path": "f4ah6o/aletheia/generator", "alias": "generator" },
-    { "path": "f4ah6o/aletheia/analyzer", "alias": "analyzer" }
+    { "path": "f4ah6o/aletheia/analyzer", "alias": "analyzer" },
+    { "path": "moonbitlang/x/fs", "alias": "fs" }
   ]
 }

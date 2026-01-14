@@ -4,6 +4,7 @@
     {
       "path": "f4ah6o/aletheia/cli",
       "alias": "cli"
-    }
+    },
+    { "path": "moonbitlang/x/sys", "alias": "sys" }
   ]
 }

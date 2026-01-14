@@ -84,9 +84,9 @@ pub fn run_command(cmd : Command) -> String {
 
 /// ソースを解析
 fn analyze_source(path : String) -> String {
-  // TODO: ファイル読み込みはfsモジュールの調査が必要
-  // 簡易版: モック関数リスト
-  let functions = ["parse_markdown", "generate_markdown", "sort", "normalize"]
+  // ファイルを読み込んで関数名を抽出
+  let source = read_file_content(path)
+  let functions = @analyzer.extract_function_names(source)
 
   let roundtrips = @patterns.find_round_trips(functions)
   let idempotents = @patterns.find_idempotent_functions(functions)
@@ -100,11 +100,20 @@ fn analyze_source(path : String) -> String {
   result
 }
 
+/// ファイル内容を読み込み
+fn read_file_content(path : String) -> String {
+  try {
+    @fs.read_file_to_string(path)
+  } catch {
+    _ => ""
+  }
+}
+
 /// テストを生成
 fn generate_tests(path : String) -> String {
-  // TODO: ファイル読み込みはfsモジュールの調査が必要
-  // 簡易版: モック関数リスト
-  let functions = ["parse_markdown", "generate_markdown", "sort", "normalize"]
+  // ファイルを読み込んで関数名を抽出
+  let source = read_file_content(path)
+  let functions = @analyzer.extract_function_names(source)
 
   // パターン検出
   let roundtrips = @patterns.find_round_trips(functions)
