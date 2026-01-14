@@ -110,6 +110,36 @@ pub fn parse_markdown(markdown : String) -> MarkdownAST {
   { prose: prose_lines, code_blocks: blocks }
 }
 
+/// MarkdownASTからMarkdown文字列を生成（Round-Trip用逆変換）
+pub fn generate_markdown(ast : MarkdownAST) -> String {
+  let result : Array[String] = []
+
+  // proseとcode_blocksを組み合わせて再構築
+  let mut i = 0
+  while i < Array::length(ast.prose) {
+    Array::push(result, ast.prose[i])
+    i = i + 1
+  }
+
+  let mut j = 0
+  while j < Array::length(ast.code_blocks) {
+    let block = ast.code_blocks[j]
+    let lang_tag = if block.lang == "" { "```" } else { "```" + block.lang }
+    Array::push(result, lang_tag)
+    Array::push(result, block.content)
+    Array::push(result, "```")
+    j = j + 1
+  }
+
+  result.join("\n")
+}
+
+/// CodeBlockを文字列に変換
+pub fn code_block_to_string(block : CodeBlock) -> String {
+  let lang_tag = if block.lang == "" { "```" } else { "```" + block.lang }
+  lang_tag + "\n" + block.content + "\n```"
+}
+
 /// コードブロックから関数呼び出しを抽出（簡易版）
 pub fn extract_function_calls(block : CodeBlock) -> Array[String] {
   let content = block.content

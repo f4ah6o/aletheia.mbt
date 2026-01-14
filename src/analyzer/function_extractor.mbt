@@ -43,6 +43,65 @@ pub fn extract_from_source(source : String, file : String) -> Result[ExtractionR
   Ok({ functions, types, arbitrary_impls })
 }
 
+/// pub fn xxx(...) 形式の関数名を抽出
+pub fn extract_function_names(source : String) -> Array[String] {
+  let result : Array[String] = []
+  let lines = source.split("\n").to_array()
+  let mut i = 0
+  while i < lines.length() {
+    let line = lines[i].to_string()  // StringView -> String
+    if line.has_prefix("pub fn ") {
+      // "pub fn xxx(" から xxx を抽出
+      let paren_pos = find_char_from(line, '(', 7)
+      if paren_pos > 7 {
+        // line[7:paren_pos] を抽出
+        let name = substring_range(line, 7, paren_pos).trim().to_string()
+        Array::push(result, name)
+      }
+    }
+    i = i + 1
+  }
+  result
+}
+
+/// 文字列から指定位置以降で文字を検索
+fn find_char_from(s : String, c : Char, start : Int) -> Int {
+  let chars = s.to_array()
+  let mut i = start
+  while i < chars.length() {
+    if chars[i] == c {
+      return i
+    }
+    i = i + 1
+  }
+  -1
+}
+
+/// 文字列の範囲を抽出
+fn substring_range(s : String, start : Int, end : Int) -> String {
+  let chars = s.to_array()
+  let mut result = ""
+  let mut i = start
+  while i < end {
+    result = result + chars[i].to_string()
+    i = i + 1
+  }
+  result
+}
+
+/// 文字列から文字の位置を検索
+fn find_char(s : String, c : Char) -> Int {
+  let chars = s.to_array()
+  let mut i = 0
+  while i < chars.length() {
+    if chars[i] == c {
+      return i
+    }
+    i = i + 1
+  }
+  -1
+}
+
 /// 関数メタデータ（簡易版）
 pub struct FunctionMeta {
   name : String

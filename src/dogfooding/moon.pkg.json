@@ -1,5 +1,8 @@
 {
+  "readme": "README.mbt.md",
   "import": [
+    { "path": "f4ah6o/aletheia/parser", "alias": "parser" },
+    { "path": "f4ah6o/aletheia/cli", "alias": "cli" },
     { "path": "f4ah6o/aletheia/patterns", "alias": "patterns" },
     { "path": "f4ah6o/aletheia/generator", "alias": "generator" },
     { "path": "f4ah6o/aletheia/analyzer", "alias": "analyzer" }

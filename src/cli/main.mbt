@@ -34,6 +34,15 @@ pub fn parse_args(args : Array[String]) -> Command {
   }
 }
 
+/// コマンドを引数配列に変換（Round-Trip用逆変換）
+pub fn command_to_args(cmd : Command) -> Array[String] {
+  match cmd {
+    Analyze(path) => ["moon-pbt-gen", "analyze", path]
+    Generate(path) => ["moon-pbt-gen", "generate", path]
+    Help => ["moon-pbt-gen", "help"]
+  }
+}
+
 /// ヘルプメッセージを生成
 pub fn help_message() -> String {
   let lines = [
@@ -73,14 +82,105 @@ pub fn run_command(cmd : Command) -> String {
   }
 }
 
-/// ソースを解析（簡易版）
+/// ソースを解析
 fn analyze_source(path : String) -> String {
-  "Found 0 functions, 0 types, 0 patterns\n"
+  // TODO: ファイル読み込みはfsモジュールの調査が必要
+  // 簡易版: モック関数リスト
+  let functions = ["parse_markdown", "generate_markdown", "sort", "normalize"]
+
+  let roundtrips = @patterns.find_round_trips(functions)
+  let idempotents = @patterns.find_idempotent_functions(functions)
+  let producers = @patterns.find_producer_consumer(functions)
+
+  let mut result = "=== Analysis Result for " + path + " ===\n"
+  result = result + "Functions found: " + int_to_string(functions.length()) + "\n"
+  result = result + "Round-Trip patterns: " + int_to_string(roundtrips.length()) + "\n"
+  result = result + "Idempotent patterns: " + int_to_string(idempotents.length()) + "\n"
+  result = result + "Producer-Consumer patterns: " + int_to_string(producers.length()) + "\n"
+  result
 }
 
-/// テストを生成（簡易版）
+/// テストを生成
 fn generate_tests(path : String) -> String {
-  "Generated 0 test files\n"
+  // TODO: ファイル読み込みはfsモジュールの調査が必要
+  // 簡易版: モック関数リスト
+  let functions = ["parse_markdown", "generate_markdown", "sort", "normalize"]
+
+  // パターン検出
+  let roundtrips = @patterns.find_round_trips(functions)
+  let idempotents = @patterns.find_idempotent_functions(functions)
+  let producers = @patterns.find_producer_consumer(functions)
+
+  // すべてのパターンを統合
+  let mut all_patterns : Array[@patterns.PatternCandidate] = []
+  let mut i = 0
+  while i < roundtrips.length() {
+    all_patterns = append_pattern(all_patterns, roundtrips[i])
+    i = i + 1
+  }
+  let mut i = 0
+  while i < idempotents.length() {
+    all_patterns = append_pattern(all_patterns, idempotents[i])
+    i = i + 1
+  }
+  let mut i = 0
+  while i < producers.length() {
+    all_patterns = append_pattern(all_patterns, producers[i])
+    i = i + 1
+  }
+
+  // ドキュメント生成
+  let module_name = extract_module_name(path)
+  let doc = @generator.build_pbt_document(module_name, path, all_patterns, "TestData")
+  let content = @generator.generate_pbt_md(doc)
+
+  let mut result = "=== Generated PBT Document ===\n"
+  result = result + "Module: " + module_name + "\n"
+  result = result + "Patterns detected: " + int_to_string(all_patterns.length()) + "\n"
+  result = result + "\n" + content + "\n"
+  result
+}
+
+/// パターンを配列に追加
+fn append_pattern(arr : Array[@patterns.PatternCandidate], pat : @patterns.PatternCandidate) -> Array[@patterns.PatternCandidate] {
+  let n = arr.length()
+  let result : Array[@patterns.PatternCandidate] = []
+  let mut i = 0
+  while i < n {
+    Array::push(result, arr[i])
+    i = i + 1
+  }
+  Array::push(result, pat)
+  result
+}
+
+/// パスからモジュール名を抽出
+fn extract_module_name(path : String) -> String {
+  // 簡易版: パスをそのまま返す
+  path
+}
+
+/// IntをStringに変換
+fn int_to_string(n : Int) -> String {
+  if n < 0 {
+    "-" + int_to_string(-n)
+  } else if n == 0 {
+    "0"
+  } else if n < 10 {
+    match n {
+      1 => "1"
+      2 => "2"
+      3 => "3"
+      4 => "4"
+      5 => "5"
+      6 => "6"
+      7 => "7"
+      8 => "8"
+      _ => "9"
+    }
+  } else {
+    int_to_string(n / 10) + int_to_string(n % 10)
+  }
 }
 
 /// テスト
