@@ -1,0 +1,57 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "f4ah6o/aletheia/generator"
+
+import(
+  "f4ah6o/aletheia/patterns"
+)
+
+// Values
+pub fn build_pbt_document(String, String, Array[@patterns.PatternCandidate], String) -> PbtDocument
+
+pub fn generate_idempotent_test(String, String) -> GeneratedTest
+
+pub fn generate_mbt_md_section(Array[GeneratedTest]) -> String
+
+pub fn generate_pbt_md(PbtDocument) -> String
+
+pub fn generate_pbt_targets_md(PbtDocument) -> String
+
+pub fn generate_producer_consumer_test(String, String, String) -> GeneratedTest
+
+pub fn generate_round_trip_test(String, String, String) -> GeneratedTest
+
+pub fn pattern_to_test(@patterns.PatternCandidate, String) -> GeneratedTest
+
+// Errors
+
+// Types and methods
+pub struct DetectedPattern {
+  kind : PatternKind
+  functions : Array[String]
+  type_info : String
+}
+
+pub struct GeneratedTest {
+  name : String
+  code : String
+  description : String
+}
+
+pub enum PatternKind {
+  RoundTrip
+  Idempotent
+  ProducerConsumer
+}
+
+pub struct PbtDocument {
+  module_name : String
+  source_file : String
+  patterns : Array[DetectedPattern]
+  test_cases : Array[GeneratedTest]
+  generated_at : String
+}
+
+// Type aliases
+
+// Traits
+

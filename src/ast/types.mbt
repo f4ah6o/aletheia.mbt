@@ -3,6 +3,7 @@
 /// 関数メタデータ、型情報、可視性などを表現する型を提供する
 ///
 
+///|
 /// ソースコード内の位置情報
 pub struct Location {
   file : String
@@ -12,10 +13,12 @@ pub struct Location {
   column_end : Int
 }
 
+///|
 pub fn Location::unknown(file : String) -> Location {
   { file, line_start: 0, line_end: 0, column_start: 0, column_end: 0 }
 }
 
+///|
 /// 関数の可視性
 pub enum Visibility {
   Public
@@ -23,6 +26,7 @@ pub enum Visibility {
   Internal
 }
 
+///|
 /// 型メタデータ
 pub enum TypeMeta {
   Primitive(String)
@@ -34,6 +38,7 @@ pub enum TypeMeta {
   Unit
 }
 
+///|
 /// 型の簡易名を取得
 pub fn TypeMeta::simple_name(self : TypeMeta) -> String {
   match self {
@@ -47,18 +52,21 @@ pub fn TypeMeta::simple_name(self : TypeMeta) -> String {
   }
 }
 
+///|
 /// 引数メタデータ
 pub struct ArgMeta {
   name : String
   type_ : TypeMeta
   is_optional : Bool
-  default_value : Option[String]
+  default_value : String?
 }
 
+///|
 pub fn ArgMeta::new(name : String, type_ : TypeMeta) -> ArgMeta {
   { name, type_, is_optional: false, default_value: None }
 }
 
+///|
 /// 関数メタデータ
 pub struct FunctionMeta {
   name : String
@@ -66,11 +74,12 @@ pub struct FunctionMeta {
   return_type : TypeMeta
   visibility : Visibility
   is_pure : Bool
-  doc_comment : Option[String]
+  doc_comment : String?
   location : Location
   type_params : Array[String]
 }
 
+///|
 pub fn FunctionMeta::new(name : String, location : Location) -> FunctionMeta {
   {
     name,
@@ -80,10 +89,11 @@ pub fn FunctionMeta::new(name : String, location : Location) -> FunctionMeta {
     is_pure: true,
     doc_comment: None,
     location,
-    type_params: []
+    type_params: [],
   }
 }
 
+///|
 /// 関数シグネチャ文字列を生成
 pub fn FunctionMeta::signature(self : FunctionMeta) -> String {
   let args_str = self.args.map(fn(a) { a.type_.simple_name() }).join(", ")
@@ -91,6 +101,7 @@ pub fn FunctionMeta::signature(self : FunctionMeta) -> String {
   "(\{args_str}) -> \{ret_str}"
 }
 
+///|
 /// 型定義メタデータ（enum, struct）
 pub struct TypeDefinition {
   name : String
@@ -99,22 +110,26 @@ pub struct TypeDefinition {
   location : Location
 }
 
+///|
 pub enum TypeKind {
   Struct(Array[StructField])
   Enum(Array[EnumVariant])
   Opaque
 }
 
+///|
 pub struct StructField {
   name : String
   type_ : TypeMeta
 }
 
+///|
 pub struct EnumVariant {
   name : String
-  data : Option[TypeMeta]
+  data : TypeMeta?
 }
 
+///|
 /// PBTテスト可能性判定結果
 pub enum Testability {
   Testable
@@ -122,6 +137,7 @@ pub enum Testability {
   NotTestable(String)
 }
 
+///|
 /// パターン候補
 pub enum PatternCandidate {
   RoundTrip(String, String, TypeMeta)
@@ -129,6 +145,7 @@ pub enum PatternCandidate {
   ProducerConsumer(String, String)
 }
 
+///|
 /// プロパティテスト定義
 pub struct PropertyDef {
   name : String
@@ -138,17 +155,15 @@ pub struct PropertyDef {
   pattern : PatternCandidate
 }
 
-pub fn PropertyDef::new(name : String, pattern : PatternCandidate) -> PropertyDef {
+///|
+pub fn PropertyDef::new(
+  name : String,
+  pattern : PatternCandidate,
+) -> PropertyDef {
   let targets = match pattern {
     RoundTrip(encoder, decoder, _) => [encoder, decoder]
     Idempotent(function) => [function]
     ProducerConsumer(producer, consumer) => [producer, consumer]
   }
-  {
-    name,
-    description: "",
-    target_functions: targets,
-    body: "",
-    pattern
-  }
+  { name, description: "", target_functions: targets, body: "", pattern }
 }

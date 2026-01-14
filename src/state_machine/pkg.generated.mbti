@@ -1,0 +1,37 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "f4ah6o/aletheia/state_machine"
+
+// Values
+pub fn add_command(StateMachine, Command) -> StateMachine
+
+pub fn create_state_machine(String, String) -> StateMachine
+
+pub fn execute_commands(StateMachine, String) -> ExecutionResult
+
+pub fn generate_state_machine_test(StateMachine, String) -> String
+
+// Errors
+
+// Types and methods
+pub struct Command {
+  name : String
+  precondition : String
+  postcondition : String
+}
+
+pub struct ExecutionResult {
+  success : Bool
+  final_state : String
+  error_message : String
+}
+
+pub struct StateMachine {
+  name : String
+  initial_state : String
+  commands : Array[Command]
+}
+
+// Type aliases
+
+// Traits
+

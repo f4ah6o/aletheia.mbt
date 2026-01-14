@@ -1,0 +1,20 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "f4ah6o/aletheia/dogfooding"
+
+// Values
+pub fn detect_self_patterns() -> Int
+
+pub fn generate_detection_summary() -> String
+
+pub fn generate_self_pbt_md() -> String
+
+pub fn get_aletheia_functions() -> Array[String]
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

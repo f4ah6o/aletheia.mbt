@@ -1,0 +1,23 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "f4ah6o/aletheia/patterns"
+
+// Values
+pub fn find_idempotent_functions(Array[String]) -> Array[PatternCandidate]
+
+pub fn find_producer_consumer(Array[String]) -> Array[PatternCandidate]
+
+pub fn find_round_trips(Array[String]) -> Array[PatternCandidate]
+
+// Errors
+
+// Types and methods
+pub enum PatternCandidate {
+  RoundTrip(String, String)
+  Idempotent(String)
+  ProducerConsumer(String, String)
+}
+
+// Type aliases
+
+// Traits
+

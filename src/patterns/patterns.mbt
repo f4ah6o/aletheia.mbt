@@ -3,20 +3,22 @@
 /// Round-Trip、Idempotence、Producer-Consumerパターンを検出する
 ///
 
+///|
 /// パターン候補
 pub enum PatternCandidate {
   /// Round-Trip: encode/decode, serialize/deserialize
-  RoundTrip(String, String)  // (encoder_name, decoder_name)
-
+  RoundTrip(String, String) // (encoder_name, decoder_name)
   /// べき等性: sort, normalize, trim など
-  Idempotent(String)  // function_name
-
+  Idempotent(String) // function_name
   /// Producer-Consumer: 型による連鎖
-  ProducerConsumer(String, String)  // (producer, consumer)
+  ProducerConsumer(String, String) // (producer, consumer)
 }
 
+///|
 /// Round-Tripパターンを検出
-pub fn find_round_trips(function_names : Array[String]) -> Array[PatternCandidate] {
+pub fn find_round_trips(
+  function_names : Array[String],
+) -> Array[PatternCandidate] {
   let results : Array[PatternCandidate] = []
 
   // よく使われるペアの接頭辞・接尾辞
@@ -28,9 +30,8 @@ pub fn find_round_trips(function_names : Array[String]) -> Array[PatternCandidat
     ("to_int", "from_int"),
     ("to_json", "from_json"),
     ("write", "read"),
-    ("save", "load")
+    ("save", "load"),
   ]
-
   let mut i = 0
   while i < Array::length(function_names) {
     let name1 = function_names[i]
@@ -58,19 +59,19 @@ pub fn find_round_trips(function_names : Array[String]) -> Array[PatternCandidat
     }
     i = i + 1
   }
-
   results
 }
 
+///|
 /// べき等性パターンを検出
-pub fn find_idempotent_functions(function_names : Array[String]) -> Array[PatternCandidate] {
+pub fn find_idempotent_functions(
+  function_names : Array[String],
+) -> Array[PatternCandidate] {
   let results : Array[PatternCandidate] = []
-
   let idempotent_keywords = [
-    "sort", "normalize", "canonicalize", "trim", "clean",
-    "compact", "dedupe", "unique", "flatten"
+    "sort", "normalize", "canonicalize", "trim", "clean", "compact", "dedupe", "unique",
+    "flatten",
   ]
-
   let mut i = 0
   while i < Array::length(function_names) {
     let name = function_names[i]
@@ -86,17 +87,17 @@ pub fn find_idempotent_functions(function_names : Array[String]) -> Array[Patter
     }
     i = i + 1
   }
-
   results
 }
 
+///|
 /// Producer-Consumerパターンを検出
-pub fn find_producer_consumer(function_names : Array[String]) -> Array[PatternCandidate] {
+pub fn find_producer_consumer(
+  function_names : Array[String],
+) -> Array[PatternCandidate] {
   let results : Array[PatternCandidate] = []
-
   let producer_prefixes = ["create", "make", "new", "build", "generate", "get"]
   let consumer_prefixes = ["process", "handle", "use", "consume", "transform"]
-
   let mut i = 0
   while i < Array::length(function_names) {
     let name1 = function_names[i]
@@ -127,10 +128,10 @@ pub fn find_producer_consumer(function_names : Array[String]) -> Array[PatternCa
     }
     i = i + 1
   }
-
   results
 }
 
+///|
 /// テスト
 test "find_round_trips_simple" {
   let names = ["encode_data", "decode_data", "to_string", "from_string"]
@@ -138,24 +139,28 @@ test "find_round_trips_simple" {
   inspect(results.length(), content="2")
 }
 
+///|
 test "find_idempotent_functions_simple" {
   let names = ["sort_array", "normalize_path", "trim_string", "add_numbers"]
   let results = find_idempotent_functions(names)
   inspect(results.length(), content="3")
 }
 
+///|
 test "find_producer_consumer_simple" {
   let names = ["create_user", "process_user", "delete_user"]
   let results = find_producer_consumer(names)
   inspect(results.length(), content="1")
 }
 
+///|
 test "find_round_trips_empty" {
   let names : Array[String] = []
   let results = find_round_trips(names)
   inspect(results.length(), content="0")
 }
 
+///|
 test "find_idempotent_functions_empty" {
   let names : Array[String] = []
   let results = find_idempotent_functions(names)

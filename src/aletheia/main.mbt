@@ -1,7 +1,6 @@
 ///|
 /// Aletheia CLI エントリポイント
 ///
-
 fn main {
   let args = @sys.get_cli_args()
 

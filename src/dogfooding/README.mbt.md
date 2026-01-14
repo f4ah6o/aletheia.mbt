@@ -36,6 +36,7 @@ moon test src/dogfooding
 Idempotent property: applying function twice should be same as applying once.
 
 ```mbt
+///|
 test "prop_sort_idempotent_demo" {
   let input = [3, 1, 2]
   inspect(input.length(), content="3")

@@ -13,6 +13,7 @@
 Idempotent property: applying function twice should be same as applying once.
 
 ```moonbit
+///|
 test "prop_sort_idempotent" {
   let input = [3, 1, 2, 4, 5]
   let sorted1 = input.sort()
@@ -25,6 +26,7 @@ test "prop_sort_idempotent" {
 Idempotent property: applying function twice should be same as applying once.
 
 ```moonbit
+///|
 test "prop_normalize_idempotent" {
   let input = "  hello  "
   let normalized1 = input.trim()
@@ -39,6 +41,7 @@ test "prop_normalize_idempotent" {
 Round-trip property: parsing and generating should preserve structure.
 
 ```moonbit
+///|
 test "prop_parser_roundtrip_preserves_code_blocks" {
   let markdown = "# Title\nSome text\n```moonbit\nfn test() -> Int { 42 }\n```"
   let ast = @parser.parse_markdown(markdown)
@@ -54,12 +57,12 @@ test "prop_parser_roundtrip_preserves_code_blocks" {
 Round-trip property: parsing and serializing commands should be reversible.
 
 ```moonbit
+///|
 test "prop_cli_roundtrip_analyze" {
   let original_args = ["moon-pbt-gen", "analyze", "./src"]
   let cmd = @cli.parse_args(original_args)
   let regenerated_args = @cli.command_to_args(cmd)
   let cmd2 = @cli.parse_args(regenerated_args)
-
   let result1 = match cmd {
     @cli.Command::Analyze(p) => p
     _ => "fail"
@@ -78,10 +81,10 @@ test "prop_cli_roundtrip_analyze" {
 Pattern detection should be monotonic: more functions should not reduce detections.
 
 ```moonbit
+///|
 test "prop_pattern_detection_monotonic" {
   let a = ["encode_data", "decode_data"]
   let b = ["to_json", "from_json"]
-
   let results_a = @patterns.find_round_trips(a)
   let results_b = @patterns.find_round_trips(b)
 
@@ -97,7 +100,6 @@ test "prop_pattern_detection_monotonic" {
     combined.push(b[j])
     j = j + 1
   }
-
   let results_combined = @patterns.find_round_trips(combined)
 
   // 結合結果は個別結果以上のパターンを含む
@@ -110,13 +112,12 @@ test "prop_pattern_detection_monotonic" {
 Pattern detection with empty input should return empty results.
 
 ```moonbit
+///|
 test "prop_pattern_detection_empty_input" {
   let empty : Array[String] = []
-
   let rt = @patterns.find_round_trips(empty)
   let id = @patterns.find_idempotent_functions(empty)
   let pc = @patterns.find_producer_consumer(empty)
-
   inspect(rt.length(), content="0")
   inspect(id.length(), content="0")
   inspect(pc.length(), content="0")
@@ -129,10 +130,10 @@ test "prop_pattern_detection_empty_input" {
 Generator should produce same output for same input.
 
 ```moonbit
+///|
 test "prop_generator_deterministic" {
   let test1 = @generator.generate_round_trip_test("encode", "decode", "Data")
   let test2 = @generator.generate_round_trip_test("encode", "decode", "Data")
-
   inspect(test1.name == test2.name, content="true")
   inspect(test1.code == test2.code, content="true")
 }

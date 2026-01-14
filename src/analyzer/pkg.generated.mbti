@@ -1,0 +1,39 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "f4ah6o/aletheia/analyzer"
+
+// Values
+pub fn extract_from_source(String, String) -> Result[ExtractionResult, String]
+
+pub fn extract_function_names(String) -> Array[String]
+
+// Errors
+
+// Types and methods
+pub struct ExtractionResult {
+  functions : Array[FunctionMeta]
+  types : Array[TypeDefinition]
+  arbitrary_impls : Array[String]
+}
+
+pub struct FunctionMeta {
+  name : String
+  location : String
+  line_num : Int
+}
+
+pub struct TypeDefinition {
+  name : String
+  kind : TypeKind
+  location : String
+}
+
+pub enum TypeKind {
+  Struct
+  Enum
+}
+
+// Type aliases
+pub type ExtractError = String
+
+// Traits
+

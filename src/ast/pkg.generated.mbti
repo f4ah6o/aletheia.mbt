@@ -1,0 +1,103 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "f4ah6o/aletheia/ast"
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct ArgMeta {
+  name : String
+  type_ : TypeMeta
+  is_optional : Bool
+  default_value : String?
+}
+pub fn ArgMeta::new(String, TypeMeta) -> Self
+
+pub struct EnumVariant {
+  name : String
+  data : TypeMeta?
+}
+
+pub struct FunctionMeta {
+  name : String
+  args : Array[ArgMeta]
+  return_type : TypeMeta
+  visibility : Visibility
+  is_pure : Bool
+  doc_comment : String?
+  location : Location
+  type_params : Array[String]
+}
+pub fn FunctionMeta::new(String, Location) -> Self
+pub fn FunctionMeta::signature(Self) -> String
+
+pub struct Location {
+  file : String
+  line_start : Int
+  line_end : Int
+  column_start : Int
+  column_end : Int
+}
+pub fn Location::unknown(String) -> Self
+
+pub enum PatternCandidate {
+  RoundTrip(String, String, TypeMeta)
+  Idempotent(String)
+  ProducerConsumer(String, String)
+}
+
+pub struct PropertyDef {
+  name : String
+  description : String
+  target_functions : Array[String]
+  body : String
+  pattern : PatternCandidate
+}
+pub fn PropertyDef::new(String, PatternCandidate) -> Self
+
+pub struct StructField {
+  name : String
+  type_ : TypeMeta
+}
+
+pub enum Testability {
+  Testable
+  NeedsUserArbitrary(Array[String])
+  NotTestable(String)
+}
+
+pub struct TypeDefinition {
+  name : String
+  kind : TypeKind
+  type_params : Array[String]
+  location : Location
+}
+
+pub enum TypeKind {
+  Struct(Array[StructField])
+  Enum(Array[EnumVariant])
+  Opaque
+}
+
+pub enum TypeMeta {
+  Primitive(String)
+  Generic(String, Array[TypeMeta])
+  Function(Array[TypeMeta], TypeMeta)
+  Tuple(Array[TypeMeta])
+  Named(String)
+  Unknown(String)
+  Unit
+}
+pub fn TypeMeta::simple_name(Self) -> String
+
+pub enum Visibility {
+  Public
+  Private
+  Internal
+}
+
+// Type aliases
+
+// Traits
+

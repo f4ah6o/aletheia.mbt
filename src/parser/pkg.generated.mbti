@@ -1,0 +1,37 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "f4ah6o/aletheia/parser"
+
+// Values
+pub fn code_block_to_string(CodeBlock) -> String
+
+pub fn extract_code_blocks(String) -> Array[CodeBlock]
+
+pub fn extract_function_calls(CodeBlock) -> Array[String]
+
+pub fn extract_moonbit_blocks(String) -> Array[CodeBlock]
+
+pub fn extract_test_blocks(String) -> Array[CodeBlock]
+
+pub fn generate_markdown(MarkdownAST) -> String
+
+pub fn parse_markdown(String) -> MarkdownAST
+
+// Errors
+
+// Types and methods
+pub struct CodeBlock {
+  lang : String
+  content : String
+  line_start : Int
+  line_end : Int
+}
+
+pub struct MarkdownAST {
+  prose : Array[String]
+  code_blocks : Array[CodeBlock]
+}
+
+// Type aliases
+
+// Traits
+

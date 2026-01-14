@@ -1,0 +1,25 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "f4ah6o/aletheia/cli"
+
+// Values
+pub fn command_to_args(Command) -> Array[String]
+
+pub fn help_message() -> String
+
+pub fn parse_args(Array[String]) -> Command
+
+pub fn run_command(Command) -> String
+
+// Errors
+
+// Types and methods
+pub enum Command {
+  Analyze(String)
+  Generate(String)
+  Help
+}
+
+// Type aliases
+
+// Traits
+
