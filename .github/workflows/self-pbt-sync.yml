@@ -1,0 +1,38 @@
+name: "Self PBT Sync"
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/self-pbt-sync.yml"
+      - "moon.mod.json"
+      - "src/**"
+      - "scripts/self_pbt.sh"
+  pull_request:
+    paths:
+      - ".github/workflows/self-pbt-sync.yml"
+      - "moon.mod.json"
+      - "src/**"
+      - "scripts/self_pbt.sh"
+
+jobs:
+  self-pbt-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+
+      - name: Update MoonBit dependencies
+        run: |
+          moon version --all
+          moon update
+
+      - name: Run self PBT sync
+        run: |
+          ./scripts/self_pbt.sh
+          git diff --exit-code

@@ -51,6 +51,7 @@ moon run src/aletheia -- generate ./src
 moon run src/aletheia -- sync
 # 自己適用PBTの生成（テンプレート出力）
 ./scripts/self_pbt.sh
+# self_pbt.sh は generate/sync + moon info + moon fmt を実行
 ```
 
 ## Claude Code Plugin
