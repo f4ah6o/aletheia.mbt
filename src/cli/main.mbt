@@ -1183,8 +1183,12 @@ fn build_generate_report(
   let output_path = output_path_for_pbt(path, module_name)
   let mut write_error : String? = None
   if !options.dry_run {
+    let merged = @generator.merge_generated_markdown(
+      read_file_content(output_path),
+      content,
+    )
     let error : String? = try {
-      @fs.write_string_to_file(output_path, content)
+      @fs.write_string_to_file(output_path, merged)
       None
     } catch {
       err => Some("\{err}")

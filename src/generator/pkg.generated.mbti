@@ -20,7 +20,15 @@ pub fn generate_producer_consumer_test(String, String, String) -> GeneratedTest
 
 pub fn generate_round_trip_test(String, String, String) -> GeneratedTest
 
+pub fn generated_block_end() -> String
+
+pub fn generated_block_start() -> String
+
+pub fn merge_generated_markdown(String, String) -> String
+
 pub fn pattern_to_test(@patterns.PatternCandidate, String) -> GeneratedTest
+
+pub fn wrap_generated_block(String) -> String
 
 // Errors
 
