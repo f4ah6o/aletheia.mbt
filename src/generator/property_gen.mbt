@@ -46,7 +46,7 @@ fn generate_parse_generate_round_trip_test(
   let test_name = "prop_" + parser + "_" + generator + "_roundtrip"
   let test_code = "test \"" +
     test_name +
-    "\" {\n  let fixtures = [\n    \"```moonbit\\nfn foo() -> Int { 1 }\\n```\",\n    \"Intro\\n\\n```mbt check\\n test { inspect(1) }\\n```\\nOutro\",\n    \"plain text\"\n  ]\n  for markdown in fixtures {\n    let ast = " +
+    "\" {\n  let fixtures = [\n    \"```moonbit\\nfn foo() -> Int { 1 }\\n```\",\n    \"Intro\\n\\n```mbt check\\n test { inspect(1) }\\n```\\nOutro\",\n    \"```mbt nocheck\\nlet x = 1\\n```\\n```moonbit\\nfn bar() -> Int { 2 }\\n```\",\n    \"```\\nfn baz() -> Int { 3 }\\n```\",\n    \"plain text\"\n  ]\n  for markdown in fixtures {\n    let ast = " +
     parser +
     "(markdown)\n    let regenerated = " +
     generator +
@@ -70,7 +70,7 @@ fn generate_parse_command_to_round_trip_test(
   let test_name = "prop_" + parser + "_" + generator + "_roundtrip"
   let test_code = "test \"" +
     test_name +
-    "\" {\n  let fixtures : Array[Array[String]] = [\n    [\"moon-pbt-gen\", \"analyze\", \"./src\"],\n    [\"moon-pbt-gen\", \"generate\", \"./src\"],\n    [\"moon-pbt-gen\", \"sync\", \"./src\"],\n    [\"moon-pbt-gen\", \"help\"],\n  ]\n  for args in fixtures {\n    let args2 = " +
+    "\" {\n  let fixtures : Array[Array[String]] = [\n    [\"moon-pbt-gen\", \"analyze\", \"./src\"],\n    [\"moon-pbt-gen\", \"analyze\", \"./examples\"],\n    [\"moon-pbt-gen\", \"generate\", \"./src\"],\n    [\"moon-pbt-gen\", \"sync\", \"./src\"],\n    [\"moon-pbt-gen\", \"help\"],\n  ]\n  for args in fixtures {\n    let args2 = " +
     generator +
     "(" +
     parser +
