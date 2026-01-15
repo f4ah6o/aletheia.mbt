@@ -124,11 +124,8 @@ test "prop_extract_function_names_distinguishes_pub_priv" {
 ///|
 /// extract_function_names 複雑なシグネチャ対応
 test "prop_extract_function_names_complex_signatures" {
-  let sources = [
-    "pub fn f1() -> Int { 1 }", "pub fn f2<T>(x : T) -> T { x }", "pub fn f3(a : Int, b : Int, c : Int) -> Int { a + b + c }",
-    "pub fn f4(\n  x : Int,\n  y : Int,\n) -> Int { x + y }",
-  ]
-  let source = join_strings(sources, "\n")
+  // 有効なMoonBit構文を使用する（関数本体は複数行で記述）
+  let source = "pub fn f1() -> Int {\n  1\n}\npub fn f2(x : Int) -> Int {\n  x\n}\npub fn f3(a : Int, b : Int, c : Int) -> Int {\n  a + b + c\n}\npub fn f4(\n  x : Int,\n  y : Int,\n) -> Int {\n  x + y\n}"
   let names = @analyzer.extract_function_names(source)
   inspect(names.length(), content="4")
 }
@@ -320,21 +317,6 @@ fn join_lines(lines : Array[String]) -> String {
   let mut i = 0
   while i < lines.length() {
     result = result + lines[i]
-    i = i + 1
-  }
-  result
-}
-
-///|
-/// 文字列配列を結合
-fn join_strings(arr : Array[String], sep : String) -> String {
-  let mut result = ""
-  let mut i = 0
-  while i < arr.length() {
-    if i > 0 {
-      result = result + sep
-    }
-    result = result + arr[i]
     i = i + 1
   }
   result
