@@ -16,7 +16,6 @@ pub fn run_command(Command) -> String
 pub enum Command {
   Analyze(String)
   Generate(String)
-  Sync(String)
   Help
 }
 

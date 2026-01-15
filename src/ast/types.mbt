@@ -53,6 +53,16 @@ pub fn TypeMeta::simple_name(self : TypeMeta) -> String {
 }
 
 ///|
+pub fn TypeMeta::unit() -> TypeMeta {
+  Unit
+}
+
+///|
+pub fn TypeMeta::named(name : String) -> TypeMeta {
+  Named(name)
+}
+
+///|
 /// 引数メタデータ
 pub struct ArgMeta {
   name : String
@@ -64,6 +74,16 @@ pub struct ArgMeta {
 ///|
 pub fn ArgMeta::new(name : String, type_ : TypeMeta) -> ArgMeta {
   { name, type_, is_optional: false, default_value: None }
+}
+
+///|
+pub fn ArgMeta::with_options(
+  name : String,
+  type_ : TypeMeta,
+  is_optional : Bool,
+  default_value : String?,
+) -> ArgMeta {
+  { name, type_, is_optional, default_value }
 }
 
 ///|
@@ -90,6 +110,26 @@ pub fn FunctionMeta::new(name : String, location : Location) -> FunctionMeta {
     doc_comment: None,
     location,
     type_params: [],
+  }
+}
+
+///|
+pub fn FunctionMeta::with_signature(
+  name : String,
+  args : Array[ArgMeta],
+  return_type : TypeMeta,
+  location : Location,
+  type_params? : Array[String] = [],
+) -> FunctionMeta {
+  {
+    name,
+    args,
+    return_type,
+    visibility: Public,
+    is_pure: true,
+    doc_comment: None,
+    location,
+    type_params,
   }
 }
 
@@ -138,6 +178,67 @@ pub enum Testability {
 }
 
 ///|
+pub fn testable() -> Testability {
+  Testable
+}
+
+///|
+pub fn needs_user_arbitrary(types : Array[String]) -> Testability {
+  NeedsUserArbitrary(types)
+}
+
+///|
+pub fn not_testable(reason : String) -> Testability {
+  NotTestable(reason)
+}
+
+///|
+/// Arbitrary実装情報
+pub struct ArbitraryImpl {
+  type_name : String
+  is_primitive : Bool
+  is_container : Bool
+  inner_types : Array[String]
+  impl_line : Int?
+}
+
+///|
+pub fn ArbitraryImpl::primitive(name : String) -> ArbitraryImpl {
+  {
+    type_name: name,
+    is_primitive: true,
+    is_container: false,
+    inner_types: [],
+    impl_line: None,
+  }
+}
+
+///|
+pub fn ArbitraryImpl::container(
+  name : String,
+  inners : Array[String],
+) -> ArbitraryImpl {
+  {
+    type_name: name,
+    is_primitive: false,
+    is_container: true,
+    inner_types: inners,
+    impl_line: None,
+  }
+}
+
+///|
+pub fn ArbitraryImpl::user_defined(name : String, line : Int) -> ArbitraryImpl {
+  {
+    type_name: name,
+    is_primitive: false,
+    is_container: false,
+    inner_types: [],
+    impl_line: Some(line),
+  }
+}
+
+///|
 /// パターン候補
 pub enum PatternCandidate {
   RoundTrip(String, String, TypeMeta)
@@ -166,4 +267,120 @@ pub fn PropertyDef::new(
     ProducerConsumer(producer, consumer) => [producer, consumer]
   }
   { name, description: "", target_functions: targets, body: "", pattern }
+}
+
+///|
+/// 呼び出しグラフ（Phase 2）
+pub struct CallGraph {
+  nodes : Array[CallNode]
+  edges : Array[CallEdge]
+  source_file : String
+}
+
+///|
+pub fn CallGraph::new(source_file : String) -> CallGraph {
+  { nodes: [], edges: [], source_file }
+}
+
+///|
+pub fn CallGraph::add_node(self : CallGraph, node : CallNode) -> CallGraph {
+  let nodes : Array[CallNode] = []
+  let mut i = 0
+  while i < self.nodes.length() {
+    Array::push(nodes, self.nodes[i])
+    i = i + 1
+  }
+  Array::push(nodes, node)
+  { nodes, edges: self.edges, source_file: self.source_file }
+}
+
+///|
+pub fn CallGraph::add_edge(self : CallGraph, edge : CallEdge) -> CallGraph {
+  let edges : Array[CallEdge] = []
+  let mut i = 0
+  while i < self.edges.length() {
+    Array::push(edges, self.edges[i])
+    i = i + 1
+  }
+  Array::push(edges, edge)
+  { nodes: self.nodes, edges, source_file: self.source_file }
+}
+
+///|
+/// 呼び出しグラフのノード
+pub struct CallNode {
+  function_name : String
+  location : String
+  line_num : Int
+  calls : Array[String] // 呼び出す関数名リスト
+  called_by : Array[String] // 呼び出される関数名リスト
+}
+
+///|
+pub fn CallNode::new(
+  name : String,
+  location : String,
+  line_num : Int,
+) -> CallNode {
+  { function_name: name, location, line_num, calls: [], called_by: [] }
+}
+
+///|
+/// 呼び出しエッジ
+pub struct CallEdge {
+  caller : String
+  callee : String
+  call_type : CallType
+  location : String
+  line_num : Int
+}
+
+///|
+pub fn CallEdge::new(
+  caller : String,
+  callee : String,
+  call_type : CallType,
+  location : String,
+  line_num : Int,
+) -> CallEdge {
+  { caller, callee, call_type, location, line_num }
+}
+
+///|
+/// 呼び出しの種類
+pub enum CallType {
+  DirectCall // func(args)
+  MethodCall // obj.method(args)
+  PipelineCall // value |> func
+  ChainCall // 関数合成
+}
+
+///|
+pub fn make_direct_call() -> CallType {
+  DirectCall
+}
+
+///|
+pub fn make_method_call() -> CallType {
+  MethodCall
+}
+
+///|
+pub fn make_pipeline_call() -> CallType {
+  PipelineCall
+}
+
+///|
+pub fn make_chain_call() -> CallType {
+  ChainCall
+}
+
+///|
+pub fn call_type_to_string(ct : CallType) -> String {
+  match ct {
+    DirectCall => "direct"
+    MethodCall => "method"
+    PipelineCall => "pipeline"
+    ChainCall => "chain"
+  }
 }

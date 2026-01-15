@@ -59,7 +59,7 @@ pub fn command_to_args(cmd : Command) -> Array[String] {
 pub fn help_message() -> String {
   let lines = [
     "moon-pbt-gen - Property-Based Testing code generator", "", "Usage:", "  moon-pbt-gen <command> [arguments]",
-    "", "Commands:", "  analyze <path>     Analyze MoonBit source files", "  generate <path>   Collect PBT targets into <module>.pbt.mbt.md",
+    "", "Commands:", "  analyze <path>     Analyze MoonBit package or file", "  generate <path>   Collect PBT targets into <module>.pbt.mbt.md",
     "  sync [path]       Sync PBT markdown into per-package tests", "  help              Show this help message",
     "", "Examples:", "  moon-pbt-gen analyze ./src", "  moon-pbt-gen generate ./src",
     "  moon-pbt-gen sync",
@@ -88,31 +88,43 @@ pub fn run_command(cmd : Command) -> String {
 ///|
 /// ソースを解析
 fn analyze_source(path : String) -> String {
-  // 対象ファイルを収集して関数名を抽出
-  let files = collect_source_files(path)
-  let functions = extract_function_names_from_files(files)
-  let roundtrips = @patterns.find_round_trips(functions)
-  let idempotents = @patterns.find_idempotent_functions(functions)
-  let producers = @patterns.find_producer_consumer(functions)
-  let mut result = "=== Analysis Result for " + path + " ===\n"
-  result = result + "Files scanned: " + int_to_string(files.length()) + "\n"
-  result = result +
-    "Functions found: " +
-    int_to_string(functions.length()) +
-    "\n"
-  result = result +
-    "Round-Trip patterns: " +
-    int_to_string(roundtrips.length()) +
-    "\n"
-  result = result +
-    "Idempotent patterns: " +
-    int_to_string(idempotents.length()) +
-    "\n"
-  result = result +
-    "Producer-Consumer patterns: " +
-    int_to_string(producers.length()) +
-    "\n"
-  result
+  let package_dirs = resolve_package_dirs(path)
+  if package_dirs.length() == 0 {
+    "No MoonBit package found under: " + path + "\n"
+  } else {
+    let mut result = ""
+    let mut i = 0
+    while i < package_dirs.length() {
+      let package_dir = package_dirs[i]
+      let functions = collect_functions_from_package(package_dir)
+      let function_names = function_names_from_meta(functions)
+      let roundtrips = @patterns.find_round_trips(function_names)
+      let idempotents = @patterns.find_idempotent_functions(function_names)
+      let producers = @patterns.find_producer_consumer(function_names)
+      if i > 0 {
+        result = result + "\n"
+      }
+      result = result + "=== Analysis Result for " + package_dir + " ===\n"
+      result = result +
+        "Functions found: " +
+        int_to_string(function_names.length()) +
+        "\n"
+      result = result +
+        "Round-Trip patterns: " +
+        int_to_string(roundtrips.length()) +
+        "\n"
+      result = result +
+        "Idempotent patterns: " +
+        int_to_string(idempotents.length()) +
+        "\n"
+      result = result +
+        "Producer-Consumer patterns: " +
+        int_to_string(producers.length()) +
+        "\n"
+      i = i + 1
+    }
+    result
+  }
 }
 
 ///|
@@ -124,46 +136,7 @@ fn read_file_content(path : String) -> String {
 }
 
 ///|
-/// ディレクトリ配下の .mbt ファイルを収集
-fn collect_source_files(path : String) -> Array[String] {
-  let result : Array[String] = []
-  if is_dir(path) {
-    if should_skip_dir(path) {
-      return result
-    }
-    let entries = read_dir_entries(path)
-    let mut i = 0
-    while i < entries.length() {
-      let child = join_path(path, entries[i])
-      if is_dir(child) {
-        result.append(collect_source_files(child))
-      } else if is_file(child) && is_mbt_file(child) {
-        Array::push(result, child)
-      }
-      i = i + 1
-    }
-    result
-  } else if is_file(path) && is_mbt_file(path) {
-    [path]
-  } else {
-    result
-  }
-}
-
-///|
-fn extract_function_names_from_files(files : Array[String]) -> Array[String] {
-  let result : Array[String] = []
-  let mut i = 0
-  while i < files.length() {
-    let source = read_file_content(files[i])
-    let names = @analyzer.extract_function_names(source)
-    result.append(names)
-    i = i + 1
-  }
-  result
-}
-
-///|
+/// ディレクトリ一覧を安全に取得
 fn read_dir_entries(path : String) -> Array[String] {
   @fs.read_dir(path) catch {
     _ => []
@@ -171,6 +144,7 @@ fn read_dir_entries(path : String) -> Array[String] {
 }
 
 ///|
+/// パスがディレクトリか判定
 fn is_dir(path : String) -> Bool {
   @fs.is_dir(path) catch {
     _ => false
@@ -178,6 +152,7 @@ fn is_dir(path : String) -> Bool {
 }
 
 ///|
+/// パスがファイルか判定
 fn is_file(path : String) -> Bool {
   @fs.is_file(path) catch {
     _ => false
@@ -185,25 +160,11 @@ fn is_file(path : String) -> Bool {
 }
 
 ///|
-fn should_skip_dir(path : String) -> Bool {
-  let name = @path.Path(path).basename().to_string()
-  name == ".git" ||
-  name == "_build" ||
-  name == "target" ||
-  name == ".mooncakes" ||
-  name == ".moonagent"
-}
-
-///|
-fn is_mbt_file(path : String) -> Bool {
-  path.has_suffix(".mbt")
-}
-
-///|
-fn join_path(base : String, entry : String) -> String {
-  let entry_path = @path.Path(entry)
+/// パスを結合
+fn join_path(base : String, name : String) -> String {
+  let entry_path = @path.Path(name)
   if entry_path.is_absolute() {
-    entry
+    name
   } else {
     @path.Path(base).join(entry_path).to_string()
   }
@@ -272,60 +233,416 @@ fn output_path_for_pbt(path : String, module_name : String) -> String {
 }
 
 ///|
-/// テストを生成
-fn generate_tests(path : String) -> String {
-  // 対象ファイルを収集して関数名を抽出
-  let files = collect_source_files(path)
-  let functions = extract_function_names_from_files(files)
+/// 親ディレクトリを取得
+fn path_dirname(path : String) -> String {
+  @path.Path(path).dirname().to_string()
+}
 
-  // パターン検出
-  let roundtrips = @patterns.find_round_trips(functions)
-  let idempotents = @patterns.find_idempotent_functions(functions)
-  let producers = @patterns.find_producer_consumer(functions)
+///|
+/// パッケージディレクトリか判定
+fn has_moon_pkg(path : String) -> Bool {
+  @fs.path_exists(join_path(path, "moon.pkg.json"))
+}
 
-  // すべてのパターンを統合
-  let mut all_patterns : Array[@patterns.PatternCandidate] = []
-  let mut i = 0
-  while i < roundtrips.length() {
-    all_patterns = append_pattern(all_patterns, roundtrips[i])
-    i = i + 1
-  }
-  let mut i = 0
-  while i < idempotents.length() {
-    all_patterns = append_pattern(all_patterns, idempotents[i])
-    i = i + 1
-  }
-  let mut i = 0
-  while i < producers.length() {
-    all_patterns = append_pattern(all_patterns, producers[i])
-    i = i + 1
-  }
+///|
+/// 除外対象ディレクトリか判定
+fn should_skip_dir(name : String) -> Bool {
+  name == ".git" ||
+  name == ".moon" ||
+  name == ".mooncakes" ||
+  name == ".moonagent" ||
+  name == "_build" ||
+  name == "target" ||
+  name == "node_modules"
+}
 
-  // ドキュメント生成
-  let module_name = extract_module_name()
-  let doc = @generator.build_pbt_document(
-    module_name, path, all_patterns, "TestData",
-  )
-  let content = @generator.generate_pbt_targets_md(doc)
-  let output_path = output_path_for_pbt(path, module_name)
-  let write_error : String? = try {
-    @fs.write_string_to_file(output_path, content)
-    None
-  } catch {
-    err => Some("\{err}")
+///|
+/// 近傍のパッケージディレクトリを探索
+fn find_package_dir(start : String) -> String? {
+  let mut current = start
+  while true {
+    if has_moon_pkg(current) {
+      return Some(current)
+    }
+    let parent = path_dirname(current)
+    if parent == current {
+      break
+    }
+    current = parent
   }
-  let mut result = "=== PBT Targets Collected ===\n"
-  result = result + "Module: " + module_name + "\n"
-  result = result + "Output: " + output_path + "\n"
-  result = result + "Files scanned: " + int_to_string(files.length()) + "\n"
-  result = result +
-    "Patterns detected: " +
-    int_to_string(all_patterns.length()) +
-    "\n"
-  if write_error is Some(msg) {
-    result = result + "Write error: " + msg + "\n"
+  None
+}
+
+///|
+/// 入力パスからパッケージディレクトリを解決
+fn resolve_package_dirs(path : String) -> Array[String] {
+  if is_file(path) {
+    match find_package_dir(path_dirname(path)) {
+      Some(dir) => [dir]
+      None => []
+    }
+  } else if is_dir(path) {
+    if has_moon_pkg(path) {
+      [path]
+    } else {
+      collect_package_dirs(path)
+    }
+  } else {
+    []
+  }
+}
+
+///|
+/// 配下のパッケージディレクトリを再帰的に収集
+fn collect_package_dirs(root : String) -> Array[String] {
+  let result : Array[String] = []
+  let entries = read_dir_entries(root)
+  let mut i = 0
+  while i < entries.length() {
+    let entry = entries[i]
+    if should_skip_dir(entry) {
+      i = i + 1
+      continue
+    }
+    let path = join_path(root, entry)
+    if is_dir(path) {
+      if has_moon_pkg(path) {
+        Array::push(result, path)
+      }
+      let nested = collect_package_dirs(path)
+      let _ = push_strings(result, nested)
+
+    }
+    i = i + 1
   }
   result
+}
+
+///|
+/// パッケージから公開関数メタデータを収集
+fn collect_functions_from_package(
+  package_dir : String,
+) -> Array[@ast.FunctionMeta] {
+  let result : Array[@ast.FunctionMeta] = []
+  let entries = read_dir_entries(package_dir)
+  let mut i = 0
+  while i < entries.length() {
+    let entry = entries[i]
+    let path = join_path(package_dir, entry)
+    if is_file(path) {
+      if entry.has_suffix(".mbt.md") {
+        if !is_pbt_doc(entry) {
+          let functions = collect_functions_from_markdown(path)
+          let _ = push_functions(result, functions)
+
+        }
+      } else if entry.has_suffix(".mbt") {
+        let functions = collect_functions_from_file(path)
+        let _ = push_functions(result, functions)
+
+      } else {
+        ()
+      }
+    }
+    i = i + 1
+  }
+  result
+}
+
+///|
+/// MoonBitソースファイルから関数メタデータを抽出
+fn collect_functions_from_file(path : String) -> Array[@ast.FunctionMeta] {
+  let source = read_file_content(path)
+  @analyzer.extract_public_functions(source, path)
+}
+
+///|
+/// MarkdownからMoonBitコードブロックを抽出して解析
+fn collect_functions_from_markdown(path : String) -> Array[@ast.FunctionMeta] {
+  let markdown = read_file_content(path)
+  let blocks = @parser.extract_moonbit_blocks(markdown)
+  let result : Array[@ast.FunctionMeta] = []
+  let mut i = 0
+  while i < blocks.length() {
+    let functions = @analyzer.extract_public_functions(blocks[i].content, path)
+    let _ = push_functions(result, functions)
+    i = i + 1
+  }
+  result
+}
+
+///|
+fn collect_arbitrary_impls_from_package(
+  package_dir : String,
+) -> Array[@ast.ArbitraryImpl] {
+  let result : Array[@ast.ArbitraryImpl] = []
+  let entries = read_dir_entries(package_dir)
+  let mut i = 0
+  while i < entries.length() {
+    let entry = entries[i]
+    let path = join_path(package_dir, entry)
+    if is_file(path) {
+      if entry.has_suffix(".mbt.md") {
+        if !is_pbt_doc(entry) {
+          let impls = collect_arbitrary_impls_from_markdown(path)
+          let _ = push_arbitrary_impls(result, impls)
+
+        }
+      } else if entry.has_suffix(".mbt") {
+        let impls = collect_arbitrary_impls_from_file(path)
+        let _ = push_arbitrary_impls(result, impls)
+
+      } else {
+        ()
+      }
+    }
+    i = i + 1
+  }
+  result
+}
+
+///|
+fn collect_arbitrary_impls_from_file(
+  path : String,
+) -> Array[@ast.ArbitraryImpl] {
+  let source = read_file_content(path)
+  @analyzer.detect_arbitrary_impls(source)
+}
+
+///|
+fn collect_arbitrary_impls_from_markdown(
+  path : String,
+) -> Array[@ast.ArbitraryImpl] {
+  let markdown = read_file_content(path)
+  let blocks = @parser.extract_moonbit_blocks(markdown)
+  let result : Array[@ast.ArbitraryImpl] = []
+  let mut i = 0
+  while i < blocks.length() {
+    let impls = @analyzer.detect_arbitrary_impls(blocks[i].content)
+    let _ = push_arbitrary_impls(result, impls)
+    i = i + 1
+  }
+  result
+}
+
+///|
+fn collect_functions_from_packages(
+  package_dirs : Array[String],
+) -> Array[@ast.FunctionMeta] {
+  let result : Array[@ast.FunctionMeta] = []
+  let mut i = 0
+  while i < package_dirs.length() {
+    let functions = collect_functions_from_package(package_dirs[i])
+    let _ = push_functions(result, functions)
+    i = i + 1
+  }
+  result
+}
+
+///|
+fn collect_arbitrary_impls_from_packages(
+  package_dirs : Array[String],
+) -> Array[@ast.ArbitraryImpl] {
+  let result : Array[@ast.ArbitraryImpl] = []
+  let mut i = 0
+  while i < package_dirs.length() {
+    let impls = collect_arbitrary_impls_from_package(package_dirs[i])
+    let _ = push_arbitrary_impls(result, impls)
+    i = i + 1
+  }
+  result
+}
+
+///|
+/// 文字列配列の末尾に要素を追加
+fn push_strings(target : Array[String], items : Array[String]) -> Array[String] {
+  let mut i = 0
+  while i < items.length() {
+    Array::push(target, items[i])
+    i = i + 1
+  }
+  target
+}
+
+///|
+/// 関数メタデータ配列の末尾に要素を追加
+fn push_functions(
+  target : Array[@ast.FunctionMeta],
+  items : Array[@ast.FunctionMeta],
+) -> Array[@ast.FunctionMeta] {
+  let mut i = 0
+  while i < items.length() {
+    Array::push(target, items[i])
+    i = i + 1
+  }
+  target
+}
+
+///|
+fn push_arbitrary_impls(
+  target : Array[@ast.ArbitraryImpl],
+  items : Array[@ast.ArbitraryImpl],
+) -> Array[@ast.ArbitraryImpl] {
+  let mut i = 0
+  while i < items.length() {
+    Array::push(target, items[i])
+    i = i + 1
+  }
+  target
+}
+
+/// PBTドキュメントのファイル名判定
+fn is_pbt_doc(name : String) -> Bool {
+  name.has_suffix(".pbt.mbt.md")
+}
+
+///|
+fn function_names_from_meta(
+  functions : Array[@ast.FunctionMeta],
+) -> Array[String] {
+  let result : Array[String] = []
+  let mut i = 0
+  while i < functions.length() {
+    Array::push(result, functions[i].name)
+    i = i + 1
+  }
+  result
+}
+
+///|
+fn find_function_meta(
+  functions : Array[@ast.FunctionMeta],
+  name : String,
+) -> @ast.FunctionMeta? {
+  let mut i = 0
+  while i < functions.length() {
+    if functions[i].name == name {
+      return Some(functions[i])
+    }
+    i = i + 1
+  }
+  None
+}
+
+///|
+fn infer_default_type(
+  functions : Array[@ast.FunctionMeta],
+  patterns : Array[@patterns.PatternCandidate],
+  known_impls : Array[@ast.ArbitraryImpl],
+) -> String {
+  let mut i = 0
+  while i < patterns.length() {
+    let type_name = match patterns[i] {
+      @patterns.RoundTrip(encoder, _) =>
+        match find_function_meta(functions, encoder) {
+          Some(func) => type_name_from_function(func)
+          None => None
+        }
+      @patterns.Idempotent(func_name) =>
+        match find_function_meta(functions, func_name) {
+          Some(func) => type_name_from_function(func)
+          None => None
+        }
+      @patterns.ProducerConsumer(producer, _) =>
+        match find_function_meta(functions, producer) {
+          Some(func) => type_name_from_function(func)
+          None => None
+        }
+    }
+    match type_name {
+      Some(t) =>
+        match @analyzer.check_type_testability(t, known_impls) {
+          @ast.Testable => return t
+          _ => ()
+        }
+      None => ()
+    }
+    i = i + 1
+  }
+  "String"
+}
+
+///|
+fn type_name_from_function(func : @ast.FunctionMeta) -> String? {
+  if func.args.length() > 0 {
+    let arg_type = func.args[0].type_.simple_name()
+    if arg_type != "Unit" {
+      return Some(arg_type)
+    }
+  }
+  let ret_type = func.return_type.simple_name()
+  if ret_type != "Unit" {
+    Some(ret_type)
+  } else {
+    None
+  }
+}
+
+///|
+/// テストを生成
+fn generate_tests(path : String) -> String {
+  let package_dirs = resolve_package_dirs(path)
+  if package_dirs.length() == 0 {
+    "No MoonBit package found under: " + path + "\n"
+  } else {
+    let functions = collect_functions_from_packages(package_dirs)
+    let function_names = function_names_from_meta(functions)
+
+    // パターン検出
+    let roundtrips = @patterns.find_round_trips(function_names)
+    let idempotents = @patterns.find_idempotent_functions(function_names)
+    let producers = @patterns.find_producer_consumer(function_names)
+
+    // すべてのパターンを統合
+    let mut all_patterns : Array[@patterns.PatternCandidate] = []
+    let mut i = 0
+    while i < roundtrips.length() {
+      all_patterns = append_pattern(all_patterns, roundtrips[i])
+      i = i + 1
+    }
+    let mut i = 0
+    while i < idempotents.length() {
+      all_patterns = append_pattern(all_patterns, idempotents[i])
+      i = i + 1
+    }
+    let mut i = 0
+    while i < producers.length() {
+      all_patterns = append_pattern(all_patterns, producers[i])
+      i = i + 1
+    }
+
+    let known_impls = collect_arbitrary_impls_from_packages(package_dirs)
+    let default_type = infer_default_type(
+      functions, all_patterns, known_impls,
+    )
+    let module_name = extract_module_name()
+    let doc = @generator.build_pbt_document(
+      module_name, path, all_patterns, default_type,
+    )
+    let content = @generator.generate_pbt_targets_md(doc)
+    let output_path = output_path_for_pbt(path, module_name)
+    let write_error : String? = try {
+      @fs.write_string_to_file(output_path, content)
+      None
+    } catch {
+      err => Some("\{err}")
+    }
+    let mut result = "=== PBT Targets Collected ===\n"
+    result = result + "Module: " + module_name + "\n"
+    result = result + "Output: " + output_path + "\n"
+    result = result +
+      "Packages scanned: " +
+      int_to_string(package_dirs.length()) +
+      "\n"
+    result = result +
+      "Patterns detected: " +
+      int_to_string(all_patterns.length()) +
+      "\n"
+    if write_error is Some(msg) {
+      result = result + "Write error: " + msg + "\n"
+    }
+    result
+  }
 }
 
 ///|
@@ -475,4 +792,50 @@ test "extract_module_name_from_mod" {
 ///|
 test "module_short_name" {
   inspect(module_short_name("org/sample"), content="sample")
+}
+
+///|
+test "generate_tests_creates_pbt_file" {
+  let test_dir = "/tmp/aletheia_pbt_pkg"
+  let pkg_path = join_path(test_dir, "moon.pkg.json")
+  let source_path = join_path(test_dir, "sample.mbt")
+  let module_name = extract_module_name()
+  let output_path = output_path_for_pbt(test_dir, module_name)
+  let test_source = "pub fn encode(x : Int) -> String { \"test\" }\npub fn decode(s : String) -> Int { 0 }"
+
+  // テスト用ディレクトリを準備
+  try {
+    @fs.remove_file(output_path)
+    @fs.remove_file(source_path)
+    @fs.remove_file(pkg_path)
+    @fs.remove_dir(test_dir)
+  } catch {
+    _ => ()
+  }
+  @fs.create_dir(test_dir) catch {
+    _ => ()
+  }
+  @fs.write_string_to_file(pkg_path, "{}") catch {
+    _ => ()
+  }
+  @fs.write_string_to_file(source_path, test_source) catch {
+    _ => ()
+  }
+
+  // generate_testsを実行
+  let result = generate_tests(test_dir)
+
+  // 結果検証
+  inspect(result.contains("PBT Targets Collected"), content="true")
+  inspect(@fs.path_exists(output_path), content="true")
+
+  // クリーンアップ
+  try {
+    @fs.remove_file(output_path)
+    @fs.remove_file(source_path)
+    @fs.remove_file(pkg_path)
+    @fs.remove_dir(test_dir)
+  } catch {
+    _ => ()
+  }
 }

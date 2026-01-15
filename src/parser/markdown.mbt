@@ -80,10 +80,7 @@ pub fn extract_code_blocks(markdown : String) -> Array[CodeBlock] {
 /// MoonBitコードブロックのみを抽出
 pub fn extract_moonbit_blocks(markdown : String) -> Array[CodeBlock] {
   let all_blocks = extract_code_blocks(markdown)
-  all_blocks.filter(fn(b) {
-    let lang = b.lang
-    lang == "moonbit" || lang == "mbt" || lang == ""
-  })
+  all_blocks.filter(fn(b) { is_moonbit_lang(b.lang) })
 }
 
 ///|
@@ -95,8 +92,26 @@ pub fn extract_test_blocks(markdown : String) -> Array[CodeBlock] {
     // 内容に test が含まれるかチェック
     content.contains("test ") ||
     content.contains("test\"") ||
-    b.lang.contains("test")
+    is_test_lang(b.lang)
   })
+}
+
+///|
+/// MoonBit系の言語タグかどうか判定
+fn is_moonbit_lang(lang : String) -> Bool {
+  let trimmed = lang.trim().to_string()
+  trimmed == "" ||
+  trimmed == "moonbit" ||
+  trimmed == "mbt" ||
+  trimmed.has_prefix("moonbit ") ||
+  trimmed.has_prefix("mbt ")
+}
+
+///|
+/// テスト実行対象の言語タグかどうか判定
+fn is_test_lang(lang : String) -> Bool {
+  let trimmed = lang.trim().to_string()
+  trimmed.contains("test") || trimmed.contains("check")
 }
 
 ///|
@@ -196,8 +211,15 @@ test "extract_code_blocks_simple" {
 
 ///|
 test "extract_moonbit_blocks_filters" {
-  let markdown = "```moonbit\nfn foo() -> Int { 1 }\n```\n```javascript\nfunction bar() { return 2; }\n```"
+  let markdown = "```moonbit\nfn foo() -> Int { 1 }\n```\n```mbt check\nfn bar() -> Int { 2 }\n```\n```javascript\nfunction baz() { return 3; }\n```"
   let blocks = extract_moonbit_blocks(markdown)
+  inspect(blocks.length(), content="2")
+}
+
+///|
+test "extract_test_blocks_accepts_check_lang" {
+  let markdown = "```mbt check\nlet x = 1\n```"
+  let blocks = extract_test_blocks(markdown)
   inspect(blocks.length(), content="1")
 }
 

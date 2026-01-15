@@ -2,10 +2,36 @@
 package "f4ah6o/aletheia/ast"
 
 // Values
+pub fn call_type_to_string(CallType) -> String
+
+pub fn make_chain_call() -> CallType
+
+pub fn make_direct_call() -> CallType
+
+pub fn make_method_call() -> CallType
+
+pub fn make_pipeline_call() -> CallType
+
+pub fn needs_user_arbitrary(Array[String]) -> Testability
+
+pub fn not_testable(String) -> Testability
+
+pub fn testable() -> Testability
 
 // Errors
 
 // Types and methods
+pub struct ArbitraryImpl {
+  type_name : String
+  is_primitive : Bool
+  is_container : Bool
+  inner_types : Array[String]
+  impl_line : Int?
+}
+pub fn ArbitraryImpl::container(String, Array[String]) -> Self
+pub fn ArbitraryImpl::primitive(String) -> Self
+pub fn ArbitraryImpl::user_defined(String, Int) -> Self
+
 pub struct ArgMeta {
   name : String
   type_ : TypeMeta
@@ -13,6 +39,41 @@ pub struct ArgMeta {
   default_value : String?
 }
 pub fn ArgMeta::new(String, TypeMeta) -> Self
+pub fn ArgMeta::with_options(String, TypeMeta, Bool, String?) -> Self
+
+pub struct CallEdge {
+  caller : String
+  callee : String
+  call_type : CallType
+  location : String
+  line_num : Int
+}
+pub fn CallEdge::new(String, String, CallType, String, Int) -> Self
+
+pub struct CallGraph {
+  nodes : Array[CallNode]
+  edges : Array[CallEdge]
+  source_file : String
+}
+pub fn CallGraph::add_edge(Self, CallEdge) -> Self
+pub fn CallGraph::add_node(Self, CallNode) -> Self
+pub fn CallGraph::new(String) -> Self
+
+pub struct CallNode {
+  function_name : String
+  location : String
+  line_num : Int
+  calls : Array[String]
+  called_by : Array[String]
+}
+pub fn CallNode::new(String, String, Int) -> Self
+
+pub enum CallType {
+  DirectCall
+  MethodCall
+  PipelineCall
+  ChainCall
+}
 
 pub struct EnumVariant {
   name : String
@@ -31,6 +92,7 @@ pub struct FunctionMeta {
 }
 pub fn FunctionMeta::new(String, Location) -> Self
 pub fn FunctionMeta::signature(Self) -> String
+pub fn FunctionMeta::with_signature(String, Array[ArgMeta], TypeMeta, Location, type_params? : Array[String]) -> Self
 
 pub struct Location {
   file : String
@@ -89,7 +151,9 @@ pub enum TypeMeta {
   Unknown(String)
   Unit
 }
+pub fn TypeMeta::named(String) -> Self
 pub fn TypeMeta::simple_name(Self) -> String
+pub fn TypeMeta::unit() -> Self
 
 pub enum Visibility {
   Public

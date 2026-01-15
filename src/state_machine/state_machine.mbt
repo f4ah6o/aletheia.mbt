@@ -60,13 +60,7 @@ pub fn generate_state_machine_test(
     sm.name +
     "\n  // Commands: " +
     cmd_count +
-    "\n  let gen : @pbt.Gen[Array[" +
-    type_name +
-    "]] = @pbt.Gen::array_of(@pbt.Gen::arbitrary())\n  @pbt.assert_check(\"" +
-    test_name +
-    "\", gen, fn(ops : Array[" +
-    type_name +
-    "]) {\n    // Execute command sequence and verify invariants\n    Ok(())\n  })\n}"
+    "\n  let ops : Array[Command] = @quickcheck.samples(100)\n  let _ = ops\n  // Execute command sequence and verify invariants\n}"
   test_code
 }
 

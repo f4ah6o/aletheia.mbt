@@ -26,6 +26,8 @@ pub fn find_round_trips(
     ("encode", "decode"),
     ("serialize", "deserialize"),
     ("marshal", "unmarshal"),
+    ("parse", "generate"),
+    ("parse", "command_to"),
     ("to_string", "from_string"),
     ("to_int", "from_int"),
     ("to_json", "from_json"),
@@ -132,11 +134,44 @@ pub fn find_producer_consumer(
 }
 
 ///|
+/// PatternCandidateを構築するヘルパー関数
+pub fn make_round_trip(encoder : String, decoder : String) -> PatternCandidate {
+  RoundTrip(encoder, decoder)
+}
+
+///|
+pub fn make_idempotent(func : String) -> PatternCandidate {
+  Idempotent(func)
+}
+
+///|
+pub fn make_producer_consumer(
+  producer : String,
+  consumer : String,
+) -> PatternCandidate {
+  ProducerConsumer(producer, consumer)
+}
+
+///|
 /// テスト
 test "find_round_trips_simple" {
   let names = ["encode_data", "decode_data", "to_string", "from_string"]
   let results = find_round_trips(names)
   inspect(results.length(), content="2")
+}
+
+///|
+test "find_round_trips_parse_generate" {
+  let names = ["parse_markdown", "generate_markdown"]
+  let results = find_round_trips(names)
+  inspect(results.length(), content="1")
+}
+
+///|
+test "find_round_trips_parse_command_to" {
+  let names = ["parse_args", "command_to_args"]
+  let results = find_round_trips(names)
+  inspect(results.length(), content="1")
 }
 
 ///|

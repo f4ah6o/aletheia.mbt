@@ -9,6 +9,7 @@ pub struct GeneratedTest {
   name : String
   code : String
   description : String
+  fence : String
 }
 
 ///|
@@ -21,21 +22,64 @@ pub fn generate_round_trip_test(
   let test_name = "prop_" + encoder + "_" + decoder + "_roundtrip"
   let test_code = "test \"" +
     test_name +
-    "\" {\n  let gen : @pbt.Gen[" +
+    "\" {\n  let samples : Array[" +
     type_name +
-    "] = @pbt.Gen::arbitrary()\n  @pbt.assert_check(\"" +
-    test_name +
-    "\", gen, fn(x : " +
-    type_name +
-    ") {\n    if " +
+    "] = @quickcheck.samples(100)\n  for x in samples {\n    assert_eq(" +
     decoder +
     "(" +
     encoder +
-    "(x)) == x {\n      Ok(())\n    } else {\n      Err(\"roundtrip mismatch\")\n    }\n  })\n}"
+    "(x)), x)\n  }\n}"
   {
     name: test_name,
     code: test_code,
     description: "Round-trip property: encode then decode should return original value",
+    fence: "mbt nocheck",
+  }
+}
+
+///|
+/// Round-Tripプロパティテスト（parse->generate->parse）を生成
+fn generate_parse_generate_round_trip_test(
+  parser : String,
+  generator : String,
+) -> GeneratedTest {
+  let test_name = "prop_" + parser + "_" + generator + "_roundtrip"
+  let test_code = "test \"" +
+    test_name +
+    "\" {\n  let fixtures = [\n    \"```moonbit\\nfn foo() -> Int { 1 }\\n```\",\n    \"Intro\\n\\n```mbt check\\n test { inspect(1) }\\n```\\nOutro\",\n    \"plain text\"\n  ]\n  for markdown in fixtures {\n    let ast = " +
+    parser +
+    "(markdown)\n    let regenerated = " +
+    generator +
+    "(ast)\n    let ast2 = " +
+    parser +
+    "(regenerated)\n    assert_eq(ast.code_blocks.length(), ast2.code_blocks.length())\n    let mut i = 0\n    while i < ast.code_blocks.length() {\n      let block1 = ast.code_blocks[i]\n      let block2 = ast2.code_blocks[i]\n      assert_eq(block1.lang, block2.lang)\n      assert_eq(block1.content, block2.content)\n      i = i + 1\n    }\n  }\n}"
+  {
+    name: test_name,
+    code: test_code,
+    description: "Round-trip property: parse -> generate -> parse preserves code block content",
+    fence: "mbt check",
+  }
+}
+
+///|
+/// Round-Tripプロパティテスト（parse_args/command_to_args）を生成
+fn generate_parse_command_to_round_trip_test(
+  parser : String,
+  generator : String,
+) -> GeneratedTest {
+  let test_name = "prop_" + parser + "_" + generator + "_roundtrip"
+  let test_code = "test \"" +
+    test_name +
+    "\" {\n  let fixtures : Array[Array[String]] = [\n    [\"moon-pbt-gen\", \"analyze\", \"./src\"],\n    [\"moon-pbt-gen\", \"generate\", \"./src\"],\n    [\"moon-pbt-gen\", \"sync\", \"./src\"],\n    [\"moon-pbt-gen\", \"help\"],\n  ]\n  for args in fixtures {\n    let args2 = " +
+    generator +
+    "(" +
+    parser +
+    "(args))\n    assert_eq(args2, args)\n  }\n}"
+  {
+    name: test_name,
+    code: test_code,
+    description: "Round-trip property: command_to_args(parse_args(args)) keeps args stable",
+    fence: "mbt check",
   }
 }
 
@@ -48,23 +92,20 @@ pub fn generate_idempotent_test(
   let test_name = "prop_" + func + "_idempotent"
   let test_code = "test \"" +
     test_name +
-    "\" {\n  let gen : @pbt.Gen[" +
+    "\" {\n  let samples : Array[" +
     type_name +
-    "] = @pbt.Gen::arbitrary()\n  @pbt.assert_check(\"" +
-    test_name +
-    "\", gen, fn(x : " +
-    type_name +
-    ") {\n    if " +
+    "] = @quickcheck.samples(100)\n  for x in samples {\n    assert_eq(" +
     func +
     "(" +
     func +
-    "(x)) == " +
+    "(x)), " +
     func +
-    "(x) {\n      Ok(())\n    } else {\n      Err(\"idempotent mismatch\")\n    }\n  })\n}"
+    "(x))\n  }\n}"
   {
     name: test_name,
     code: test_code,
     description: "Idempotent property: applying function twice should be same as applying once",
+    fence: "mbt nocheck",
   }
 }
 
@@ -80,7 +121,7 @@ pub fn generate_mbt_md_section(input_tests : Array[GeneratedTest]) -> String {
       let t = input_tests[i]
       result = result + "### " + t.name + "\n\n"
       result = result + t.description + "\n\n"
-      result = result + "```moonbit test\n" + t.code + "\n```\n\n"
+      result = result + "```" + t.fence + "\n" + t.code + "\n```\n\n"
       i = i + 1
     }
     result
@@ -121,7 +162,13 @@ pub fn pattern_to_test(
 ) -> GeneratedTest {
   match pattern {
     @patterns.RoundTrip(encoder, decoder) =>
-      generate_round_trip_test(encoder, decoder, type_name)
+      if encoder == "parse_markdown" && decoder == "generate_markdown" {
+        generate_parse_generate_round_trip_test(encoder, decoder)
+      } else if encoder == "parse_args" && decoder == "command_to_args" {
+        generate_parse_command_to_round_trip_test(encoder, decoder)
+      } else {
+        generate_round_trip_test(encoder, decoder, type_name)
+      }
     @patterns.Idempotent(func) => generate_idempotent_test(func, type_name)
     @patterns.ProducerConsumer(producer, consumer) =>
       generate_producer_consumer_test(producer, consumer, type_name)
@@ -138,21 +185,18 @@ pub fn generate_producer_consumer_test(
   let test_name = "prop_" + producer + "_" + consumer + "_pipeline"
   let test_code = "test \"" +
     test_name +
-    "\" {\n  let gen : @pbt.Gen[" +
+    "\" {\n  let samples : Array[" +
     type_name +
-    "] = @pbt.Gen::arbitrary()\n  @pbt.assert_check(\"" +
-    test_name +
-    "\", gen, fn(x : " +
-    type_name +
-    ") {\n    let produced = " +
-    producer +
-    "(x)\n    let _ = " +
+    "] = @quickcheck.samples(100)\n  for x in samples {\n    let _ = " +
     consumer +
-    "(produced)\n    Ok(())\n  })\n}"
+    "(" +
+    producer +
+    "(x))\n  }\n}"
   {
     name: test_name,
     code: test_code,
     description: "Pipeline property: producer output is valid consumer input",
+    fence: "mbt nocheck",
   }
 }
 
@@ -289,8 +333,7 @@ pub fn generate_pbt_md(doc : PbtDocument) -> String {
   result = result +
     "- **Patterns Detected**: " +
     doc.patterns.length().to_string() +
-    "\n"
-  result = result + "- **Runtime**: import `f4ah6o/aletheia/pbt` as `@pbt`\n\n"
+    "\n\n"
 
   // パターン別にセクションを生成
   let roundtrips = filter_by_name_suffix(doc.test_cases, "roundtrip")
@@ -303,7 +346,7 @@ pub fn generate_pbt_md(doc : PbtDocument) -> String {
       let t = roundtrips[i]
       result = result + "### " + t.name + "\n\n"
       result = result + t.description + "\n\n"
-      result = result + "```moonbit test\n" + t.code + "\n```\n\n"
+      result = result + "```" + t.fence + "\n" + t.code + "\n```\n\n"
       i = i + 1
     }
   }
@@ -314,7 +357,7 @@ pub fn generate_pbt_md(doc : PbtDocument) -> String {
       let t = idempotents[i]
       result = result + "### " + t.name + "\n\n"
       result = result + t.description + "\n\n"
-      result = result + "```moonbit test\n" + t.code + "\n```\n\n"
+      result = result + "```" + t.fence + "\n" + t.code + "\n```\n\n"
       i = i + 1
     }
   }
@@ -325,7 +368,7 @@ pub fn generate_pbt_md(doc : PbtDocument) -> String {
       let t = pipelines[i]
       result = result + "### " + t.name + "\n\n"
       result = result + t.description + "\n\n"
-      result = result + "```moonbit test\n" + t.code + "\n```\n\n"
+      result = result + "```" + t.fence + "\n" + t.code + "\n```\n\n"
       i = i + 1
     }
   }
@@ -407,6 +450,8 @@ test "generate_round_trip_test_basic" {
   let result = generate_round_trip_test("encode", "decode", "Data")
   inspect(result.name, content="prop_encode_decode_roundtrip")
   inspect(result.code.contains("decode(encode(x))"), content="true")
+  inspect(result.code.contains("@quickcheck.samples"), content="true")
+  inspect(result.fence, content="mbt nocheck")
 }
 
 ///|
@@ -414,6 +459,8 @@ test "generate_idempotent_test_basic" {
   let result = generate_idempotent_test("sort", "Array[Int]")
   inspect(result.name, content="prop_sort_idempotent")
   inspect(result.code.contains("sort(sort(x))"), content="true")
+  inspect(result.code.contains("@quickcheck.samples"), content="true")
+  inspect(result.fence, content="mbt nocheck")
 }
 
 ///|
@@ -423,6 +470,19 @@ test "generate_mbt_md_section" {
   let input_tests = [test1, test2]
   let result = generate_mbt_md_section(input_tests)
   inspect(result.contains("Property Tests"), content="true")
+  inspect(result.contains("```mbt nocheck"), content="true")
+}
+
+///|
+test "generate_mbt_md_section_respects_fence" {
+  let custom = {
+    name: "custom",
+    code: "test { assert_true(true) }",
+    description: "custom fence",
+    fence: "mbt check",
+  }
+  let result = generate_mbt_md_section([custom])
+  inspect(result.contains("```mbt check"), content="true")
 }
 
 ///|
@@ -430,6 +490,28 @@ test "generate_round_trip_test_escapes_braces" {
   let result = generate_round_trip_test("save", "load", "Config")
   inspect(result.code.contains("{"), content="true")
   inspect(result.code.contains("x)"), content="true")
+}
+
+///|
+test "pattern_to_test_parse_generate_roundtrip" {
+  let result = pattern_to_test(
+    @patterns.make_round_trip("parse_markdown", "generate_markdown"),
+    "String",
+  )
+  inspect(result.fence, content="mbt check")
+  inspect(result.code.contains("parse_markdown"), content="true")
+  inspect(result.code.contains("generate_markdown"), content="true")
+}
+
+///|
+test "pattern_to_test_parse_command_to_roundtrip" {
+  let result = pattern_to_test(
+    @patterns.make_round_trip("parse_args", "command_to_args"),
+    "Array[String]",
+  )
+  inspect(result.fence, content="mbt check")
+  inspect(result.code.contains("parse_args"), content="true")
+  inspect(result.code.contains("command_to_args"), content="true")
 }
 
 ///|

@@ -1,5 +1,5 @@
 {
-  "is-main": true,
+  "is_main": true,
   "import": [
     {
       "path": "f4ah6o/aletheia/cli",

@@ -8,6 +8,12 @@ pub fn find_producer_consumer(Array[String]) -> Array[PatternCandidate]
 
 pub fn find_round_trips(Array[String]) -> Array[PatternCandidate]
 
+pub fn make_idempotent(String) -> PatternCandidate
+
+pub fn make_producer_consumer(String, String) -> PatternCandidate
+
+pub fn make_round_trip(String, String) -> PatternCandidate
+
 // Errors
 
 // Types and methods
