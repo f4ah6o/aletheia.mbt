@@ -5,6 +5,7 @@
     { "path": "f4ah6o/aletheia/cli", "alias": "cli" },
     { "path": "f4ah6o/aletheia/patterns", "alias": "patterns" },
     { "path": "f4ah6o/aletheia/generator", "alias": "generator" },
-    { "path": "f4ah6o/aletheia/analyzer", "alias": "analyzer" }
+    { "path": "f4ah6o/aletheia/analyzer", "alias": "analyzer" },
+    { "path": "f4ah6o/aletheia/pbt", "alias": "pbt" }
   ]
 }
