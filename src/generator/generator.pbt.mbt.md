@@ -33,17 +33,17 @@ Round-trip special cases should pick the right fence.
 ///|
 test "prop_pattern_to_test_respects_fences" {
   let markdown = pattern_to_test(
-    @patterns.RoundTrip("parse_markdown", "generate_markdown"),
+    @patterns.make_round_trip("parse_markdown", "generate_markdown"),
     "String",
   )
   inspect(markdown.fence, content="mbt check")
   let args = pattern_to_test(
-    @patterns.RoundTrip("parse_args", "command_to_args"),
+    @patterns.make_round_trip("parse_args", "command_to_args"),
     "Array[String]",
   )
   inspect(args.fence, content="mbt check")
   let generic = pattern_to_test(
-    @patterns.RoundTrip("parse_config", "generate_config"),
+    @patterns.make_round_trip("parse_config", "generate_config"),
     "String",
   )
   inspect(generic.fence, content="mbt nocheck")
@@ -58,8 +58,8 @@ Generated markdown should include round-trip and idempotent sections.
 ///|
 test "prop_generate_pbt_md_includes_sections" {
   let patterns : Array[@patterns.PatternCandidate] = [
-    @patterns.RoundTrip("parse_markdown", "generate_markdown"),
-    @patterns.Idempotent("normalize"),
+    @patterns.make_round_trip("parse_markdown", "generate_markdown"),
+    @patterns.make_idempotent("normalize"),
   ]
   let doc = build_pbt_document(
     "generator", "./src/generator", patterns, "String",
@@ -82,7 +82,7 @@ Targets markdown should list detected round-trip pairs.
 ///|
 test "prop_generate_pbt_targets_md_lists_roundtrip" {
   let patterns : Array[@patterns.PatternCandidate] = [
-    @patterns.RoundTrip("parse_args", "command_to_args"),
+    @patterns.make_round_trip("parse_args", "command_to_args"),
   ]
   let doc = build_pbt_document(
     "generator", "./src/generator", patterns, "String",
