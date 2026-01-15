@@ -47,11 +47,20 @@ moon run src/aletheia
 # PBTターゲット収集
 moon run src/aletheia -- generate ./src
 
+# 変更内容のサマリをJSONで出力（dry-run）
+moon run src/aletheia -- generate ./src --dry-run --format json
+
+# 検出根拠の詳細表示
+moon run src/aletheia -- analyze ./src --explain
+
 # PBT markdown同期（デフォルト: src/aletheia.pbt.mbt.md）
 moon run src/aletheia -- sync
 # 自己適用PBTの生成（テンプレート出力）
 ./scripts/self_pbt.sh
 # self_pbt.sh は generate/sync + moon info + moon fmt を実行
+
+# 開発時の一括チェック
+./scripts/dev-check.sh
 ```
 
 ## Claude Code Plugin

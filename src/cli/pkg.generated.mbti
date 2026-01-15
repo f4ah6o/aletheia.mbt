@@ -4,6 +4,8 @@ package "f4ah6o/aletheia/cli"
 // Values
 pub fn command_to_args(Command) -> Array[String]
 
+pub fn default_options() -> CommandOptions
+
 pub fn help_message() -> String
 
 pub fn parse_args(Array[String]) -> Command
@@ -14,10 +16,21 @@ pub fn run_command(Command) -> String
 
 // Types and methods
 pub enum Command {
-  Analyze(String)
-  Generate(String)
-  Sync(String)
+  Analyze(String, CommandOptions)
+  Generate(String, CommandOptions)
+  Sync(String, CommandOptions)
   Help
+}
+
+pub struct CommandOptions {
+  dry_run : Bool
+  explain : Bool
+  format : OutputFormat
+}
+
+pub enum OutputFormat {
+  Text
+  Json
 }
 
 // Type aliases

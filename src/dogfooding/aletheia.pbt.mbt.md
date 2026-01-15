@@ -66,11 +66,11 @@ test "prop_cli_roundtrip_analyze" {
   let regenerated_args = @cli.command_to_args(cmd)
   let cmd2 = @cli.parse_args(regenerated_args)
   let result1 = match cmd {
-    @cli.Command::Analyze(p) => p
+    @cli.Command::Analyze(p, _) => p
     _ => "fail"
   }
   let result2 = match cmd2 {
-    @cli.Command::Analyze(p) => p
+    @cli.Command::Analyze(p, _) => p
     _ => "fail"
   }
   inspect(result1 == result2, content="true")
