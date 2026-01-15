@@ -49,6 +49,19 @@ moon run src/aletheia -- generate ./src
 
 # PBT markdown同期（デフォルト: src/aletheia.pbt.mbt.md）
 moon run src/aletheia -- sync
+# 自己適用PBTの生成（テンプレート出力）
+./scripts/self_pbt.sh
+```
+
+## Claude Code Plugin
+
+```bash
+# ローカルでプラグインを試す
+claude --plugin-dir ./plugins/aletheia-self-pbt
+
+# マーケットプレイスを追加してインストール（Claude Code内）
+/plugin marketplace add .
+/plugin install aletheia-self-pbt@f4ah6o-plugins
 ```
 
 ## モジュール構成
@@ -71,9 +84,9 @@ src/
 
 ## 制約事項
 
-- **AST解析**: 簡易版の文字列処理ベース（本格的な構文解析は未実装）
-- **型推論**: 静的型チェック機能は未実装
-- **ワーニング**: ビルド時に35個の未使用変数/関数に関する警告あり（機能に影響なし）
+- **AST解析の精度**: 現在は簡易的な行スキャンのため、複雑なシグネチャや型推論には未対応
+- **生成テストの調整**: 生成された `.pbt.mbt.md` はテンプレートとして扱い、必要に応じて型やプロパティを調整
+- **ワーニング**: ビルド時に未使用変数/関数に関する警告あり（機能に影響なし）
 
 ## ライセンス
 

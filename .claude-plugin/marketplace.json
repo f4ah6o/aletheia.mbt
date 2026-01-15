@@ -1,0 +1,19 @@
+{
+  "name": "f4ah6o-plugins",
+  "owner": {
+    "name": "f4ah6o"
+  },
+  "plugins": [
+    {
+      "name": "aletheia-self-pbt",
+      "source": "./plugins/aletheia-self-pbt",
+      "description": "Self-dogfooding workflow for generating and validating Aletheia PBT templates.",
+      "version": "0.1.0",
+      "author": {
+        "name": "f4ah6o"
+      },
+      "license": "Apache-2.0",
+      "repository": "https://github.com/f4ah6o/aletheia.mbt.git"
+    }
+  ]
+}
