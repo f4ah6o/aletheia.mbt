@@ -160,8 +160,9 @@ test "prop_parser_roundtrip_preserves_code_blocks" {
   let regenerated = @parser.generate_markdown(ast)
 
   // 再生成された文字列をパースして、コードブロック数が一致することを確認
-  let ast2 = @parser.parse_markdown(regenerated)
-  inspect(ast.code_blocks.length() == ast2.code_blocks.length(), content="true")
+  let blocks1 = @parser.extract_code_blocks(markdown)
+  let blocks2 = @parser.extract_code_blocks(regenerated)
+  inspect(blocks1.length() == blocks2.length(), content="true")
 }
 
 ///|
@@ -282,11 +283,11 @@ test "self_detection_finds_patterns" {
 test "prop_parser_roundtrip_content_preserved" {
   let code_content = "pub fn add(a: Int, b: Int) -> Int { a + b }"
   let markdown = "```moonbit\n" + code_content + "\n```"
-  let ast = @parser.parse_markdown(markdown)
+  let blocks = @parser.extract_code_blocks(markdown)
 
   // 抽出されたコードブロックの内容が一致することを確認
-  if ast.code_blocks.length() > 0 {
-    let block = ast.code_blocks[0]
+  if blocks.length() > 0 {
+    let block = blocks[0]
     inspect(block.content.contains("add"), content="true")
   } else {
     inspect("block found", content="block found")

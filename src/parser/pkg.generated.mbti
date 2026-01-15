@@ -1,6 +1,10 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "f4ah6o/aletheia/parser"
 
+import(
+  "mizchi/markdown"
+)
+
 // Values
 pub fn code_block_to_string(CodeBlock) -> String
 
@@ -27,8 +31,7 @@ pub struct CodeBlock {
 }
 
 pub struct MarkdownAST {
-  prose : Array[String]
-  code_blocks : Array[CodeBlock]
+  document : @markdown.Document
 }
 
 // Type aliases

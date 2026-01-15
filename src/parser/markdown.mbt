@@ -1,6 +1,7 @@
 ///|
 /// Markdownパーサー
 /// .mbt.mdファイルからコードブロックとメタデータを抽出する
+/// mizchi/markdown.mbt を使用
 ///
 
 ///|
@@ -13,67 +14,91 @@ pub struct CodeBlock {
 }
 
 ///|
-/// Markdown AST
+/// Markdown AST（mizchi/markdownのDocumentのラッパー）
 pub struct MarkdownAST {
-  prose : Array[String]
-  code_blocks : Array[CodeBlock]
+  document : @markdown.Document
 }
 
 ///|
-/// 文字列を行単位の配列に分割
-fn split_lines(source : String) -> Array[String] {
-  source.split("\n").map(fn(s) { s.to_string() }).to_array()
+/// Blockノードからコードブロックを抽出
+fn extract_fenced_code(
+  block : @markdown.Block,
+  line_offset : Int,
+) -> Array[CodeBlock] {
+  match block {
+    @markdown.Block::FencedCode(info~, code~, ..) => {
+      // 行番号を計算（簡易的にオフセットから推定）
+      let line_start = line_offset
+      let line_end = line_offset + code.split("\n").to_array().length()
+      [{ lang: info, content: code, line_start, line_end }]
+    }
+    @markdown.Block::Blockquote(children~, ..) =>
+      extract_code_blocks_from_array(children, line_offset)
+    @markdown.Block::BulletList(items~, ..) =>
+      extract_code_from_list_items(items, line_offset)
+    @markdown.Block::OrderedList(items~, ..) =>
+      extract_code_from_list_items(items, line_offset)
+    @markdown.Block::Table(..) => [] // テーブルはスキップ
+    @markdown.Block::IndentedCode(code~, ..) => {
+      // インデントされたコードブロックも抽出
+      let line_start = line_offset
+      let line_end = line_offset + code.split("\n").to_array().length()
+      [{ lang: "", content: code, line_start, line_end }]
+    }
+    _ => []
+  }
+}
+
+///|
+/// ListItemからコードブロックを抽出
+fn extract_code_from_list_items(
+  items : Array[@markdown.ListItem],
+  line_offset : Int,
+) -> Array[CodeBlock] {
+  let result : Array[CodeBlock] = []
+  let mut offset = line_offset
+  let mut i = 0
+  while i < items.length() {
+    let item = items[i]
+    let blocks = extract_code_blocks_from_array(item.children, offset)
+    let mut j = 0
+    while j < blocks.length() {
+      Array::push(result, blocks[j])
+      j = j + 1
+    }
+    offset = offset + 1
+    i = i + 1
+  }
+  result
+}
+
+///|
+/// Block配列からコードブロックを再帰的に抽出
+fn extract_code_blocks_from_array(
+  blocks : Array[@markdown.Block],
+  line_offset : Int,
+) -> Array[CodeBlock] {
+  let result : Array[CodeBlock] = []
+  let mut offset = line_offset
+  let mut i = 0
+  while i < blocks.length() {
+    let blocks_from_block = extract_fenced_code(blocks[i], offset)
+    let mut j = 0
+    while j < blocks_from_block.length() {
+      Array::push(result, blocks_from_block[j])
+      j = j + 1
+    }
+    offset = offset + 1
+    i = i + 1
+  }
+  result
 }
 
 ///|
 /// Markdownからコードブロックを抽出
 pub fn extract_code_blocks(markdown : String) -> Array[CodeBlock] {
-  let lines = split_lines(markdown)
-  let mut in_block = false
-  let mut current_lang = ""
-  let mut current_content : Array[String] = []
-  let mut block_start = 0
-  let result : Array[CodeBlock] = []
-  let mut line_num = 0
-  let n = Array::length(lines)
-  while line_num < n {
-    let line = lines[line_num]
-    if !in_block {
-      // コードブロック開始を検出: ```lang
-      if line.has_prefix("```") {
-        in_block = true
-        block_start = line_num
-        // 言語を抽出: ```moonbit -> moonbit
-        let lang_part = line.split("```").to_array()
-        current_lang = if Array::length(lang_part) > 1 {
-          lang_part[1].trim().to_string()
-        } else {
-          ""
-        }
-        current_content = []
-      } else {
-        ()
-      }
-      // コードブロック終了を検出: ```
-    } else if line.has_prefix("```") {
-      // コードブロックを完了
-      let block = {
-        lang: current_lang,
-        content: current_content.join("\n"),
-        line_start: block_start,
-        line_end: line_num,
-      }
-      Array::push(result, block)
-      in_block = false
-      current_lang = ""
-      current_content = []
-    } else {
-      // コードブロック内の行を追加
-      Array::push(current_content, line)
-    }
-    line_num = line_num + 1
-  }
-  result
+  let result = @markdown.parse(markdown)
+  extract_code_blocks_from_array(result.document.children, 1)
 }
 
 ///|
@@ -117,39 +142,14 @@ fn is_test_lang(lang : String) -> Bool {
 ///|
 /// MarkdownをパースしてASTを構築
 pub fn parse_markdown(markdown : String) -> MarkdownAST {
-  let blocks = extract_code_blocks(markdown)
-  let prose_lines = split_lines(markdown)
-    .filter(fn(line) {
-      let trimmed = line.trim()
-      let trimmed_str = trimmed.to_string()
-      // コードブロック内でない空行以外のプロセス部分
-      String::length(trimmed_str) > 0 && !trimmed.has_prefix("```")
-    })
-    .map(fn(s) { s.to_string() })
-  { prose: prose_lines, code_blocks: blocks }
+  let result = @markdown.parse(markdown)
+  { document: result.document }
 }
 
 ///|
 /// MarkdownASTからMarkdown文字列を生成（Round-Trip用逆変換）
 pub fn generate_markdown(ast : MarkdownAST) -> String {
-  let result : Array[String] = []
-
-  // proseとcode_blocksを組み合わせて再構築
-  let mut i = 0
-  while i < Array::length(ast.prose) {
-    Array::push(result, ast.prose[i])
-    i = i + 1
-  }
-  let mut j = 0
-  while j < Array::length(ast.code_blocks) {
-    let block = ast.code_blocks[j]
-    let lang_tag = if block.lang == "" { "```" } else { "```" + block.lang }
-    Array::push(result, lang_tag)
-    Array::push(result, block.content)
-    Array::push(result, "```")
-    j = j + 1
-  }
-  result.join("\n")
+  @markdown.serialize(ast.document)
 }
 
 ///|
@@ -168,7 +168,7 @@ pub fn extract_function_calls(block : CodeBlock) -> Array[String] {
   // 簡単な正規表現風のマッチング
   let lines = split_lines(content)
   let mut i = 0
-  let n = Array::length(lines)
+  let n = lines.length()
   while i < n {
     let line = lines[i]
     // 関数呼び出しパターンを検出
@@ -191,6 +191,12 @@ pub fn extract_function_calls(block : CodeBlock) -> Array[String] {
     i = i + 1
   }
   result
+}
+
+///|
+/// 文字列を行単位の配列に分割
+fn split_lines(source : String) -> Array[String] {
+  source.split("\n").map(fn(s) { s.to_string() }).to_array()
 }
 
 ///|
@@ -227,5 +233,5 @@ test "extract_test_blocks_accepts_check_lang" {
 test "parse_markdown_ast" {
   let markdown = "# Title\nSome text\n```moonbit\nfn test() -> Int { 42 }\n```"
   let ast = parse_markdown(markdown)
-  inspect(ast.code_blocks.length(), content="1")
+  inspect(ast.document.children.length(), content="3")
 }
