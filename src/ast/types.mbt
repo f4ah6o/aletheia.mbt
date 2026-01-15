@@ -27,6 +27,21 @@ pub enum Visibility {
 }
 
 ///|
+pub fn make_public() -> Visibility {
+  Public
+}
+
+///|
+pub fn make_private() -> Visibility {
+  Private
+}
+
+///|
+pub fn make_internal() -> Visibility {
+  Internal
+}
+
+///|
 /// 型メタデータ
 pub enum TypeMeta {
   Primitive(String)
