@@ -1,0 +1,5 @@
+import {
+  "f4ah6o/aletheia/ast" as @ast,
+  "moonbitlang/parser" as @mb_parser,
+  "moonbitlang/parser/syntax" as @syntax,
+}

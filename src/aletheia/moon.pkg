@@ -1,0 +1,5 @@
+import { "f4ah6o/aletheia/cli" as @cli, "moonbitlang/x/sys" as @sys }
+
+options(
+  is_main: true,
+)

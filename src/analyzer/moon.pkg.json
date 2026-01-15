@@ -1,7 +1,0 @@
-{
-  "import": [
-    { "path": "f4ah6o/aletheia/ast", "alias": "ast" },
-    { "path": "moonbitlang/parser", "alias": "mb_parser" },
-    { "path": "moonbitlang/parser/syntax", "alias": "syntax" }
-  ]
-}

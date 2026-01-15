@@ -1,0 +1,13 @@
+import {
+  "f4ah6o/aletheia/parser" as @parser,
+  "f4ah6o/aletheia/cli" as @cli,
+  "f4ah6o/aletheia/patterns" as @patterns,
+  "f4ah6o/aletheia/generator" as @generator,
+  "f4ah6o/aletheia/analyzer" as @analyzer,
+  "f4ah6o/aletheia/pbt" as @pbt,
+  "f4ah6o/aletheia/ast" as @ast,
+}
+
+options(
+  readme: "README.mbt.md",
+)
