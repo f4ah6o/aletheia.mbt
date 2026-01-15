@@ -491,6 +491,7 @@ fn push_arbitrary_impls(
   target
 }
 
+///|
 /// PBTドキュメントのファイル名判定
 fn is_pbt_doc(name : String) -> Bool {
   name.has_suffix(".pbt.mbt.md")
@@ -610,11 +611,8 @@ fn generate_tests(path : String) -> String {
       all_patterns = append_pattern(all_patterns, producers[i])
       i = i + 1
     }
-
     let known_impls = collect_arbitrary_impls_from_packages(package_dirs)
-    let default_type = infer_default_type(
-      functions, all_patterns, known_impls,
-    )
+    let default_type = infer_default_type(functions, all_patterns, known_impls)
     let module_name = extract_module_name()
     let doc = @generator.build_pbt_document(
       module_name, path, all_patterns, default_type,
@@ -799,13 +797,10 @@ test "generate_tests_creates_pbt_file" {
   let test_dir = "/tmp/aletheia_pbt_pkg"
   let pkg_path = join_path(test_dir, "moon.pkg.json")
   let source_path = join_path(test_dir, "sample.mbt")
-  let module_name = extract_module_name()
-  let output_path = output_path_for_pbt(test_dir, module_name)
   let test_source = "pub fn encode(x : Int) -> String { \"test\" }\npub fn decode(s : String) -> Int { 0 }"
 
   // テスト用ディレクトリを準備
   try {
-    @fs.remove_file(output_path)
     @fs.remove_file(source_path)
     @fs.remove_file(pkg_path)
     @fs.remove_dir(test_dir)
@@ -827,11 +822,28 @@ test "generate_tests_creates_pbt_file" {
 
   // 結果検証
   inspect(result.contains("PBT Targets Collected"), content="true")
-  inspect(@fs.path_exists(output_path), content="true")
+  let entries = read_dir_entries(test_dir)
+  let mut has_pbt = false
+  let mut i = 0
+  while i < entries.length() {
+    if entries[i].has_suffix(".pbt.mbt.md") {
+      has_pbt = true
+    }
+    i = i + 1
+  }
+  inspect(has_pbt, content="true")
 
   // クリーンアップ
   try {
-    @fs.remove_file(output_path)
+    let entries = read_dir_entries(test_dir)
+    let mut i = 0
+    while i < entries.length() {
+      let entry = entries[i]
+      if entry.has_suffix(".pbt.mbt.md") {
+        @fs.remove_file(join_path(test_dir, entry))
+      }
+      i = i + 1
+    }
     @fs.remove_file(source_path)
     @fs.remove_file(pkg_path)
     @fs.remove_dir(test_dir)

@@ -14,6 +14,8 @@ pub fn generate_mbt_md_section(Array[GeneratedTest]) -> String
 
 pub fn generate_pbt_md(PbtDocument) -> String
 
+pub fn generate_pbt_targets_md(PbtDocument) -> String
+
 pub fn generate_producer_consumer_test(String, String, String) -> GeneratedTest
 
 pub fn generate_round_trip_test(String, String, String) -> GeneratedTest

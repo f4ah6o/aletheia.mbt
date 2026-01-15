@@ -6,43 +6,33 @@
 
 - **Source**: `./src`
 - **Generated**: 2026-01-14
-- **Patterns Detected**: 0
+- **Patterns Detected**: 22
 
-## Package: aletheia
-Add property tests for the CLI entrypoint behavior.
+## Round-Trip Targets
 
-## Package: analyzer
-Add property tests for function name extraction and metadata detection.
-
-## Package: ast
-Add property tests for AST structures and type representations.
-
-## Package: cli
-Add property tests for argument parsing and command round-trips.
-
-## Package: dogfooding
-Add property tests that validate the generator and CLI workflow.
-
-## Package: generator
-Add property tests for deterministic code generation.
-
-## Package: parser
-Add property tests for markdown parsing and round-trip behavior.
-
-## Package: patterns
-Add property tests for pattern detection invariants.
-
-## Package: pbt
-Add property tests for generators, shrinking, and check semantics.
-
-## Package: pbt_sync
-Add property tests for markdown sync rules.
-
-## Package: state_machine
-Add property tests for state machine execution results.
+- `parse_args` <-> `generate_detection_summary`
+- `parse_args` <-> `generate_self_pbt_md`
+- `parse_args` <-> `generate_round_trip_test`
+- `parse_args` <-> `generate_idempotent_test`
+- `parse_args` <-> `generate_mbt_md_section`
+- `parse_args` <-> `generate_producer_consumer_test`
+- `parse_args` <-> `generate_pbt_md`
+- `parse_args` <-> `generate_pbt_targets_md`
+- `parse_args` <-> `generate_state_machine_test`
+- `parse_args` <-> `generate_markdown`
+- `parse_args` <-> `command_to_args`
+- `parse_markdown` <-> `generate_detection_summary`
+- `parse_markdown` <-> `generate_self_pbt_md`
+- `parse_markdown` <-> `generate_round_trip_test`
+- `parse_markdown` <-> `generate_idempotent_test`
+- `parse_markdown` <-> `generate_mbt_md_section`
+- `parse_markdown` <-> `generate_producer_consumer_test`
+- `parse_markdown` <-> `generate_pbt_md`
+- `parse_markdown` <-> `generate_pbt_targets_md`
+- `parse_markdown` <-> `generate_state_machine_test`
+- `parse_markdown` <-> `generate_markdown`
+- `parse_markdown` <-> `command_to_args`
 
 ## Notes
 
-- Add ` ```mbt test` or ` ```moonbit test` blocks under each package heading; they sync into `pbt_generated_test.mbt`.
-- Use `mbt nocheck` for documentation-only blocks that should not be synced or tested.
-- Run `moon run src/aletheia -- sync` after edits to update generated tests.
+- Property definitions are intentionally omitted. Define them in a separate process.
