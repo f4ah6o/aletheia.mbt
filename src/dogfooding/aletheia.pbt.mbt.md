@@ -12,20 +12,22 @@
 ### `sort` Idempotence
 Idempotent property: applying function twice should be same as applying once.
 
-```moonbit
+```mbt check
 ///|
 test "prop_sort_idempotent" {
   let input = [3, 1, 2, 4, 5]
-  let sorted1 = input.sort()
-  let sorted2 = sorted1.sort()
-  inspect(sorted1.length() == sorted2.length(), content="true")
+  input.sort()
+  let sorted1 = input.copy()
+  let sorted2 = sorted1.copy()
+  sorted2.sort()
+  inspect(sorted1 == sorted2, content="true")
 }
 ```
 
 ### `normalize` Idempotence
 Idempotent property: applying function twice should be same as applying once.
 
-```moonbit
+```mbt check
 ///|
 test "prop_normalize_idempotent" {
   let input = "  hello  "
@@ -40,10 +42,10 @@ test "prop_normalize_idempotent" {
 ### `parse_markdown` <-> `generate_markdown`
 Round-trip property: parsing and generating should preserve structure.
 
-```moonbit
+```mbt check
 ///|
 test "prop_parser_roundtrip_preserves_code_blocks" {
-  let markdown = "# Title\nSome text\n```moonbit\nfn test() -> Int { 42 }\n```"
+  let markdown = "# Title\nSome text\n```mbt check\nfn test() -> Int { 42 }\n```"
   let ast = @parser.parse_markdown(markdown)
   let regenerated = @parser.generate_markdown(ast)
 
@@ -56,7 +58,7 @@ test "prop_parser_roundtrip_preserves_code_blocks" {
 ### `parse_args` <-> `command_to_args`
 Round-trip property: parsing and serializing commands should be reversible.
 
-```moonbit
+```mbt check
 ///|
 test "prop_cli_roundtrip_analyze" {
   let original_args = ["moon-pbt-gen", "analyze", "./src"]
@@ -80,7 +82,7 @@ test "prop_cli_roundtrip_analyze" {
 ### Monotonicity
 Pattern detection should be monotonic: more functions should not reduce detections.
 
-```moonbit
+```mbt check
 ///|
 test "prop_pattern_detection_monotonic" {
   let a = ["encode_data", "decode_data"]
@@ -89,7 +91,7 @@ test "prop_pattern_detection_monotonic" {
   let results_b = @patterns.find_round_trips(b)
 
   // a と b を結合
-  let mut combined : Array[String] = []
+  let combined : Array[String] = []
   let mut i = 0
   while i < a.length() {
     combined.push(a[i])
@@ -111,7 +113,7 @@ test "prop_pattern_detection_monotonic" {
 ### Empty Input
 Pattern detection with empty input should return empty results.
 
-```moonbit
+```mbt check
 ///|
 test "prop_pattern_detection_empty_input" {
   let empty : Array[String] = []
@@ -129,7 +131,7 @@ test "prop_pattern_detection_empty_input" {
 ### Determinism
 Generator should produce same output for same input.
 
-```moonbit
+```mbt check
 ///|
 test "prop_generator_deterministic" {
   let test1 = @generator.generate_round_trip_test("encode", "decode", "Data")
