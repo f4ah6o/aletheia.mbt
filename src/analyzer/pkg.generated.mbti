@@ -3,11 +3,10 @@ package "f4ah6o/aletheia/analyzer"
 
 import(
   "f4ah6o/aletheia/ast"
-  "f4ah6o/aletheia/patterns"
 )
 
 // Values
-pub fn build_call_graph(String, String) -> @ast.CallGraph
+pub fn build_call_graph_ast(String, String) -> Result[@ast.CallGraph, String]
 
 pub fn check_container_arbitrary(String, Array[String], Array[@ast.ArbitraryImpl]) -> @ast.Testability
 
@@ -19,34 +18,23 @@ pub fn container_patterns() -> Array[String]
 
 pub fn detect_arbitrary_impls(String) -> Array[@ast.ArbitraryImpl]
 
-pub fn extract_from_source(String, String) -> Result[ExtractionResult, String]
+pub fn detect_arbitrary_impls_ast(String) -> Result[Array[@ast.ArbitraryImpl], String]
+
+pub fn extract_from_source_ast(String, String) -> Result[Array[@ast.FunctionMeta], String]
 
 pub fn extract_function_names(String) -> Array[String]
 
 pub fn extract_public_functions(String, String) -> Array[@ast.FunctionMeta]
 
-pub fn find_patterns_from_call_graph(@ast.CallGraph, Array[String]) -> Array[@patterns.PatternCandidate]
-
 pub fn has_arbitrary(String, Array[@ast.ArbitraryImpl]) -> Bool
 
 pub fn primitive_types() -> Array[String]
 
-pub fn push_string(Array[String], String) -> Array[String]
-
 // Errors
 
 // Types and methods
-pub struct ExtractionResult {
-  functions : Array[@ast.FunctionMeta]
-  types : Array[@ast.TypeDefinition]
-  arbitrary_impls : Array[@ast.ArbitraryImpl]
-}
-
-type FunctionDef
-pub fn FunctionDef::new(String, String, Int) -> Self
 
 // Type aliases
-pub type ExtractError = String
 
 // Traits
 

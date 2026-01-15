@@ -7,7 +7,7 @@
 
 - **Source**: `./src`
 - **Generated**: 2026-01-14
-- **Patterns Detected**: 26
+- **Patterns Detected**: 59
 
 ## Round-Trip Targets
 
@@ -37,6 +37,42 @@
 - `parse_args` <-> `generate_producer_consumer_test`
 - `parse_markdown` <-> `generate_state_machine_test`
 - `parse_markdown` <-> `generate_producer_consumer_test`
+
+## Producer-Consumer Targets
+
+- `new` -> `user_defined`
+- `new` -> `user_defined`
+- `new` -> `user_defined`
+- `new` -> `user_defined`
+- `new` -> `user_defined`
+- `new` -> `user_defined`
+- `new` -> `user_defined`
+- `make_public` -> `user_defined`
+- `make_private` -> `user_defined`
+- `make_internal` -> `user_defined`
+- `generate_pbt_md` -> `user_defined`
+- `make_chain_call` -> `user_defined`
+- `make_idempotent` -> `user_defined`
+- `make_round_trip` -> `user_defined`
+- `make_direct_call` -> `user_defined`
+- `make_method_call` -> `user_defined`
+- `generate_markdown` -> `user_defined`
+- `build_pbt_document` -> `user_defined`
+- `make_pipeline_call` -> `user_defined`
+- `generated_block_end` -> `user_defined`
+- `build_call_graph_ast` -> `user_defined`
+- `create_state_machine` -> `user_defined`
+- `generate_self_pbt_md` -> `user_defined`
+- `generated_block_start` -> `user_defined`
+- `get_aletheia_functions` -> `user_defined`
+- `make_producer_consumer` -> `user_defined`
+- `generate_mbt_md_section` -> `user_defined`
+- `generate_pbt_targets_md` -> `user_defined`
+- `generate_idempotent_test` -> `user_defined`
+- `generate_round_trip_test` -> `user_defined`
+- `generate_detection_summary` -> `user_defined`
+- `generate_state_machine_test` -> `user_defined`
+- `generate_producer_consumer_test` -> `user_defined`
 
 ## Notes
 
