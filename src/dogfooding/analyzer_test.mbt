@@ -25,13 +25,10 @@ test "prop_extract_names_count_consistent" {
     @pbt.Gen::pure("bar"),
     @pbt.Gen::pure("baz"),
   ])
-
   let gen_function = @pbt.Gen::map(gen_fn_name, fn(name) {
     "pub fn " + name + "(a : Int, b : Int) -> Int { a + b }\n"
   })
-
   let gen_source = @pbt.Gen::array_of(gen_function)
-
   @pbt.assert_check(
     "extract_function_names count consistent",
     gen_source,
@@ -44,7 +41,12 @@ test "prop_extract_names_count_consistent" {
       if name_count == meta_count {
         Ok(())
       } else {
-        Err("count mismatch: names=" + int_to_string_a(name_count) + " metas=" + int_to_string_a(meta_count))
+        Err(
+          "count mismatch: names=" +
+          int_to_string_a(name_count) +
+          " metas=" +
+          int_to_string_a(meta_count),
+        )
       }
     },
     config~,
@@ -56,20 +58,16 @@ test "prop_extract_names_count_consistent" {
 /// 名前抽出とメタデータ抽出の結果に不一致がない
 test "prop_extract_names_subset" {
   let config = @pbt.CheckConfig::new(100, 50, 1002, 10)
-
   let gen_fn_name = @pbt.Gen::one_of([
     @pbt.Gen::pure("process"),
     @pbt.Gen::pure("handle"),
     @pbt.Gen::pure("transform"),
     @pbt.Gen::pure("compute"),
   ])
-
   let gen_function = @pbt.Gen::map(gen_fn_name, fn(name) {
     "pub fn " + name + "(x : Int) -> Int { x }\n"
   })
-
   let gen_source = @pbt.Gen::array_of(gen_function)
-
   @pbt.assert_check(
     "extract_function_names subset",
     gen_source,
@@ -96,7 +94,6 @@ test "prop_extract_names_subset" {
         }
         i = i + 1
       }
-
       if all_found {
         Ok(())
       } else {
@@ -128,9 +125,7 @@ test "prop_extract_function_names_distinguishes_pub_priv" {
 /// extract_function_names 複雑なシグネチャ対応
 test "prop_extract_function_names_complex_signatures" {
   let sources = [
-    "pub fn f1() -> Int { 1 }",
-    "pub fn f2<T>(x : T) -> T { x }",
-    "pub fn f3(a : Int, b : Int, c : Int) -> Int { a + b + c }",
+    "pub fn f1() -> Int { 1 }", "pub fn f2<T>(x : T) -> T { x }", "pub fn f3(a : Int, b : Int, c : Int) -> Int { a + b + c }",
     "pub fn f4(\n  x : Int,\n  y : Int,\n) -> Int { x + y }",
   ]
   let source = join_strings(sources, "\n")
@@ -158,7 +153,6 @@ test "prop_arbitrary_primitives_complete" {
     }
     i = i + 1
   }
-
   inspect(all_found, content="true")
 }
 
@@ -166,7 +160,6 @@ test "prop_arbitrary_primitives_complete" {
 /// has_arbitrary はプリミティブ型に対して常にtrue
 test "prop_has_arbitrary_reflexive_primitives" {
   let impls = @analyzer.detect_arbitrary_impls("")
-
   let primitives = @analyzer.primitive_types()
   let mut all_true = true
   let mut i = 0
@@ -177,7 +170,6 @@ test "prop_has_arbitrary_reflexive_primitives" {
     }
     i = i + 1
   }
-
   inspect(all_true, content="true")
 }
 
@@ -186,7 +178,6 @@ test "prop_has_arbitrary_reflexive_primitives" {
 test "prop_has_arbitrary_user_defined" {
   let source = "impl Arbitrary for MyType\nimpl Arbitrary for OtherType"
   let impls = @analyzer.detect_arbitrary_impls(source)
-
   inspect(@analyzer.has_arbitrary("MyType", impls), content="true")
   inspect(@analyzer.has_arbitrary("OtherType", impls), content="true")
   inspect(@analyzer.has_arbitrary("UnknownType", impls), content="false")
@@ -197,7 +188,6 @@ test "prop_has_arbitrary_user_defined" {
 /// プリミティブ型は常にTestable
 test "prop_check_type_testability_consistent" {
   let impls = @analyzer.detect_arbitrary_impls("")
-
   let primitives = @analyzer.primitive_types()
   let mut all_testable = true
   let mut i = 0
@@ -218,7 +208,6 @@ test "prop_check_type_testability_consistent" {
     }
     i = i + 1
   }
-
   inspect(all_testable, content="true")
 }
 
@@ -227,7 +216,6 @@ test "prop_check_type_testability_consistent" {
 test "prop_check_type_testability_user_defined" {
   let impls = @analyzer.detect_arbitrary_impls("")
   let result = @analyzer.check_type_testability("MyCustomType", impls)
-
   match result {
     @ast.Testability::NeedsUserArbitrary(types) =>
       inspect(types.length() > 0 && types[0] == "MyCustomType", content="true")
@@ -271,7 +259,8 @@ test "prop_check_type_testability_map_types" {
   let result2 = @analyzer.check_type_testability("Map[MyType, Int]", impls)
   match result2 {
     @ast.Testability::NeedsUserArbitrary(_) => inspect("ok", content="ok")
-    _ => inspect("Map[MyType, Int] should be NeedsUserArbitrary", content="fail")
+    _ =>
+      inspect("Map[MyType, Int] should be NeedsUserArbitrary", content="fail")
   }
 }
 
@@ -291,9 +280,8 @@ test "prop_check_function_testability_primitives" {
     args,
     @ast.TypeMeta::named("Int"),
     location,
-    type_params = [],
+    type_params=[],
   )
-
   let result = @analyzer.check_function_testability(func, impls)
   match result {
     @ast.Testability::Testable => inspect("ok", content="ok")
@@ -305,7 +293,6 @@ test "prop_check_function_testability_primitives" {
 /// check_function_testability はユーザー定義型引数でNeedsUserArbitrary
 test "prop_check_function_testability_custom_type" {
   let impls = @analyzer.detect_arbitrary_impls("")
-
   let location = @ast.Location::unknown("test.mbt")
   let args = [@ast.ArgMeta::new("x", @ast.TypeMeta::named("MyType"))]
   let func = @ast.FunctionMeta::with_signature(
@@ -313,9 +300,8 @@ test "prop_check_function_testability_custom_type" {
     args,
     @ast.TypeMeta::named("Int"),
     location,
-    type_params = [],
+    type_params=[],
   )
-
   let result = @analyzer.check_function_testability(func, impls)
   match result {
     @ast.Testability::NeedsUserArbitrary(_) => inspect("ok", content="ok")
