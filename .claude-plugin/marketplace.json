@@ -14,6 +14,17 @@
       },
       "license": "Apache-2.0",
       "repository": "https://github.com/f4ah6o/aletheia.mbt.git"
+    },
+    {
+      "name": "aletheia-pbt",
+      "source": "./plugins/aletheia-pbt",
+      "description": "Generate and sync MoonBit property-based tests with Aletheia.",
+      "version": "0.1.0",
+      "author": {
+        "name": "f4ah6o"
+      },
+      "license": "Apache-2.0",
+      "repository": "https://github.com/f4ah6o/aletheia.mbt.git"
     }
   ]
 }

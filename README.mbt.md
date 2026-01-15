@@ -63,14 +63,18 @@ moon run src/aletheia -- sync
 ./scripts/dev-check.sh
 ```
 
-## Claude Code Plugin
+## Claude Code Plugins
 
 ```bash
-# ローカルでプラグインを試す
+# ローカルでプラグインを試す（一般用途）
+claude --plugin-dir ./plugins/aletheia-pbt
+
+# ローカルでプラグインを試す（自己適用）
 claude --plugin-dir ./plugins/aletheia-self-pbt
 
 # マーケットプレイスを追加してインストール（Claude Code内）
 /plugin marketplace add .
+/plugin install aletheia-pbt@f4ah6o-plugins
 /plugin install aletheia-self-pbt@f4ah6o-plugins
 ```
 
