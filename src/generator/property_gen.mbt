@@ -62,6 +62,32 @@ fn generate_parse_generate_round_trip_test(
 }
 
 ///|
+/// Round-Tripプロパティテスト（parse/generateの正規化）を生成
+fn generate_parse_generate_stable_test(
+  parser : String,
+  generator : String,
+) -> GeneratedTest {
+  let test_name = "prop_" + parser + "_" + generator + "_roundtrip"
+  let test_code = "test \"" +
+    test_name +
+    "\" {\n  let fixtures = [\n    \"\",\n    \"alpha\",\n    \"alpha\\nbeta\",\n    \"a,b,c\"\n  ]\n  for input in fixtures {\n    let normalized = " +
+    generator +
+    "(" +
+    parser +
+    "(input))\n    let normalized2 = " +
+    generator +
+    "(" +
+    parser +
+    "(normalized))\n    assert_eq(normalized2, normalized)\n  }\n}"
+  {
+    name: test_name,
+    code: test_code,
+    description: "Round-trip property: generate(parse(x)) is stable under re-parsing",
+    fence: "mbt nocheck",
+  }
+}
+
+///|
 /// Round-Tripプロパティテスト（parse_args/command_to_args）を生成
 fn generate_parse_command_to_round_trip_test(
   parser : String,
@@ -78,7 +104,7 @@ fn generate_parse_command_to_round_trip_test(
   {
     name: test_name,
     code: test_code,
-    description: "Round-trip property: command_to_args(parse_args(args)) keeps args stable",
+    description: "Round-trip property: command_to(parse(args)) keeps args stable",
     fence: "mbt check",
   }
 }
@@ -155,6 +181,16 @@ pub struct PbtDocument {
 }
 
 ///|
+fn is_parse_generate_pair(encoder : String, decoder : String) -> Bool {
+  encoder.has_prefix("parse_") && decoder.has_prefix("generate_")
+}
+
+///|
+fn is_parse_command_to_pair(encoder : String, decoder : String) -> Bool {
+  encoder.has_prefix("parse_") && decoder.has_prefix("command_to_")
+}
+
+///|
 /// PatternCandidate から GeneratedTest を生成
 pub fn pattern_to_test(
   pattern : @patterns.PatternCandidate,
@@ -164,8 +200,10 @@ pub fn pattern_to_test(
     @patterns.RoundTrip(encoder, decoder) =>
       if encoder == "parse_markdown" && decoder == "generate_markdown" {
         generate_parse_generate_round_trip_test(encoder, decoder)
-      } else if encoder == "parse_args" && decoder == "command_to_args" {
+      } else if is_parse_command_to_pair(encoder, decoder) {
         generate_parse_command_to_round_trip_test(encoder, decoder)
+      } else if is_parse_generate_pair(encoder, decoder) {
+        generate_parse_generate_stable_test(encoder, decoder)
       } else {
         generate_round_trip_test(encoder, decoder, type_name)
       }
@@ -512,6 +550,29 @@ test "pattern_to_test_parse_command_to_roundtrip" {
   inspect(result.fence, content="mbt check")
   inspect(result.code.contains("parse_args"), content="true")
   inspect(result.code.contains("command_to_args"), content="true")
+}
+
+///|
+test "pattern_to_test_generic_parse_generate_roundtrip" {
+  let result = pattern_to_test(
+    @patterns.make_round_trip("parse_config", "generate_config"),
+    "String",
+  )
+  inspect(result.fence, content="mbt nocheck")
+  inspect(result.code.contains("parse_config"), content="true")
+  inspect(result.code.contains("generate_config"), content="true")
+  inspect(result.code.contains("normalized2"), content="true")
+}
+
+///|
+test "pattern_to_test_generic_parse_command_to_roundtrip" {
+  let result = pattern_to_test(
+    @patterns.make_round_trip("parse_flags", "command_to_flags"),
+    "Array[String]",
+  )
+  inspect(result.fence, content="mbt check")
+  inspect(result.code.contains("parse_flags"), content="true")
+  inspect(result.code.contains("command_to_flags"), content="true")
 }
 
 ///|
