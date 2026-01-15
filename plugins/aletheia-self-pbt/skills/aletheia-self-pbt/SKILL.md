@@ -7,16 +7,16 @@ description: Self-dogfooding workflow for the f4ah6o/aletheia.mbt MoonBit repo, 
 
 ## Overview
 
-Generate and validate Aletheia's own PBT templates, then iterate on detection and templates until they are mbt check ready.
+Generate or sync Aletheia's own PBT templates, then iterate on detection and templates until they are mbt check ready.
 
 ## Workflow
 
-1. Regenerate PBT templates
-   - Run `./scripts/self_pbt.sh` from repo root.
-   - This runs `moon run src/aletheia -- generate ./src`, then `moon info` and `moon fmt`.
+1. Generate or sync PBT templates
+   - Full regenerate: run `./scripts/self_pbt.sh` from repo root.
+   - Sync existing files: run `moon run src/aletheia -- sync ./src`.
 
 2. Review generated files
-   - Check `src/cli/cli.pbt.mbt.md` and `src/parser/parser.pbt.mbt.md` for template correctness.
+   - Check `src/aletheia.pbt.mbt.md`, `src/cli/cli.pbt.mbt.md`, and `src/parser/parser.pbt.mbt.md` for template correctness.
    - Keep templates as `mbt nocheck` until the property logic is valid; switch to `mbt check` only after validating semantics.
 
 3. Update detection/template logic
