@@ -21,18 +21,16 @@ pub struct MarkdownAST {
 
 ///|
 /// Blockノードからコードブロックを抽出
-fn extract_fenced_code(block : @markdown.Block, line_offset : Int) -> Array[CodeBlock] {
+fn extract_fenced_code(
+  block : @markdown.Block,
+  line_offset : Int,
+) -> Array[CodeBlock] {
   match block {
     @markdown.Block::FencedCode(info~, code~, ..) => {
       // 行番号を計算（簡易的にオフセットから推定）
       let line_start = line_offset
       let line_end = line_offset + code.split("\n").to_array().length()
-      [{
-        lang: info,
-        content: code,
-        line_start,
-        line_end,
-      }]
+      [{ lang: info, content: code, line_start, line_end }]
     }
     @markdown.Block::Blockquote(children~, ..) =>
       extract_code_blocks_from_array(children, line_offset)
@@ -40,18 +38,12 @@ fn extract_fenced_code(block : @markdown.Block, line_offset : Int) -> Array[Code
       extract_code_from_list_items(items, line_offset)
     @markdown.Block::OrderedList(items~, ..) =>
       extract_code_from_list_items(items, line_offset)
-    @markdown.Block::Table(..) =>
-      [] // テーブルはスキップ
+    @markdown.Block::Table(..) => [] // テーブルはスキップ
     @markdown.Block::IndentedCode(code~, ..) => {
       // インデントされたコードブロックも抽出
       let line_start = line_offset
       let line_end = line_offset + code.split("\n").to_array().length()
-      [{
-        lang: "",
-        content: code,
-        line_start,
-        line_end,
-      }]
+      [{ lang: "", content: code, line_start, line_end }]
     }
     _ => []
   }
