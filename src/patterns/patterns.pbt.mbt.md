@@ -21,7 +21,6 @@ test "prop_round_trip_monotonic" {
   let b = ["to_json", "from_json"]
   let results_a = find_round_trips(a)
   let results_b = find_round_trips(b)
-
   let combined : Array[String] = []
   let mut i = 0
   while i < a.length() {
@@ -34,7 +33,6 @@ test "prop_round_trip_monotonic" {
     j = j + 1
   }
   let results_combined = find_round_trips(combined)
-
   inspect(results_combined.length() >= results_a.length(), content="true")
   inspect(results_combined.length() >= results_b.length(), content="true")
 }
