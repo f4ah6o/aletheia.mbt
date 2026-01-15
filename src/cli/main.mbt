@@ -619,8 +619,12 @@ fn generate_tests(path : String) -> String {
     )
     let content = @generator.generate_pbt_targets_md(doc)
     let output_path = output_path_for_pbt(path, module_name)
+    let merged = @generator.merge_generated_markdown(
+      read_file_content(output_path),
+      content,
+    )
     let write_error : String? = try {
-      @fs.write_string_to_file(output_path, content)
+      @fs.write_string_to_file(output_path, merged)
       None
     } catch {
       err => Some("\{err}")

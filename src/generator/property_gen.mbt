@@ -256,6 +256,34 @@ fn pattern_to_detected(pattern : @patterns.PatternCandidate) -> DetectedPattern 
 }
 
 ///|
+fn pattern_sort_key(pattern : @patterns.PatternCandidate) -> String {
+  match pattern {
+    @patterns.RoundTrip(encoder, decoder) =>
+      "1_round_trip:" + encoder + ":" + decoder
+    @patterns.Idempotent(func) => "2_idempotent:" + func
+    @patterns.ProducerConsumer(producer, consumer) =>
+      "3_producer_consumer:" + producer + ":" + consumer
+  }
+}
+
+///|
+fn sort_patterns(
+  patterns : Array[@patterns.PatternCandidate],
+) -> Array[@patterns.PatternCandidate] {
+  let result : Array[@patterns.PatternCandidate] = []
+  let mut i = 0
+  while i < patterns.length() {
+    Array::push(result, patterns[i])
+    i = i + 1
+  }
+  result.sort_by((a, b) => String::compare(
+    pattern_sort_key(a),
+    pattern_sort_key(b),
+  ))
+  result
+}
+
+///|
 /// 配列の末尾に要素を追加（再帰的）
 fn append_test(
   arr : Array[GeneratedTest],
@@ -340,11 +368,12 @@ pub fn build_pbt_document(
   patterns : Array[@patterns.PatternCandidate],
   default_type : String,
 ) -> PbtDocument {
+  let sorted = sort_patterns(patterns)
   let mut test_cases : Array[GeneratedTest] = []
   let mut detected : Array[DetectedPattern] = []
   let mut i = 0
-  while i < patterns.length() {
-    let pattern = patterns[i]
+  while i < sorted.length() {
+    let pattern = sorted[i]
     let t = pattern_to_test(pattern, default_type)
     let detected_pattern = pattern_to_detected(pattern)
     test_cases = append_test(test_cases, t)
@@ -483,6 +512,81 @@ pub fn generate_pbt_targets_md(doc : PbtDocument) -> String {
 }
 
 ///|
+pub fn generated_block_start() -> String {
+  "<!-- aletheia:begin -->"
+}
+
+///|
+pub fn generated_block_end() -> String {
+  "<!-- aletheia:end -->"
+}
+
+///|
+pub fn wrap_generated_block(content : String) -> String {
+  let trimmed = content.trim_end().to_string()
+  let mut result = generated_block_start() + "\n"
+  if trimmed != "" {
+    result = result + trimmed + "\n"
+  }
+  result = result + generated_block_end() + "\n"
+  result
+}
+
+///|
+fn wrap_generated_block_with_suffix(
+  content : String,
+  suffix : String,
+) -> String {
+  let trimmed = content.trim_end().to_string()
+  let mut result = generated_block_start() + "\n"
+  if trimmed != "" {
+    result = result + trimmed + "\n"
+  }
+  result = result + generated_block_end()
+  if suffix.has_prefix("\n") {
+    result
+  } else {
+    result + "\n"
+  }
+}
+
+///|
+pub fn merge_generated_markdown(
+  existing : String,
+  generated : String,
+) -> String {
+  let start_marker = generated_block_start()
+  let end_marker = generated_block_end()
+  match existing.find(start_marker) {
+    None => wrap_generated_block(generated)
+    Some(start_idx) => {
+      let start_len = start_marker.length()
+      let end_len = end_marker.length()
+      let search_start = start_idx + start_len
+      let remainder = slice_string(existing, search_start, existing.length())
+      match remainder.find(end_marker) {
+        None => wrap_generated_block(generated)
+        Some(rel_end) => {
+          let end_idx = search_start + rel_end
+          let prefix = slice_string(existing, 0, start_idx)
+          let suffix = slice_string(
+            existing,
+            end_idx + end_len,
+            existing.length(),
+          )
+          prefix + wrap_generated_block_with_suffix(generated, suffix) + suffix
+        }
+      }
+    }
+  }
+}
+
+///|
+fn slice_string(source : String, start : Int, end : Int) -> String {
+  String::unsafe_substring(source, start~, end~)
+}
+
+///|
 /// テスト
 test "generate_round_trip_test_basic" {
   let result = generate_round_trip_test("encode", "decode", "Data")
@@ -521,6 +625,35 @@ test "generate_mbt_md_section_respects_fence" {
   }
   let result = generate_mbt_md_section([custom])
   inspect(result.contains("```mbt check"), content="true")
+}
+
+///|
+test "wrap_generated_block_has_markers" {
+  let wrapped = wrap_generated_block("hello")
+  inspect(wrapped.contains(generated_block_start()), content="true")
+  inspect(wrapped.contains(generated_block_end()), content="true")
+}
+
+///|
+test "merge_generated_markdown_preserves_outside" {
+  let existing = "intro\n" +
+    generated_block_start() +
+    "\nOLD_BLOCK\n" +
+    generated_block_end() +
+    "\noutro\n"
+  let merged = merge_generated_markdown(existing, "NEW_BLOCK")
+  inspect(merged.contains("intro"), content="true")
+  inspect(merged.contains("outro"), content="true")
+  inspect(merged.contains("OLD_BLOCK"), content="false")
+  inspect(merged.contains("NEW_BLOCK"), content="true")
+}
+
+///|
+test "merge_generated_markdown_is_stable_with_suffix" {
+  let existing = wrap_generated_block("BLOCK") + "\n\n"
+  let merged1 = merge_generated_markdown(existing, "BLOCK")
+  let merged2 = merge_generated_markdown(merged1, "BLOCK")
+  inspect(merged1 == merged2, content="true")
 }
 
 ///|

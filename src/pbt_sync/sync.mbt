@@ -154,6 +154,7 @@ fn build_expected_outputs(
     Ok(found) => found
   }
   let grouped = group_blocks(blocks)
+  grouped.sort_by((a, b) => String::compare(a.name, b.name))
   let source_root = resolve_source_root()
   let outputs : Array[OutputFile] = []
   let mut i = 0
@@ -455,6 +456,7 @@ fn collect_generated_files(path : String) -> Array[String] {
       i = i + 1
     }
   }
+  result.sort_by((a, b) => String::compare(a, b))
   result
 }
 
