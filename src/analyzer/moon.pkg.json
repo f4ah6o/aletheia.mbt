@@ -1,7 +1,7 @@
 {
   "import": [
     { "path": "f4ah6o/aletheia/ast", "alias": "ast" },
-    { "path": "f4ah6o/aletheia/parser", "alias": "parser" },
-    { "path": "f4ah6o/aletheia/patterns", "alias": "patterns" }
+    { "path": "moonbitlang/parser", "alias": "mb_parser" },
+    { "path": "moonbitlang/parser/syntax", "alias": "syntax" }
   ]
 }

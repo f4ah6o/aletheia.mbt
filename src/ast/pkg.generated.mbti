@@ -8,9 +8,15 @@ pub fn make_chain_call() -> CallType
 
 pub fn make_direct_call() -> CallType
 
+pub fn make_internal() -> Visibility
+
 pub fn make_method_call() -> CallType
 
 pub fn make_pipeline_call() -> CallType
+
+pub fn make_private() -> Visibility
+
+pub fn make_public() -> Visibility
 
 pub fn needs_user_arbitrary(Array[String]) -> Testability
 
