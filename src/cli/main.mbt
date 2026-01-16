@@ -383,12 +383,16 @@ fn analyze_packages(path : String) -> Array[PackageAnalysis] {
     let roundtrips = @patterns.find_round_trips(function_names)
     let idempotents = @patterns.find_idempotent_functions(function_names)
     let producers = @patterns.find_producer_consumer(function_names)
+    let invariants = @patterns.find_invariant_functions(function_names)
+    let oracles = @patterns.find_oracle_candidates(function_names)
     Array::push(results, {
       path: package_dir,
       functions,
       roundtrips,
       idempotents,
       producers,
+      invariants,
+      oracles,
     })
     i = i + 1
   }
@@ -402,6 +406,8 @@ priv struct PackageAnalysis {
   roundtrips : Array[@patterns.PatternCandidate]
   idempotents : Array[@patterns.PatternCandidate]
   producers : Array[@patterns.PatternCandidate]
+  invariants : Array[@patterns.PatternCandidate]
+  oracles : Array[@patterns.PatternCandidate]
 }
 
 ///|
@@ -444,6 +450,17 @@ fn describe_pattern(
       describe_function_name(functions, producer) +
       " -> " +
       describe_function_name(functions, consumer)
+    @patterns.Invariant(func, inv_type) =>
+      "Invariant: " +
+      describe_function_name(functions, func) +
+      " (" +
+      inv_type +
+      ")"
+    @patterns.Oracle(implementation, oracle) =>
+      "Oracle: " +
+      describe_function_name(functions, implementation) +
+      " vs " +
+      describe_function_name(functions, oracle)
   }
 }
 
@@ -487,6 +504,27 @@ fn pattern_to_json(
           json_string(function_signature_or_empty(functions, consumer)),
         ),
       ])
+    @patterns.Invariant(func, inv_type) =>
+      json_object([
+        ("kind", json_string("invariant")),
+        ("function", json_string(func)),
+        ("invariant_type", json_string(inv_type)),
+        ("signature", json_string(function_signature_or_empty(functions, func))),
+      ])
+    @patterns.Oracle(implementation, oracle) =>
+      json_object([
+        ("kind", json_string("oracle")),
+        ("implementation", json_string(implementation)),
+        ("oracle", json_string(oracle)),
+        (
+          "implementation_signature",
+          json_string(function_signature_or_empty(functions, implementation)),
+        ),
+        (
+          "oracle_signature",
+          json_string(function_signature_or_empty(functions, oracle)),
+        ),
+      ])
   }
 }
 
@@ -523,6 +561,14 @@ fn format_analysis_text(
     result = result +
       "Producer-Consumer patterns: " +
       int_to_string(pkg.producers.length()) +
+      "\n"
+    result = result +
+      "Invariant patterns: " +
+      int_to_string(pkg.invariants.length()) +
+      "\n"
+    result = result +
+      "Oracle patterns: " +
+      int_to_string(pkg.oracles.length()) +
       "\n"
     if explain {
       result = result + "Functions:\n"
@@ -591,6 +637,44 @@ fn format_analysis_text(
           j = j + 1
         }
       }
+      result = result + "Invariant details:\n"
+      if pkg.invariants.length() == 0 {
+        result = result + "  (none)\n"
+      } else {
+        let mut j = 0
+        while j < pkg.invariants.length() {
+          match pkg.invariants[j] {
+            @patterns.Invariant(func, inv_type) =>
+              result = result +
+                "  - " +
+                describe_function_name(pkg.functions, func) +
+                " (" +
+                inv_type +
+                ")\n"
+            _ => ()
+          }
+          j = j + 1
+        }
+      }
+      result = result + "Oracle details:\n"
+      if pkg.oracles.length() == 0 {
+        result = result + "  (none)\n"
+      } else {
+        let mut j = 0
+        while j < pkg.oracles.length() {
+          match pkg.oracles[j] {
+            @patterns.Oracle(implementation, oracle) =>
+              result = result +
+                "  - " +
+                describe_function_name(pkg.functions, implementation) +
+                " vs " +
+                describe_function_name(pkg.functions, oracle) +
+                "\n"
+            _ => ()
+          }
+          j = j + 1
+        }
+      }
     }
     i = i + 1
   }
@@ -621,6 +705,8 @@ fn format_analysis_json(
       ("round_trip_count", json_number(pkg.roundtrips.length())),
       ("idempotent_count", json_number(pkg.idempotents.length())),
       ("producer_consumer_count", json_number(pkg.producers.length())),
+      ("invariant_count", json_number(pkg.invariants.length())),
+      ("oracle_count", json_number(pkg.oracles.length())),
     ]
     if explain {
       let functions_json : Array[String] = []
@@ -657,10 +743,26 @@ fn format_analysis_json(
         Array::push(producer_json, pattern_to_json(pkg.functions, pat))
         j = j + 1
       }
+      let invariant_json : Array[String] = []
+      let mut j = 0
+      while j < pkg.invariants.length() {
+        let pat = pkg.invariants[j]
+        Array::push(invariant_json, pattern_to_json(pkg.functions, pat))
+        j = j + 1
+      }
+      let oracle_json : Array[String] = []
+      let mut j = 0
+      while j < pkg.oracles.length() {
+        let pat = pkg.oracles[j]
+        Array::push(oracle_json, pattern_to_json(pkg.functions, pat))
+        j = j + 1
+      }
       Array::push(pairs, ("functions", json_array(functions_json)))
       Array::push(pairs, ("round_trips", json_array(roundtrip_json)))
       Array::push(pairs, ("idempotents", json_array(idempotent_json)))
       Array::push(pairs, ("producer_consumers", json_array(producer_json)))
+      Array::push(pairs, ("invariants", json_array(invariant_json)))
+      Array::push(pairs, ("oracles", json_array(oracle_json)))
     }
     Array::push(package_jsons, json_object(pairs))
     i = i + 1
@@ -1095,6 +1197,16 @@ fn infer_default_type(
           Some(func) => type_name_from_function(func)
           None => None
         }
+      @patterns.Invariant(func, _) =>
+        match find_function_meta(functions, func) {
+          Some(func) => type_name_from_function(func)
+          None => None
+        }
+      @patterns.Oracle(implementation, _) =>
+        match find_function_meta(functions, implementation) {
+          Some(func) => type_name_from_function(func)
+          None => None
+        }
     }
     match type_name {
       Some(t) =>
@@ -1155,6 +1267,8 @@ fn build_generate_report(
   let roundtrips = @patterns.find_round_trips(function_names)
   let idempotents = @patterns.find_idempotent_functions(function_names)
   let producers = @patterns.find_producer_consumer(function_names)
+  let invariants = @patterns.find_invariant_functions(function_names)
+  let oracles = @patterns.find_oracle_candidates(function_names)
 
   // すべてのパターンを統合
   let mut all_patterns : Array[@patterns.PatternCandidate] = []
@@ -1171,6 +1285,16 @@ fn build_generate_report(
   let mut i = 0
   while i < producers.length() {
     all_patterns = append_pattern(all_patterns, producers[i])
+    i = i + 1
+  }
+  let mut i = 0
+  while i < invariants.length() {
+    all_patterns = append_pattern(all_patterns, invariants[i])
+    i = i + 1
+  }
+  let mut i = 0
+  while i < oracles.length() {
+    all_patterns = append_pattern(all_patterns, oracles[i])
     i = i + 1
   }
   let known_impls = collect_arbitrary_impls_from_packages(package_dirs)

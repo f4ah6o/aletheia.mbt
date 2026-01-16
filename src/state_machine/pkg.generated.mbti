@@ -10,6 +10,12 @@ pub fn execute_commands(StateMachine, String) -> ExecutionResult
 
 pub fn generate_state_machine_test(StateMachine, String) -> String
 
+pub fn generate_state_machine_test_template(String, String, String, String) -> String
+
+pub fn[S : Show, Cmd : Show, R, Sh : Shim] run_state_machine_test(StateM[S, Cmd, R], Array[Cmd], (Cmd, Sh) -> R, Sh) -> StateMResult
+
+pub fn[T] shim_wrap(T, Unit) -> T
+
 // Errors
 
 // Types and methods
@@ -25,6 +31,36 @@ pub struct ExecutionResult {
   error_message : String
 }
 
+pub struct PassthroughShim {
+}
+pub fn PassthroughShim::new() -> Self
+pub impl Shim for PassthroughShim
+
+pub struct RecordingShim {
+  recorded : Array[String]
+}
+pub fn RecordingShim::new() -> Self
+pub impl Shim for RecordingShim
+
+pub struct StateM[S, Cmd, R] {
+  name : String
+  initial_state : S
+  next_state : (S, Cmd) -> S
+  precondition : (S, Cmd) -> Bool
+  postcondition : (S, Cmd, R) -> Bool
+}
+pub fn[S, Cmd, R] StateM::new(String, S, (S, Cmd) -> S) -> Self[S, Cmd, R]
+pub fn[S, Cmd, R] StateM::with_postcondition(Self[S, Cmd, R], (S, Cmd, R) -> Bool) -> Self[S, Cmd, R]
+pub fn[S, Cmd, R] StateM::with_precondition(Self[S, Cmd, R], (S, Cmd) -> Bool) -> Self[S, Cmd, R]
+
+pub struct StateMResult {
+  success : Bool
+  commands_executed : Int
+  final_state_desc : String
+  error_message : String?
+  effects : Array[String]
+}
+
 pub struct StateMachine {
   name : String
   initial_state : String
@@ -34,4 +70,8 @@ pub struct StateMachine {
 // Type aliases
 
 // Traits
+pub trait Shim {
+  record(Self, String) -> Unit
+  effects(Self) -> Array[String]
+}
 

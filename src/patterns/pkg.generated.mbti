@@ -4,11 +4,19 @@ package "f4ah6o/aletheia/patterns"
 // Values
 pub fn find_idempotent_functions(Array[String]) -> Array[PatternCandidate]
 
+pub fn find_invariant_functions(Array[String]) -> Array[PatternCandidate]
+
+pub fn find_oracle_candidates(Array[String]) -> Array[PatternCandidate]
+
 pub fn find_producer_consumer(Array[String]) -> Array[PatternCandidate]
 
 pub fn find_round_trips(Array[String]) -> Array[PatternCandidate]
 
 pub fn make_idempotent(String) -> PatternCandidate
+
+pub fn make_invariant(String, String) -> PatternCandidate
+
+pub fn make_oracle(String, String) -> PatternCandidate
 
 pub fn make_producer_consumer(String, String) -> PatternCandidate
 
@@ -17,10 +25,21 @@ pub fn make_round_trip(String, String) -> PatternCandidate
 // Errors
 
 // Types and methods
+pub enum InvariantType {
+  LengthPreserving
+  LengthDecreasing
+  LengthIncreasing
+  OrderPreserving
+  ContentPreserving
+}
+pub fn InvariantType::to_string(Self) -> String
+
 pub enum PatternCandidate {
   RoundTrip(String, String)
   Idempotent(String)
   ProducerConsumer(String, String)
+  Invariant(String, String)
+  Oracle(String, String)
 }
 
 // Type aliases

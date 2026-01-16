@@ -8,9 +8,17 @@ import(
 // Values
 pub fn build_pbt_document(String, String, Array[@patterns.PatternCandidate], String) -> PbtDocument
 
+pub fn generate_counterexample_section() -> String
+
+pub fn generate_frequency_generator_template(String, Array[(Int, String)]) -> String
+
 pub fn generate_idempotent_test(String, String) -> GeneratedTest
 
+pub fn generate_invariant_test(String, String, String) -> GeneratedTest
+
 pub fn generate_mbt_md_section(Array[GeneratedTest]) -> String
+
+pub fn generate_oracle_test(String, String, String) -> GeneratedTest
 
 pub fn generate_pbt_md(PbtDocument) -> String
 
@@ -19,6 +27,8 @@ pub fn generate_pbt_targets_md(PbtDocument) -> String
 pub fn generate_producer_consumer_test(String, String, String) -> GeneratedTest
 
 pub fn generate_round_trip_test(String, String, String) -> GeneratedTest
+
+pub fn generate_test_with_stats(String, String, String, Array[(String, String)]) -> GeneratedTest
 
 pub fn generated_block_end() -> String
 
@@ -50,6 +60,8 @@ pub enum PatternKind {
   RoundTrip
   Idempotent
   ProducerConsumer
+  Invariant
+  Oracle
 }
 
 pub struct PbtDocument {
