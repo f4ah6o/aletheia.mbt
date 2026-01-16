@@ -23,14 +23,21 @@ pub fn generate_round_trip_test(
 
   // QuickCheckジェネレータ式を取得
   let gen_expr = generator_expression_for_type(type_name)
-
   let test_code = "test \"" +
     test_name +
     "\" {\n" +
-    "  let gen = " + gen_expr + "\n" +
+    "  let gen = " +
+    gen_expr +
+    "\n" +
     "  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)\n" +
-    "  let result = @pbt.check(gen, fn(x : " + type_name + ") {\n" +
-    "    assert_eq(" + decoder + "(" + encoder + "(x)), x)\n" +
+    "  let result = @pbt.check(gen, fn(x : " +
+    type_name +
+    ") {\n" +
+    "    assert_eq(" +
+    decoder +
+    "(" +
+    encoder +
+    "(x)), x)\n" +
     "    Ok(())\n" +
     "  }, config~)\n" +
     "  assert_true(result.passed)\n" +
@@ -125,14 +132,23 @@ pub fn generate_idempotent_test(
 
   // QuickCheckジェネレータ式を取得
   let gen_expr = generator_expression_for_type(type_name)
-
   let test_code = "test \"" +
     test_name +
     "\" {\n" +
-    "  let gen = " + gen_expr + "\n" +
+    "  let gen = " +
+    gen_expr +
+    "\n" +
     "  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)\n" +
-    "  let result = @pbt.check(gen, fn(x : " + type_name + ") {\n" +
-    "    assert_eq(" + func + "(" + func + "(x)), " + func + "(x))\n" +
+    "  let result = @pbt.check(gen, fn(x : " +
+    type_name +
+    ") {\n" +
+    "    assert_eq(" +
+    func +
+    "(" +
+    func +
+    "(x)), " +
+    func +
+    "(x))\n" +
     "    Ok(())\n" +
     "  }, config~)\n" +
     "  assert_true(result.passed)\n" +
@@ -240,14 +256,21 @@ pub fn generate_producer_consumer_test(
 
   // QuickCheckジェネレータ式を取得
   let gen_expr = generator_expression_for_type(type_name)
-
   let test_code = "test \"" +
     test_name +
     "\" {\n" +
-    "  let gen = " + gen_expr + "\n" +
+    "  let gen = " +
+    gen_expr +
+    "\n" +
     "  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)\n" +
-    "  let result = @pbt.check(gen, fn(x : " + type_name + ") {\n" +
-    "    let _ = " + consumer + "(" + producer + "(x))\n" +
+    "  let result = @pbt.check(gen, fn(x : " +
+    type_name +
+    ") {\n" +
+    "    let _ = " +
+    consumer +
+    "(" +
+    producer +
+    "(x))\n" +
     "    Ok(())\n" +
     "  }, config~)\n" +
     "  assert_true(result.passed)\n" +
@@ -305,14 +328,19 @@ pub fn generate_invariant_test(
 
   // QuickCheckジェネレータ式を取得
   let gen_expr = generator_expression_for_type(type_name)
-
   let test_code = "test \"" +
     test_name +
     "\" {\n" +
-    "  let gen = " + gen_expr + "\n" +
+    "  let gen = " +
+    gen_expr +
+    "\n" +
     "  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)\n" +
-    "  let result = @pbt.check(gen, fn(x : " + type_name + ") {\n" +
-    "    " + assertion + "\n" +
+    "  let result = @pbt.check(gen, fn(x : " +
+    type_name +
+    ") {\n" +
+    "    " +
+    assertion +
+    "\n" +
     "    Ok(())\n" +
     "  }, config~)\n" +
     "  assert_true(result.passed)\n" +
@@ -331,14 +359,21 @@ pub fn generate_oracle_test(
 
   // QuickCheckジェネレータ式を取得
   let gen_expr = generator_expression_for_type(type_name)
-
   let test_code = "test \"" +
     test_name +
     "\" {\n" +
-    "  let gen = " + gen_expr + "\n" +
+    "  let gen = " +
+    gen_expr +
+    "\n" +
     "  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)\n" +
-    "  let result = @pbt.check(gen, fn(x : " + type_name + ") {\n" +
-    "    assert_eq(" + implementation + "(x), " + oracle + "(x))\n" +
+    "  let result = @pbt.check(gen, fn(x : " +
+    type_name +
+    ") {\n" +
+    "    assert_eq(" +
+    implementation +
+    "(x), " +
+    oracle +
+    "(x))\n" +
     "    Ok(())\n" +
     "  }, config~)\n" +
     "  assert_true(result.passed)\n" +
@@ -362,9 +397,7 @@ pub fn generate_edge_case_tests(
 ) -> GeneratedTest {
   let edge_cases = edge_cases_for_type(type_name)
   let test_name = func_name + "_edge_cases"
-
   let mut test_code = "test \"" + test_name + "\" {\n"
-
   let mut i = 0
   while i < edge_cases.length() {
     let edge_case = edge_cases[i]
@@ -389,10 +422,8 @@ pub fn generate_edge_case_tests(
       "(x_" +
       int_to_string(i) +
       ")\n"
-
     i = i + 1
   }
-
   test_code = test_code + "  // Edge cases handled successfully\n" + "}"
   {
     name: test_name,

@@ -1507,7 +1507,6 @@ fn build_per_package_reports(
   if package_dirs.length() == 0 {
     return Err("No MoonBit package found under: " + path)
   }
-
   let reports : Array[GenerateReport] = []
   let mut i = 0
   while i < package_dirs.length() {
@@ -1565,7 +1564,6 @@ fn build_per_package_reports(
     )
     let content = @generator.generate_pbt_targets_md(doc)
     let output_path = output_path_for_pbt(pkg_dir, module_name)
-
     let mut write_error : String? = None
     if !options.dry_run {
       let merged = @generator.merge_generated_markdown(
@@ -1580,7 +1578,6 @@ fn build_per_package_reports(
       }
       write_error = error
     }
-
     Array::push(reports, {
       path: pkg_dir,
       module_name,
@@ -1593,10 +1590,8 @@ fn build_per_package_reports(
       dry_run: options.dry_run,
       write_error,
     })
-
     i = i + 1
   }
-
   Ok(reports)
 }
 
