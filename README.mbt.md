@@ -63,7 +63,10 @@ moon run src/aletheia -- sync
 ./scripts/dev-check.sh
 ```
 
-## Claude Code Plugins
+## Agent skills 
+
+### Claude Code Plugins
+* https://code.claude.com/docs/en/plugin-marketplaces
 
 ```bash
 # ローカルでプラグインを試す（一般用途）
@@ -73,10 +76,15 @@ claude --plugin-dir ./plugins/aletheia-pbt
 claude --plugin-dir ./plugins/aletheia-self-pbt
 
 # マーケットプレイスを追加してインストール（Claude Code内）
-/plugin marketplace add .
+/plugin marketplace add https://github.com/f4ah6o/aletheia.mbt
 /plugin install aletheia-pbt@f4ah6o-plugins
+# if running in aletheia
 /plugin install aletheia-self-pbt@f4ah6o-plugins
 ```
+
+### codex
+
+* https://developers.openai.com/codex/skills/
 
 ## モジュール構成
 
