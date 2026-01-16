@@ -8,7 +8,11 @@ import(
 // Values
 pub fn build_pbt_document(String, String, Array[@patterns.PatternCandidate], String) -> PbtDocument
 
+pub fn edge_cases_for_type(String) -> Array[EdgeCase]
+
 pub fn generate_counterexample_section() -> String
+
+pub fn generate_edge_case_tests(String, String) -> GeneratedTest
 
 pub fn generate_frequency_generator_template(String, Array[(Int, String)]) -> String
 
@@ -34,6 +38,12 @@ pub fn generated_block_end() -> String
 
 pub fn generated_block_start() -> String
 
+pub fn generator_expression_for_type(String) -> String
+
+pub fn is_container_type(String) -> Bool
+
+pub fn is_primitive_type(String) -> Bool
+
 pub fn merge_generated_markdown(String, String) -> String
 
 pub fn pattern_to_test(@patterns.PatternCandidate, String) -> GeneratedTest
@@ -47,6 +57,11 @@ pub struct DetectedPattern {
   kind : PatternKind
   functions : Array[String]
   type_info : String
+}
+
+pub struct EdgeCase {
+  value_expr : String
+  description : String
 }
 
 pub struct GeneratedTest {
