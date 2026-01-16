@@ -9,11 +9,31 @@ import(
 // Values
 pub fn[T : Show] assert_check(String, Gen[T], (T) -> Result[Unit, String], config? : CheckConfig, shrink? : (T) -> Iter[T]) -> Unit raise
 
+pub fn[T : Show] assert_check_with_stats(String, Gen[T], (T) -> (Result[Unit, String], String?), config? : CheckConfig, shrink? : (T) -> Iter[T]) -> Unit raise
+
 pub fn[T : Show] check(Gen[T], (T) -> Result[Unit, String], config? : CheckConfig, shrink? : (T) -> Iter[T]) -> Result[Unit, Failure]
+
+pub fn[T : Show] check_with_stats(Gen[T], (T) -> (Result[Unit, String], String?), config? : CheckConfig, shrink? : (T) -> Iter[T]) -> CheckResult[T]
+
+pub fn[T] classify(String, Bool, (T) -> Result[Unit, String]) -> (T) -> (Result[Unit, String], String?)
+
+pub fn[T, V : Show] collect(V, (T) -> Result[Unit, String]) -> (T) -> (Result[Unit, String], String?)
+
+pub fn generate_shrink_template(String, Array[(String, String)]) -> String
 
 pub fn[T] shrink_array(Array[T]) -> Iter[Array[T]]
 
+pub fn shrink_bool(Bool) -> Iter[Bool]
+
+pub fn shrink_double(Double) -> Iter[Double]
+
 pub fn shrink_int(Int) -> Iter[Int]
+
+pub fn[T] shrink_option(T?, (T) -> Iter[T]) -> Iter[T?]
+
+pub fn shrink_string(String) -> Iter[String]
+
+pub fn[A, B] shrink_tuple2((A, B), (A) -> Iter[A], (B) -> Iter[B]) -> Iter[(A, B)]
 
 // Errors
 
@@ -26,6 +46,13 @@ pub struct CheckConfig {
 }
 pub fn CheckConfig::new(Int, Int, UInt64, Int) -> Self
 pub impl Default for CheckConfig
+
+pub struct CheckResult[T] {
+  passed : Bool
+  failure : Failure?
+  stats : Statistics?
+}
+pub impl[T : Show] Show for CheckResult[T]
 
 pub struct Failure {
   case_index : Int
@@ -50,6 +77,23 @@ pub fn[T] Gen::one_of(Array[Self[T]]) -> Self[T]
 pub fn[T] Gen::pure(T) -> Self[T]
 pub fn[T] Gen::resize(Self[T], Int) -> Self[T]
 pub fn[T] Gen::sized((Int) -> Self[T]) -> Self[T]
+
+pub struct StatEntry {
+  label : String
+  count : Int
+  percentage : Double
+}
+pub impl Show for StatEntry
+
+pub struct Statistics {
+  entries : Array[StatEntry]
+  mut total : Int
+}
+pub fn Statistics::add_label(Self, String) -> Unit
+pub fn Statistics::finalize(Self) -> Unit
+pub fn Statistics::new() -> Self
+pub fn Statistics::to_string(Self) -> String
+pub impl Show for Statistics
 
 // Type aliases
 

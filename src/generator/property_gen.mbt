@@ -160,6 +160,8 @@ pub enum PatternKind {
   RoundTrip
   Idempotent
   ProducerConsumer
+  Invariant
+  Oracle
 }
 
 ///|
@@ -210,6 +212,10 @@ pub fn pattern_to_test(
     @patterns.Idempotent(func) => generate_idempotent_test(func, type_name)
     @patterns.ProducerConsumer(producer, consumer) =>
       generate_producer_consumer_test(producer, consumer, type_name)
+    @patterns.Invariant(func, inv_type) =>
+      generate_invariant_test(func, inv_type, type_name)
+    @patterns.Oracle(implementation, oracle) =>
+      generate_oracle_test(implementation, oracle, type_name)
   }
 }
 
@@ -239,6 +245,206 @@ pub fn generate_producer_consumer_test(
 }
 
 ///|
+/// 不変条件プロパティテストを生成
+pub fn generate_invariant_test(
+  func : String,
+  inv_type : String,
+  type_name : String,
+) -> GeneratedTest {
+  let test_name = "prop_" + func + "_invariant_" + inv_type.to_lower()
+  let (assertion, description) = match inv_type {
+    "LengthPreserving" =>
+      (
+        "assert_eq(" + func + "(x).length(), x.length())",
+        "Invariant property: " + func + " preserves length",
+      )
+    "LengthDecreasing" =>
+      (
+        "assert_true(" + func + "(x).length() <= x.length())",
+        "Invariant property: " + func + " does not increase length",
+      )
+    "LengthIncreasing" =>
+      (
+        "assert_true(" + func + "(x).length() >= x.length())",
+        "Invariant property: " + func + " does not decrease length",
+      )
+    "OrderPreserving" =>
+      (
+        "// Order of elements is preserved by " + func,
+        "Invariant property: " + func + " preserves element order",
+      )
+    "ContentPreserving" =>
+      (
+        "assert_eq(" +
+        func +
+        "(x).iter().fold(init=0, fn(acc, e) { acc + e.hash() }), x.iter().fold(init=0, fn(acc, e) { acc + e.hash() }))",
+        "Invariant property: " + func + " preserves content (same elements)",
+      )
+    _ =>
+      (
+        "// TODO: Define invariant for " + inv_type,
+        "Invariant property: " + func + " maintains " + inv_type,
+      )
+  }
+  let test_code = "test \"" +
+    test_name +
+    "\" {\n  let samples : Array[" +
+    type_name +
+    "] = @quickcheck.samples(100)\n  for x in samples {\n    " +
+    assertion +
+    "\n  }\n}"
+  { name: test_name, code: test_code, description, fence: "mbt nocheck" }
+}
+
+///|
+/// オラクルプロパティテストを生成
+pub fn generate_oracle_test(
+  implementation : String,
+  oracle : String,
+  type_name : String,
+) -> GeneratedTest {
+  let test_name = "prop_" + implementation + "_vs_" + oracle + "_oracle"
+  let test_code = "test \"" +
+    test_name +
+    "\" {\n  let samples : Array[" +
+    type_name +
+    "] = @quickcheck.samples(100)\n  for x in samples {\n    assert_eq(" +
+    implementation +
+    "(x), " +
+    oracle +
+    "(x))\n  }\n}"
+  {
+    name: test_name,
+    code: test_code,
+    description: "Oracle property: " +
+    implementation +
+    " should produce the same result as " +
+    oracle,
+    fence: "mbt nocheck",
+  }
+}
+
+///|
+/// 頻度分布付きジェネレータテンプレートを生成
+pub fn generate_frequency_generator_template(
+  type_name : String,
+  distribution : Array[(Int, String)],
+) -> String {
+  let mut result = "fn gen_" +
+    type_name.to_lower() +
+    "() -> @pbt.Gen[" +
+    type_name +
+    "] {\n"
+  result = result + "  @pbt.frequency([\n"
+  let mut i = 0
+  while i < distribution.length() {
+    let (weight, variant) = distribution[i]
+    result = result +
+      "    (" +
+      weight.to_string() +
+      ", @pbt.Gen::constant(" +
+      variant +
+      "))"
+    if i < distribution.length() - 1 {
+      result = result + ","
+    }
+    result = result + "\n"
+    i = i + 1
+  }
+  result = result + "  ])\n}"
+  result
+}
+
+///|
+/// 統計付きテストを生成
+pub fn generate_test_with_stats(
+  test_name : String,
+  gen_code : String,
+  property_code : String,
+  classifications : Array[(String, String)],
+) -> GeneratedTest {
+  let mut classify_code = ""
+  let mut i = 0
+  while i < classifications.length() {
+    let (label, condition) = classifications[i]
+    if i == 0 {
+      classify_code = "    let label = if " +
+        condition +
+        " { Some(\"" +
+        label +
+        "\") }"
+    } else {
+      classify_code = classify_code +
+        " else if " +
+        condition +
+        " { Some(\"" +
+        label +
+        "\") }"
+    }
+    i = i + 1
+  }
+  if classifications.length() > 0 {
+    classify_code = classify_code + " else { None }\n"
+  }
+  let test_code = "test \"" +
+    test_name +
+    "\" {\n  let gen = " +
+    gen_code +
+    "\n  let result = @pbt.check_with_stats(gen, fn(x) {\n" +
+    classify_code +
+    "    " +
+    property_code +
+    "\n    (Ok(()), label)\n  })\n  match result.stats {\n    Some(stats) => println(stats.to_string())\n    None => ()\n  }\n  assert_true(result.passed)\n}"
+  {
+    name: test_name,
+    code: test_code,
+    description: "Property test with statistical classification",
+    fence: "mbt nocheck",
+  }
+}
+
+///|
+/// 反例ログセクションを生成
+pub fn generate_counterexample_section() -> String {
+  "## Counterexample Logging\n\n" +
+  "When a property test fails, the following information is logged:\n\n" +
+  "- **Original value**: The first value that caused the failure\n" +
+  "- **Shrunk value**: The minimal value that still causes the failure (if shrinking is enabled)\n" +
+  "- **Test case index**: Which test case failed\n" +
+  "- **Size parameter**: The size used to generate the failing value\n" +
+  "- **Random seed**: The seed used for reproducibility\n\n" +
+  "To reproduce a failure, use the same seed:\n\n" +
+  "```mbt nocheck\n" +
+  "let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=<SEED>, shrink_limit=100)\n" +
+  "@pbt.check(gen, prop, config~)\n" +
+  "```\n"
+}
+
+///|
+fn string_to_lower(s : String) -> String {
+  let chars = s.to_array()
+  let mut result = ""
+  let mut i = 0
+  while i < chars.length() {
+    let c = chars[i]
+    let code = c.to_int()
+    if code >= 65 && code <= 90 {
+      // A-Z -> a-z
+      result = result + Char::from_int(code + 32).to_string()
+    } else {
+      result = result + c.to_string()
+    }
+    i = i + 1
+  }
+  result
+}
+
+///|
+fn String::to_lower(self : String) -> String {
+  string_to_lower(self)
+}
+
+///|
 /// PatternCandidate を DetectedPattern に変換
 fn pattern_to_detected(pattern : @patterns.PatternCandidate) -> DetectedPattern {
   match pattern {
@@ -252,6 +458,10 @@ fn pattern_to_detected(pattern : @patterns.PatternCandidate) -> DetectedPattern 
         functions: [producer, consumer],
         type_info: "T",
       }
+    @patterns.Invariant(func, inv_type) =>
+      { kind: Invariant, functions: [func, inv_type], type_info: "T" }
+    @patterns.Oracle(implementation, oracle) =>
+      { kind: Oracle, functions: [implementation, oracle], type_info: "T" }
   }
 }
 
@@ -263,6 +473,10 @@ fn pattern_sort_key(pattern : @patterns.PatternCandidate) -> String {
     @patterns.Idempotent(func) => "2_idempotent:" + func
     @patterns.ProducerConsumer(producer, consumer) =>
       "3_producer_consumer:" + producer + ":" + consumer
+    @patterns.Invariant(func, inv_type) =>
+      "4_invariant:" + func + ":" + inv_type
+    @patterns.Oracle(implementation, oracle) =>
+      "5_oracle:" + implementation + ":" + oracle
   }
 }
 
@@ -351,6 +565,8 @@ fn filter_patterns_by_kind(
       RoundTrip => pattern.kind is RoundTrip
       Idempotent => pattern.kind is Idempotent
       ProducerConsumer => pattern.kind is ProducerConsumer
+      Invariant => pattern.kind is Invariant
+      Oracle => pattern.kind is Oracle
     }
     if matches {
       result = append_detected(result, pattern)
@@ -406,6 +622,8 @@ pub fn generate_pbt_md(doc : PbtDocument) -> String {
   let roundtrips = filter_by_name_suffix(doc.test_cases, "roundtrip")
   let idempotents = filter_by_name_suffix(doc.test_cases, "idempotent")
   let pipelines = filter_by_name_suffix(doc.test_cases, "pipeline")
+  let invariants = filter_by_name_suffix(doc.test_cases, "invariant")
+  let oracles = filter_by_name_suffix(doc.test_cases, "oracle")
   if roundtrips.length() > 0 {
     result = result + "## Round-Trip Properties\n\n"
     let mut i = 0
@@ -439,6 +657,28 @@ pub fn generate_pbt_md(doc : PbtDocument) -> String {
       i = i + 1
     }
   }
+  if invariants.length() > 0 {
+    result = result + "## Invariant Properties\n\n"
+    let mut i = 0
+    while i < invariants.length() {
+      let t = invariants[i]
+      result = result + "### " + t.name + "\n\n"
+      result = result + t.description + "\n\n"
+      result = result + "```" + t.fence + "\n" + t.code + "\n```\n\n"
+      i = i + 1
+    }
+  }
+  if oracles.length() > 0 {
+    result = result + "## Oracle Properties\n\n"
+    let mut i = 0
+    while i < oracles.length() {
+      let t = oracles[i]
+      result = result + "### " + t.name + "\n\n"
+      result = result + t.description + "\n\n"
+      result = result + "```" + t.fence + "\n" + t.code + "\n```\n\n"
+      i = i + 1
+    }
+  }
   result
 }
 
@@ -459,6 +699,8 @@ pub fn generate_pbt_targets_md(doc : PbtDocument) -> String {
   let roundtrips = filter_patterns_by_kind(doc.patterns, RoundTrip)
   let idempotents = filter_patterns_by_kind(doc.patterns, Idempotent)
   let pipelines = filter_patterns_by_kind(doc.patterns, ProducerConsumer)
+  let invariants = filter_patterns_by_kind(doc.patterns, Invariant)
+  let oracles = filter_patterns_by_kind(doc.patterns, Oracle)
   if roundtrips.length() > 0 {
     result = result + "## Round-Trip Targets\n\n"
     let mut i = 0
@@ -498,6 +740,40 @@ pub fn generate_pbt_targets_md(doc : PbtDocument) -> String {
           "- `" +
           p.functions[0] +
           "` -> `" +
+          p.functions[1] +
+          "`\n"
+      }
+      i = i + 1
+    }
+    result = result + "\n"
+  }
+  if invariants.length() > 0 {
+    result = result + "## Invariant Targets\n\n"
+    let mut i = 0
+    while i < invariants.length() {
+      let p = invariants[i]
+      if p.functions.length() >= 2 {
+        result = result +
+          "- `" +
+          p.functions[0] +
+          "` (" +
+          p.functions[1] +
+          ")\n"
+      }
+      i = i + 1
+    }
+    result = result + "\n"
+  }
+  if oracles.length() > 0 {
+    result = result + "## Oracle Targets\n\n"
+    let mut i = 0
+    while i < oracles.length() {
+      let p = oracles[i]
+      if p.functions.length() >= 2 {
+        result = result +
+          "- `" +
+          p.functions[0] +
+          "` vs `" +
           p.functions[1] +
           "`\n"
       }
