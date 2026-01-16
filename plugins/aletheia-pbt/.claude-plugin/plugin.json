@@ -1,7 +1,7 @@
 {
   "name": "aletheia-pbt",
   "description": "Generate and sync MoonBit property-based tests with Aletheia.",
-  "version": "0.1.0",
+  "version": "2026.1.0",
   "author": {
     "name": "f4ah6o"
   },
