@@ -5,27 +5,9 @@
 ## Overview
 
 - **Source**: `./src/cli`
-- **Generated**: 2026-01-14
+- **Generated**: 2026-01-16
 - **Patterns Detected**: 1
 
-## Round-Trip Properties
+## Notes
 
-### prop_parse_args_command_to_args_roundtrip
-
-Round-trip property: command_to_args(parse_args(args)) keeps args stable
-
-```mbt check
-///|
-test "prop_parse_args_command_to_args_roundtrip" {
-  let fixtures : Array[Array[String]] = [
-    ["moon-pbt-gen", "analyze", "./src"],
-    ["moon-pbt-gen", "generate", "./src"],
-    ["moon-pbt-gen", "help"],
-  ]
-  for args in fixtures {
-    let args2 = command_to_args(parse_args(args))
-    assert_eq(args2, args)
-  }
-}
-```
-
+Tests are defined in src/aletheia.pbt.mbt.md

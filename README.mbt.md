@@ -63,6 +63,38 @@ moon run src/aletheia -- sync
 ./scripts/dev-check.sh
 ```
 
+## PBT 開発ワークフロー
+
+PBT テストファイルやマークダウンを変更する際のワークフロー:
+
+1. `.pbt.mbt.md` マークダウンファイルを編集
+2. `./scripts/self_pbt.sh` を実行してテストファイルを再生成
+3. `moon test` で検証
+4. マークダウンと生成されたテストファイルの両方をコミット
+
+**重要**: PBT 変更をコミットする前に必ず `./scripts/self_pbt.sh` を実行してください。
+このスクリプトは、生成されたテストファイルが `moon fmt` で正しくフォーマットされることを保証します。
+
+```bash
+# PBT 開発の推奨ワークフロー
+# 1. マークダウンを編集
+vim src/aletheia.pbt.mbt.md
+
+# 2. テストファイルを再生成
+./scripts/self_pbt.sh
+
+# 3. テストを実行
+moon test
+
+# 4. 変更を確認
+git status
+git diff
+
+# 5. コミット（マークダウンと生成されたテストファイルの両方）
+git add src/aletheia.pbt.mbt.md src/*/pbt_generated_test.mbt
+git commit -m "feat: add PBT tests for XYZ"
+```
+
 ## Claude Code Plugins
 
 ```bash

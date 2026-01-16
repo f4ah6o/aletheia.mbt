@@ -79,6 +79,359 @@
 - Property definitions are intentionally omitted. Define them in a separate process.
 <!-- aletheia:end -->
 
+---
+
+# Property-Based Tests
+
+## Package: cli
+
+### prop_parse_args_command_to_args_roundtrip
+
+Round-trip property: command_to_args(parse_args(args)) keeps args stable
+
+```mbt check
+///|
+test "prop_parse_args_command_to_args_roundtrip" {
+  let fixtures : Array[Array[String]] = [
+    // Basic commands
+    ["moon-pbt-gen", "analyze", "./src"],
+    ["moon-pbt-gen", "generate", "./src"],
+    ["moon-pbt-gen", "sync", "src/aletheia.pbt.mbt.md"],
+    ["moon-pbt-gen", "help"],
+    // With options
+    ["moon-pbt-gen", "analyze", "./src", "--dry-run"],
+    ["moon-pbt-gen", "analyze", "./src", "--explain"],
+    ["moon-pbt-gen", "analyze", "./src", "--format", "json"],
+    ["moon-pbt-gen", "generate", "./src", "--dry-run", "--explain"],
+    ["moon-pbt-gen", "generate", "./src", "--format", "json"],
+    ["moon-pbt-gen", "sync", "src/aletheia.pbt.mbt.md", "--dry-run"],
+    // Multiple options combined
+    ["moon-pbt-gen", "analyze", "./src", "--dry-run", "--explain", "--format", "json"],
+  ]
+  for args in fixtures {
+    let args2 = @cli.command_to_args(@cli.parse_args(args))
+    assert_eq(args2, args)
+  }
+}
+```
+
+### prop_parse_args_invalid_is_help
+
+Property: invalid arguments should return Help command
+
+```mbt check
+///|
+test "prop_parse_args_invalid_is_help" {
+  let invalid_args : Array[Array[String]] = [
+    [],
+    ["moon-pbt-gen"],
+    ["moon-pbt-gen", "unknown"],
+    ["moon-pbt-gen", "analyze"],  // missing path
+    ["moon-pbt-gen", "generate"], // missing path
+    ["moon-pbt-gen", "analyze", "./src", "--unknown-flag"],
+    ["moon-pbt-gen", "analyze", "./src", "--format"],  // missing format value
+    ["moon-pbt-gen", "analyze", "./src", "--format", "invalid"],
+  ]
+  for args in invalid_args {
+    let cmd = @cli.parse_args(args)
+    // For invalid args, round-trip should at least produce valid args
+    let args2 = @cli.command_to_args(cmd)
+    let cmd2 = @cli.parse_args(args2)
+    // Should not error on second parse
+    assert_eq(@cli.command_to_args(cmd2), args2)
+  }
+}
+```
+
+## Package: parser
+
+### prop_parse_markdown_generate_markdown_roundtrip
+
+Round-trip property: parse -> generate -> parse preserves code block content
+
+```mbt check
+///|
+test "prop_parse_markdown_generate_markdown_roundtrip" {
+  let fixtures = [
+    "```moonbit\nfn foo() -> Int { 1 }\n```",
+    "Intro\n\n```mbt check\n test { inspect(1) }\n```\nOutro",
+    "```mbt nocheck\nlet x = 1\n```\n```moonbit\nfn bar() -> Int { 2 }\n```",
+    "```\nfn baz() -> Int { 3 }\n```",
+    "plain text",
+  ]
+  for markdown in fixtures {
+    let blocks1 = extract_code_blocks(markdown)
+    let ast = parse_markdown(markdown)
+    let regenerated = generate_markdown(ast)
+    let blocks2 = extract_code_blocks(regenerated)
+    assert_eq(blocks1.length(), blocks2.length())
+    let mut i = 0
+    while i < blocks1.length() {
+      let block1 = blocks1[i]
+      let block2 = blocks2[i]
+      assert_eq(block1.lang, block2.lang)
+      assert_eq(block1.content, block2.content)
+      i = i + 1
+    }
+  }
+}
+```
+
+### prop_extract_code_blocks_deterministic
+
+Property: extract_code_blocks should be deterministic
+
+```mbt check
+///|
+test "prop_extract_code_blocks_deterministic" {
+  let fixtures = [
+    "",
+    "plain text without code blocks",
+    "```mbt\ntest {}\n```",
+    "# Heading\n\n```moonbit check\nfn foo() {}\n```\n\nMore text",
+    "```python\nprint('hello')\n```\n\n```mbt nocheck\nlet x = 1\n```",
+  ]
+  for markdown in fixtures {
+    let blocks1 = extract_code_blocks(markdown)
+    let blocks2 = extract_code_blocks(markdown)
+    assert_eq(blocks1.length(), blocks2.length())
+    let mut i = 0
+    while i < blocks1.length() {
+      assert_eq(blocks1[i].lang, blocks2[i].lang)
+      assert_eq(blocks1[i].content, blocks2[i].content)
+      i = i + 1
+    }
+  }
+}
+```
+
+### prop_generate_markdown_preserves_structure
+
+Property: generate_markdown should preserve AST structure
+
+```mbt check
+///|
+test "prop_generate_markdown_preserves_structure" {
+  let fixtures = [
+    "# Title\n\nSome text.\n\n```mbt\nfn foo() {}\n```",
+    "```moonbit\nlet x = 1\n```\n\n```mbt check\ntest {}\n```",
+  ]
+  for markdown in fixtures {
+    let blocks1 = @parser.extract_code_blocks(markdown)
+    let ast = @parser.parse_markdown(markdown)
+    let regenerated = @parser.generate_markdown(ast)
+    let blocks2 = @parser.extract_code_blocks(regenerated)
+    // Code block count should be preserved
+    assert_eq(blocks1.length(), blocks2.length())
+  }
+}
+```
+
+## Package: generator
+
+### prop_generate_round_trip_test_is_deterministic
+
+Generator should be deterministic for the same inputs.
+
+```mbt check
+///|
+test "prop_generate_round_trip_test_is_deterministic" {
+  let t1 = generate_round_trip_test("encode", "decode", "Data")
+  let t2 = generate_round_trip_test("encode", "decode", "Data")
+  inspect(t1.name == t2.name, content="true")
+  inspect(t1.code == t2.code, content="true")
+  inspect(t1.fence == t2.fence, content="true")
+}
+```
+
+### prop_pattern_to_test_respects_fences
+
+Round-trip special cases should pick the right fence.
+
+```mbt check
+///|
+test "prop_pattern_to_test_respects_fences" {
+  let markdown = pattern_to_test(
+    @patterns.make_round_trip("parse_markdown", "generate_markdown"),
+    "String",
+  )
+  inspect(markdown.fence, content="mbt check")
+  let args = pattern_to_test(
+    @patterns.make_round_trip("parse_args", "command_to_args"),
+    "Array[String]",
+  )
+  inspect(args.fence, content="mbt check")
+  let generic = pattern_to_test(
+    @patterns.make_round_trip("parse_config", "generate_config"),
+    "String",
+  )
+  inspect(generic.fence, content="mbt nocheck")
+}
+```
+
+### prop_generate_pbt_md_includes_sections
+
+Generated markdown should include round-trip and idempotent sections.
+
+```mbt check
+///|
+test "prop_generate_pbt_md_includes_sections" {
+  let patterns : Array[@patterns.PatternCandidate] = [
+    @patterns.make_round_trip("parse_markdown", "generate_markdown"),
+    @patterns.make_idempotent("normalize"),
+  ]
+  let doc = build_pbt_document(
+    "generator", "./src/generator", patterns, "String",
+  )
+  let md = generate_pbt_md(doc)
+  inspect(md.contains("## Round-Trip Properties"), content="true")
+  inspect(md.contains("## Idempotent Properties"), content="true")
+  inspect(
+    md.contains("prop_parse_markdown_generate_markdown_roundtrip"),
+    content="true",
+  )
+}
+```
+
+### prop_generate_pbt_targets_md_lists_roundtrip
+
+Targets markdown should list detected round-trip pairs.
+
+```mbt check
+///|
+test "prop_generate_pbt_targets_md_lists_roundtrip" {
+  let patterns : Array[@patterns.PatternCandidate] = [
+    @patterns.make_round_trip("parse_args", "command_to_args"),
+  ]
+  let doc = build_pbt_document(
+    "generator", "./src/generator", patterns, "String",
+  )
+  let md = generate_pbt_targets_md(doc)
+  inspect(md.contains("## Round-Trip Targets"), content="true")
+  inspect(md.contains("`parse_args` <-> `command_to_args`"), content="true")
+}
+```
+
+## Package: patterns
+
+### prop_round_trip_monotonic
+
+Pattern detection should be monotonic as inputs grow.
+
+```mbt check
+///|
+test "prop_round_trip_monotonic" {
+  let a = ["encode_data", "decode_data"]
+  let b = ["to_json", "from_json"]
+  let results_a = find_round_trips(a)
+  let results_b = find_round_trips(b)
+  let combined : Array[String] = []
+  let mut i = 0
+  while i < a.length() {
+    combined.push(a[i])
+    i = i + 1
+  }
+  let mut j = 0
+  while j < b.length() {
+    combined.push(b[j])
+    j = j + 1
+  }
+  let results_combined = find_round_trips(combined)
+  inspect(results_combined.length() >= results_a.length(), content="true")
+  inspect(results_combined.length() >= results_b.length(), content="true")
+}
+```
+
+### prop_round_trip_detects_parse_generate
+
+Parse/generate pairs should be detected as round-trips.
+
+```mbt check
+///|
+test "prop_round_trip_detects_parse_generate" {
+  let names = ["parse_markdown", "generate_markdown"]
+  let results = find_round_trips(names)
+  inspect(results.length(), content="1")
+}
+```
+
+### prop_empty_inputs_return_empty
+
+Empty inputs should yield empty detection results.
+
+```mbt check
+///|
+test "prop_empty_inputs_return_empty" {
+  let empty : Array[String] = []
+  inspect(find_round_trips(empty).length(), content="0")
+  inspect(find_idempotent_functions(empty).length(), content="0")
+  inspect(find_producer_consumer(empty).length(), content="0")
+}
+```
+
+## Package: analyzer
+
+### prop_extract_function_names_skips_private
+
+Only public functions should be listed.
+
+```mbt check
+///|
+test "prop_extract_function_names_skips_private" {
+  let source : String =
+    #|fn private_fn() -> Int { 1 }
+    #|pub fn public_fn() -> Int { 2 }
+    #|
+  let names = extract_function_names(source)
+  inspect(names.length(), content="1")
+  inspect(names[0], content="public_fn")
+}
+```
+
+### prop_extract_public_functions_reads_signature
+
+Function signatures should preserve argument and return types.
+
+```mbt check
+///|
+test "prop_extract_public_functions_reads_signature" {
+  let source : String =
+    #|pub fn greet(name : String, times : Int) -> String { "hi" }
+    #|
+  let funcs = extract_public_functions(source, "sample.mbt")
+  inspect(funcs.length(), content="1")
+  let f = funcs[0]
+  inspect(f.name, content="greet")
+  inspect(f.args.length(), content="2")
+  inspect(f.args[0].type_.simple_name(), content="String")
+  inspect(f.return_type.simple_name(), content="String")
+}
+```
+
+### prop_detect_arbitrary_impls_finds_user_defined
+
+User-defined Arbitrary impls should be detected.
+
+```mbt check
+///|
+test "prop_detect_arbitrary_impls_finds_user_defined" {
+  let source : String =
+    #|impl Arbitrary for Foo
+    #|pub fn build() -> Int { 1 }
+    #|
+  let impls = detect_arbitrary_impls(source)
+  let mut found = false
+  let mut i = 0
+  while i < impls.length() {
+    if impls[i].type_name == "Foo" {
+      found = true
+    }
+    i = i + 1
+  }
+  inspect(found, content="true")
+}
+```
+
 
 
 

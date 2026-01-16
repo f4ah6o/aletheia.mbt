@@ -35,4 +35,10 @@ jobs:
       - name: Run self PBT sync
         run: |
           ./scripts/self_pbt.sh
-          git diff --exit-code
+          if ! git diff --exit-code; then
+            echo "::error::PBT generated files are not properly formatted!"
+            echo "::error::Please run './scripts/self_pbt.sh' and commit the changes."
+            echo "::error::Or run 'moon fmt' on the changed files."
+            git diff --color=always
+            exit 1
+          fi
