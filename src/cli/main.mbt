@@ -237,7 +237,7 @@ fn run_analyze(path : String, options : CommandOptions) -> String {
 ///|
 fn run_generate(path : String, options : CommandOptions) -> String {
   let prefix = "Collecting PBT targets for: " + path + "\n"
-  match build_generate_report(path, options) {
+  match build_per_package_reports(path, options) {
     Err(msg) =>
       match options.format {
         Text => prefix + "No MoonBit package found under: " + path + "\n"
@@ -249,10 +249,10 @@ fn run_generate(path : String, options : CommandOptions) -> String {
             ("error", json_string(msg)),
           ])
       }
-    Ok(report) =>
+    Ok(reports) =>
       match options.format {
-        Text => prefix + format_generate_text(report, options.explain)
-        Json => format_generate_json(report, options.explain)
+        Text => prefix + format_generate_reports_text(reports, options.explain)
+        Json => format_generate_reports_json(reports, options.explain)
       }
   }
 }
@@ -1418,6 +1418,42 @@ fn format_generate_json(report : GenerateReport, explain : Bool) -> String {
 }
 
 ///|
+fn format_generate_reports_text(
+  reports : Array[GenerateReport],
+  explain : Bool,
+) -> String {
+  let mut result = ""
+  let mut i = 0
+  while i < reports.length() {
+    let report = reports[i]
+    if i > 0 {
+      result = result + "\n"
+    }
+    result = result + format_generate_text(report, explain)
+    i = i + 1
+  }
+  result
+}
+
+///|
+fn format_generate_reports_json(
+  reports : Array[GenerateReport],
+  explain : Bool,
+) -> String {
+  let reports_json : Array[String] = []
+  let mut i = 0
+  while i < reports.length() {
+    Array::push(reports_json, format_generate_json(reports[i], explain))
+    i = i + 1
+  }
+  json_object([
+    ("ok", json_bool(true)),
+    ("command", json_string("generate")),
+    ("reports", json_array(reports_json)),
+  ])
+}
+
+///|
 /// テストを生成
 fn generate_tests(path : String) -> String {
   match build_generate_report(path, default_options()) {
@@ -1446,6 +1482,122 @@ fn format_sync_text(markdown_path : String, dry_run : Bool) -> String {
   } else {
     sync_targets(markdown_path)
   }
+}
+
+///|
+/// パッケージパスからモジュール名を抽出
+fn extract_module_name_from_package(package_dir : String) -> String {
+  // パスセパレータ（/または\）で分割して最後の要素を取得
+  let separator = "/"
+  let components = package_dir.split(separator).to_array()
+  if components.length() > 0 {
+    components[components.length() - 1].to_string()
+  } else {
+    "module"
+  }
+}
+
+///|
+/// パッケージ単位のレポート生成
+fn build_per_package_reports(
+  path : String,
+  options : CommandOptions,
+) -> Result[Array[GenerateReport], String] {
+  let package_dirs = resolve_package_dirs(path)
+  if package_dirs.length() == 0 {
+    return Err("No MoonBit package found under: " + path)
+  }
+
+  let reports : Array[GenerateReport] = []
+  let mut i = 0
+  while i < package_dirs.length() {
+    let pkg_dir = package_dirs[i]
+
+    // パッケージ単位で関数を収集
+    let functions = collect_functions_from_package(pkg_dir)
+    let function_names = function_names_from_meta_sorted(functions)
+
+    // パッケージ単位でパターン検出
+    let roundtrips = @patterns.find_round_trips(function_names)
+    let idempotents = @patterns.find_idempotent_functions(function_names)
+    let producers = @patterns.find_producer_consumer(function_names)
+    let invariants = @patterns.find_invariant_functions(function_names)
+    let oracles = @patterns.find_oracle_candidates(function_names)
+
+    // パターンを統合
+    let mut all_patterns : Array[@patterns.PatternCandidate] = []
+    let mut j = 0
+    while j < roundtrips.length() {
+      all_patterns = append_pattern(all_patterns, roundtrips[j])
+      j = j + 1
+    }
+    let mut j = 0
+    while j < idempotents.length() {
+      all_patterns = append_pattern(all_patterns, idempotents[j])
+      j = j + 1
+    }
+    let mut j = 0
+    while j < producers.length() {
+      all_patterns = append_pattern(all_patterns, producers[j])
+      j = j + 1
+    }
+    let mut j = 0
+    while j < invariants.length() {
+      all_patterns = append_pattern(all_patterns, invariants[j])
+      j = j + 1
+    }
+    let mut j = 0
+    while j < oracles.length() {
+      all_patterns = append_pattern(all_patterns, oracles[j])
+      j = j + 1
+    }
+
+    // パッケージ単位でArbitrary実装を収集
+    let known_impls = collect_arbitrary_impls_from_package(pkg_dir)
+    let default_type = infer_default_type(functions, all_patterns, known_impls)
+
+    // パッケージ名を抽出
+    let module_name = extract_module_name_from_package(pkg_dir)
+
+    // ドキュメントを生成
+    let doc = @generator.build_pbt_document(
+      module_name, pkg_dir, all_patterns, default_type,
+    )
+    let content = @generator.generate_pbt_targets_md(doc)
+    let output_path = output_path_for_pbt(pkg_dir, module_name)
+
+    let mut write_error : String? = None
+    if !options.dry_run {
+      let merged = @generator.merge_generated_markdown(
+        read_file_content(output_path),
+        content,
+      )
+      let error : String? = try {
+        @fs.write_string_to_file(output_path, merged)
+        None
+      } catch {
+        err => Some("\{err}")
+      }
+      write_error = error
+    }
+
+    Array::push(reports, {
+      path: pkg_dir,
+      module_name,
+      output_path,
+      packages_scanned: 1,
+      patterns_detected: all_patterns.length(),
+      default_type,
+      patterns: all_patterns,
+      functions,
+      dry_run: options.dry_run,
+      write_error,
+    })
+
+    i = i + 1
+  }
+
+  Ok(reports)
 }
 
 ///|

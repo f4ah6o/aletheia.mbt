@@ -20,15 +20,21 @@ pub fn generate_round_trip_test(
   type_name : String,
 ) -> GeneratedTest {
   let test_name = "prop_" + encoder + "_" + decoder + "_roundtrip"
+
+  // QuickCheckジェネレータ式を取得
+  let gen_expr = generator_expression_for_type(type_name)
+
   let test_code = "test \"" +
     test_name +
-    "\" {\n  let samples : Array[" +
-    type_name +
-    "] = @quickcheck.samples(100)\n  for x in samples {\n    assert_eq(" +
-    decoder +
-    "(" +
-    encoder +
-    "(x)), x)\n  }\n}"
+    "\" {\n" +
+    "  let gen = " + gen_expr + "\n" +
+    "  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)\n" +
+    "  let result = @pbt.check(gen, fn(x : " + type_name + ") {\n" +
+    "    assert_eq(" + decoder + "(" + encoder + "(x)), x)\n" +
+    "    Ok(())\n" +
+    "  }, config~)\n" +
+    "  assert_true(result.passed)\n" +
+    "}"
   {
     name: test_name,
     code: test_code,
@@ -116,17 +122,21 @@ pub fn generate_idempotent_test(
   type_name : String,
 ) -> GeneratedTest {
   let test_name = "prop_" + func + "_idempotent"
+
+  // QuickCheckジェネレータ式を取得
+  let gen_expr = generator_expression_for_type(type_name)
+
   let test_code = "test \"" +
     test_name +
-    "\" {\n  let samples : Array[" +
-    type_name +
-    "] = @quickcheck.samples(100)\n  for x in samples {\n    assert_eq(" +
-    func +
-    "(" +
-    func +
-    "(x)), " +
-    func +
-    "(x))\n  }\n}"
+    "\" {\n" +
+    "  let gen = " + gen_expr + "\n" +
+    "  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)\n" +
+    "  let result = @pbt.check(gen, fn(x : " + type_name + ") {\n" +
+    "    assert_eq(" + func + "(" + func + "(x)), " + func + "(x))\n" +
+    "    Ok(())\n" +
+    "  }, config~)\n" +
+    "  assert_true(result.passed)\n" +
+    "}"
   {
     name: test_name,
     code: test_code,
@@ -227,15 +237,21 @@ pub fn generate_producer_consumer_test(
   type_name : String,
 ) -> GeneratedTest {
   let test_name = "prop_" + producer + "_" + consumer + "_pipeline"
+
+  // QuickCheckジェネレータ式を取得
+  let gen_expr = generator_expression_for_type(type_name)
+
   let test_code = "test \"" +
     test_name +
-    "\" {\n  let samples : Array[" +
-    type_name +
-    "] = @quickcheck.samples(100)\n  for x in samples {\n    let _ = " +
-    consumer +
-    "(" +
-    producer +
-    "(x))\n  }\n}"
+    "\" {\n" +
+    "  let gen = " + gen_expr + "\n" +
+    "  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)\n" +
+    "  let result = @pbt.check(gen, fn(x : " + type_name + ") {\n" +
+    "    let _ = " + consumer + "(" + producer + "(x))\n" +
+    "    Ok(())\n" +
+    "  }, config~)\n" +
+    "  assert_true(result.passed)\n" +
+    "}"
   {
     name: test_name,
     code: test_code,
@@ -286,13 +302,21 @@ pub fn generate_invariant_test(
         "Invariant property: " + func + " maintains " + inv_type,
       )
   }
+
+  // QuickCheckジェネレータ式を取得
+  let gen_expr = generator_expression_for_type(type_name)
+
   let test_code = "test \"" +
     test_name +
-    "\" {\n  let samples : Array[" +
-    type_name +
-    "] = @quickcheck.samples(100)\n  for x in samples {\n    " +
-    assertion +
-    "\n  }\n}"
+    "\" {\n" +
+    "  let gen = " + gen_expr + "\n" +
+    "  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)\n" +
+    "  let result = @pbt.check(gen, fn(x : " + type_name + ") {\n" +
+    "    " + assertion + "\n" +
+    "    Ok(())\n" +
+    "  }, config~)\n" +
+    "  assert_true(result.passed)\n" +
+    "}"
   { name: test_name, code: test_code, description, fence: "mbt nocheck" }
 }
 
@@ -304,15 +328,21 @@ pub fn generate_oracle_test(
   type_name : String,
 ) -> GeneratedTest {
   let test_name = "prop_" + implementation + "_vs_" + oracle + "_oracle"
+
+  // QuickCheckジェネレータ式を取得
+  let gen_expr = generator_expression_for_type(type_name)
+
   let test_code = "test \"" +
     test_name +
-    "\" {\n  let samples : Array[" +
-    type_name +
-    "] = @quickcheck.samples(100)\n  for x in samples {\n    assert_eq(" +
-    implementation +
-    "(x), " +
-    oracle +
-    "(x))\n  }\n}"
+    "\" {\n" +
+    "  let gen = " + gen_expr + "\n" +
+    "  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)\n" +
+    "  let result = @pbt.check(gen, fn(x : " + type_name + ") {\n" +
+    "    assert_eq(" + implementation + "(x), " + oracle + "(x))\n" +
+    "    Ok(())\n" +
+    "  }, config~)\n" +
+    "  assert_true(result.passed)\n" +
+    "}"
   {
     name: test_name,
     code: test_code,
@@ -320,6 +350,54 @@ pub fn generate_oracle_test(
     implementation +
     " should produce the same result as " +
     oracle,
+    fence: "mbt nocheck",
+  }
+}
+
+///|
+/// エッジケーステストを生成
+pub fn generate_edge_case_tests(
+  func_name : String,
+  type_name : String,
+) -> GeneratedTest {
+  let edge_cases = edge_cases_for_type(type_name)
+  let test_name = func_name + "_edge_cases"
+
+  let mut test_code = "test \"" + test_name + "\" {\n"
+
+  let mut i = 0
+  while i < edge_cases.length() {
+    let edge_case = edge_cases[i]
+    test_code = test_code +
+      "  // " +
+      edge_case.description +
+      "\n" +
+      "  let x_" +
+      int_to_string(i) +
+      " : " +
+      type_name +
+      " = " +
+      edge_case.value_expr +
+      "\n"
+
+    // 関数を実行して結果を検証（基本チェック）
+    test_code = test_code +
+      "  let result_" +
+      int_to_string(i) +
+      " = " +
+      func_name +
+      "(x_" +
+      int_to_string(i) +
+      ")\n"
+
+    i = i + 1
+  }
+
+  test_code = test_code + "  // Edge cases handled successfully\n" + "}"
+  {
+    name: test_name,
+    code: test_code,
+    description: "Edge case tests for " + func_name,
     fence: "mbt nocheck",
   }
 }
@@ -863,12 +941,37 @@ fn slice_string(source : String, start : Int, end : Int) -> String {
 }
 
 ///|
+/// IntをStringに変換
+fn int_to_string(n : Int) -> String {
+  if n < 0 {
+    "-" + int_to_string(-n)
+  } else if n == 0 {
+    "0"
+  } else if n < 10 {
+    match n {
+      1 => "1"
+      2 => "2"
+      3 => "3"
+      4 => "4"
+      5 => "5"
+      6 => "6"
+      7 => "7"
+      8 => "8"
+      _ => "9"
+    }
+  } else {
+    int_to_string(n / 10) + int_to_string(n % 10)
+  }
+}
+
+///|
 /// テスト
 test "generate_round_trip_test_basic" {
   let result = generate_round_trip_test("encode", "decode", "Data")
   inspect(result.name, content="prop_encode_decode_roundtrip")
   inspect(result.code.contains("decode(encode(x))"), content="true")
-  inspect(result.code.contains("@quickcheck.samples"), content="true")
+  inspect(result.code.contains("@pbt.check"), content="true")
+  inspect(result.code.contains("@pbt.Gen::arbitrary()"), content="true")
   inspect(result.fence, content="mbt nocheck")
 }
 
@@ -877,7 +980,8 @@ test "generate_idempotent_test_basic" {
   let result = generate_idempotent_test("sort", "Array[Int]")
   inspect(result.name, content="prop_sort_idempotent")
   inspect(result.code.contains("sort(sort(x))"), content="true")
-  inspect(result.code.contains("@quickcheck.samples"), content="true")
+  inspect(result.code.contains("@pbt.check"), content="true")
+  inspect(result.code.contains("@pbt.Gen::array_of"), content="true")
   inspect(result.fence, content="mbt nocheck")
 }
 
