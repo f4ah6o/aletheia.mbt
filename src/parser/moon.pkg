@@ -1,1 +1,1 @@
-import { "f4ah6o/aletheia/ast" as @ast, "mizchi/markdown" as @markdown }
+import { "f4ah6o/aletheia/ast" as @ast, "f4ah6o/aletheia/markdown" as @markdown }
