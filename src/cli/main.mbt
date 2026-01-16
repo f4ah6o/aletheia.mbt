@@ -888,8 +888,11 @@ fn path_dirname(path : String) -> String {
 
 ///|
 /// パッケージディレクトリか判定
+/// moon.pkg (new format) または moon.pkg.json (legacy) の存在をチェック
 fn has_moon_pkg(path : String) -> Bool {
-  @fs.path_exists(join_path(path, "moon.pkg.json"))
+  let pkg_file_new = join_path(path, "moon.pkg")
+  let pkg_file_legacy = join_path(path, "moon.pkg.json")
+  @fs.path_exists(pkg_file_new) || @fs.path_exists(pkg_file_legacy)
 }
 
 ///|
