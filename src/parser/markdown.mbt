@@ -1,7 +1,13 @@
 ///|
 /// Markdownパーサー
 /// .mbt.mdファイルからコードブロックとメタデータを抽出する
-/// mizchi/markdown.mbt を使用
+///
+/// このモジュールは f4ah6o/md (mizchi/markdown のフォーク) のコードを
+/// 使用しています。詳細は src/markdown/ を参照してください。
+///
+/// MIT License - Copyright (c) mizchi
+/// Original: https://github.com/mizchi/markdown.mbt
+/// Fork: https://github.com/f4ah6o/markdown.mbt
 ///
 
 ///|
@@ -14,7 +20,7 @@ pub struct CodeBlock {
 }
 
 ///|
-/// Markdown AST（mizchi/markdownのDocumentのラッパー）
+/// Markdown AST（f4ah6o/mdのDocumentのラッパー）
 pub struct MarkdownAST {
   document : @markdown.Document
 }
