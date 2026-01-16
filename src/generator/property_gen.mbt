@@ -784,7 +784,7 @@ pub fn generate_pbt_targets_md(doc : PbtDocument) -> String {
   result = result +
     "## Notes\n\n" +
     "- Property definitions are intentionally omitted. Define them in a separate process.\n"
-  result
+  result.trim_end().to_string()
 }
 
 ///|
@@ -1004,4 +1004,55 @@ test "generate_pbt_targets_md" {
   let md = generate_pbt_targets_md(doc)
   inspect(md.contains("Round-Trip Targets"), content="true")
   inspect(md.contains("normalize"), content="true")
+}
+
+///|
+test "generate_is_deterministic" {
+  // 同じ入力で複数回生成しても結果が同一であることを検証
+  let names = ["parse_foo", "generate_foo", "normalize"]
+  let patterns = @patterns.find_round_trips(names)
+  let doc1 = build_pbt_document("test_module", "src", patterns, "String")
+  let doc2 = build_pbt_document("test_module", "src", patterns, "String")
+  let md1 = generate_pbt_targets_md(doc1)
+  let md2 = generate_pbt_targets_md(doc2)
+  inspect(md1 == md2, content="true")
+}
+
+///|
+test "merge_preserves_manual_edits" {
+  // マーカー外の編集が保持されることを検証
+  let existing = "Manual intro\n" +
+    generated_block_start() +
+    "\nOLD\n" +
+    generated_block_end() +
+    "\nManual outro"
+  let generated = "NEW"
+  let merged = merge_generated_markdown(existing, generated)
+  inspect(merged.contains("Manual intro"), content="true")
+  inspect(merged.contains("Manual outro"), content="true")
+  inspect(merged.contains("NEW"), content="true")
+  inspect(merged.contains("OLD"), content="false")
+}
+
+///|
+test "merge_without_markers_creates_markers" {
+  // マーカーがないファイルの場合、新しいマーカーが作成されることを検証
+  let existing = "Manual content without markers"
+  let generated = "GENERATED"
+  let merged = merge_generated_markdown(existing, generated)
+  inspect(merged.contains(generated_block_start()), content="true")
+  inspect(merged.contains(generated_block_end()), content="true")
+  inspect(merged.contains("GENERATED"), content="true")
+  inspect(merged.contains("Manual content without markers"), content="false")
+}
+
+///|
+test "merge_with_unbalanced_markers_replaces_all" {
+  // 不整合なマーカーの場合、全体が置換されることを検証
+  let existing = generated_block_start() + "\nOLD\n" + generated_block_end()
+  let merged1 = merge_generated_markdown(existing, "NEW1")
+  let merged2 = merge_generated_markdown(merged1, "NEW2")
+  inspect(merged1.contains("NEW1"), content="true")
+  inspect(merged2.contains("NEW2"), content="true")
+  inspect(merged2.contains("NEW1"), content="false")
 }

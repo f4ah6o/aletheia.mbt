@@ -135,6 +135,28 @@ src/
 - **生成マーカー**: `.pbt.mbt.md` に `<!-- aletheia:begin -->` と `<!-- aletheia:end -->` を挿入。手編集はマーカー外に書くと再生成で保持される
 - **ワーニング**: ビルド時に未使用変数/関数に関する警告あり（機能に影響なし）
 
+## 生成されたファイルの編集
+
+### マーカーで保護されたセクション
+
+生成されたファイルには `<!-- aletheia:begin -->` と `<!-- aletheia:end -->` で囲まれたセクションが含まれます。
+
+- **マーカー内**: 自動生成される内容で、`generate` コマンド実行時に上書きされます
+- **マーカー外**: 手動で追加した内容は保持されます
+
+### 再生成のルール
+
+```bash
+# 同じコードベースで generate を複数回実行しても、生成結果は同一になります
+moon run src/aletheia -- generate ./src
+moon run src/aletheia -- generate ./src  # 差分なし
+
+# マーカー外の手編集は保持されます
+echo "## Manual Notes" >> src/aletheia.pbt.mbt.md
+moon run src/aletheia -- generate ./src
+grep "Manual Notes" src/aletheia.pbt.mbt.md  # Manual Notes が残っている
+```
+
 ## ライセンス
 
 Apache-2.0

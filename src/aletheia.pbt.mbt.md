@@ -7,7 +7,7 @@
 
 - **Source**: `./src`
 - **Generated**: 2026-01-14
-- **Patterns Detected**: 59
+- **Patterns Detected**: 92
 
 ## Round-Trip Targets
 
@@ -17,26 +17,40 @@
 - `parse_args` <-> `generated_block_end`
 - `parse_markdown` <-> `command_to_args`
 - `parse_markdown` <-> `generate_pbt_md`
+- `parse_args` <-> `generate_oracle_test`
 - `parse_args` <-> `generate_self_pbt_md`
 - `parse_args` <-> `generated_block_start`
 - `parse_markdown` <-> `generate_markdown`
+- `parse_args` <-> `generate_invariant_test`
 - `parse_args` <-> `generate_mbt_md_section`
 - `parse_args` <-> `generate_pbt_targets_md`
 - `parse_markdown` <-> `generated_block_end`
 - `parse_args` <-> `generate_idempotent_test`
 - `parse_args` <-> `generate_round_trip_test`
+- `parse_args` <-> `generate_shrink_template`
+- `parse_args` <-> `generate_test_with_stats`
+- `parse_markdown` <-> `generate_oracle_test`
 - `parse_markdown` <-> `generate_self_pbt_md`
 - `parse_markdown` <-> `generated_block_start`
 - `parse_args` <-> `generate_detection_summary`
 - `parse_args` <-> `generate_state_machine_test`
+- `parse_markdown` <-> `generate_invariant_test`
 - `parse_markdown` <-> `generate_mbt_md_section`
 - `parse_markdown` <-> `generate_pbt_targets_md`
 - `parse_markdown` <-> `generate_idempotent_test`
 - `parse_markdown` <-> `generate_round_trip_test`
+- `parse_markdown` <-> `generate_shrink_template`
+- `parse_markdown` <-> `generate_test_with_stats`
 - `parse_markdown` <-> `generate_detection_summary`
+- `parse_args` <-> `generate_counterexample_section`
 - `parse_args` <-> `generate_producer_consumer_test`
 - `parse_markdown` <-> `generate_state_machine_test`
+- `parse_markdown` <-> `generate_counterexample_section`
 - `parse_markdown` <-> `generate_producer_consumer_test`
+- `parse_args` <-> `generate_state_machine_test_template`
+- `parse_args` <-> `generate_frequency_generator_template`
+- `parse_markdown` <-> `generate_state_machine_test_template`
+- `parse_markdown` <-> `generate_frequency_generator_template`
 
 ## Producer-Consumer Targets
 
@@ -47,9 +61,15 @@
 - `new` -> `user_defined`
 - `new` -> `user_defined`
 - `new` -> `user_defined`
+- `new` -> `user_defined`
+- `new` -> `user_defined`
+- `new` -> `user_defined`
+- `new` -> `user_defined`
+- `make_oracle` -> `user_defined`
 - `make_public` -> `user_defined`
 - `make_private` -> `user_defined`
 - `make_internal` -> `user_defined`
+- `make_invariant` -> `user_defined`
 - `generate_pbt_md` -> `user_defined`
 - `make_chain_call` -> `user_defined`
 - `make_idempotent` -> `user_defined`
@@ -62,17 +82,33 @@
 - `generated_block_end` -> `user_defined`
 - `build_call_graph_ast` -> `user_defined`
 - `create_state_machine` -> `user_defined`
+- `generate_oracle_test` -> `user_defined`
 - `generate_self_pbt_md` -> `user_defined`
 - `generated_block_start` -> `user_defined`
 - `get_aletheia_functions` -> `user_defined`
 - `make_producer_consumer` -> `user_defined`
+- `generate_invariant_test` -> `user_defined`
 - `generate_mbt_md_section` -> `user_defined`
 - `generate_pbt_targets_md` -> `user_defined`
 - `generate_idempotent_test` -> `user_defined`
 - `generate_round_trip_test` -> `user_defined`
+- `generate_shrink_template` -> `user_defined`
+- `generate_test_with_stats` -> `user_defined`
 - `generate_detection_summary` -> `user_defined`
 - `generate_state_machine_test` -> `user_defined`
+- `generate_counterexample_section` -> `user_defined`
 - `generate_producer_consumer_test` -> `user_defined`
+- `generate_state_machine_test_template` -> `user_defined`
+- `generate_frequency_generator_template` -> `user_defined`
+
+## Invariant Targets
+
+- `map` (OrderPreserving)
+- `map` (LengthPreserving)
+- `add_edge` (LengthIncreasing)
+- `add_node` (LengthIncreasing)
+- `add_label` (LengthIncreasing)
+- `add_command` (LengthIncreasing)
 
 ## Notes
 
@@ -435,3 +471,4 @@ test "prop_detect_arbitrary_impls_finds_user_defined" {
 
 
 
+## Manual Notes

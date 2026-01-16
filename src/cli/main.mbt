@@ -379,7 +379,7 @@ fn analyze_packages(path : String) -> Array[PackageAnalysis] {
   while i < package_dirs.length() {
     let package_dir = package_dirs[i]
     let functions = collect_functions_from_package(package_dir)
-    let function_names = function_names_from_meta(functions)
+    let function_names = function_names_from_meta_sorted(functions)
     let roundtrips = @patterns.find_round_trips(function_names)
     let idempotents = @patterns.find_idempotent_functions(function_names)
     let producers = @patterns.find_producer_consumer(function_names)
@@ -1159,6 +1159,16 @@ fn function_names_from_meta(
 }
 
 ///|
+/// 関数名をアルファベット順にソートして返す（安定した出力のため）
+fn function_names_from_meta_sorted(
+  functions : Array[@ast.FunctionMeta],
+) -> Array[String] {
+  let names = function_names_from_meta(functions)
+  names.sort_by((a, b) => String::compare(a, b))
+  names
+}
+
+///|
 fn find_function_meta(
   functions : Array[@ast.FunctionMeta],
   name : String,
@@ -1261,7 +1271,7 @@ fn build_generate_report(
     return Err("No MoonBit package found under: " + path)
   }
   let functions = collect_functions_from_packages(package_dirs)
-  let function_names = function_names_from_meta(functions)
+  let function_names = function_names_from_meta_sorted(functions)
 
   // パターン検出
   let roundtrips = @patterns.find_round_trips(function_names)
