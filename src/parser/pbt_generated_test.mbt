@@ -1,10 +1,8 @@
 ///|
 test "prop_parse_markdown_generate_markdown_roundtrip" {
   let fixtures = [
-    "```moonbit\nfn foo() -> Int { 1 }\n```",
-    "Intro\n\n```mbt check\n test { inspect(1) }\n```\nOutro",
-    "```mbt nocheck\nlet x = 1\n```\n```moonbit\nfn bar() -> Int { 2 }\n```",
-    "```\nfn baz() -> Int { 3 }\n```",
+    "```moonbit\nfn foo() -> Int { 1 }\n```", "Intro\n\n```mbt check\n test { inspect(1) }\n```\nOutro",
+    "```mbt nocheck\nlet x = 1\n```\n```moonbit\nfn bar() -> Int { 2 }\n```", "```\nfn baz() -> Int { 3 }\n```",
     "plain text",
   ]
   for markdown in fixtures {
@@ -27,10 +25,7 @@ test "prop_parse_markdown_generate_markdown_roundtrip" {
 ///|
 test "prop_extract_code_blocks_deterministic" {
   let fixtures = [
-    "",
-    "plain text without code blocks",
-    "```mbt\ntest {}\n```",
-    "# Heading\n\n```moonbit check\nfn foo() {}\n```\n\nMore text",
+    "", "plain text without code blocks", "```mbt\ntest {}\n```", "# Heading\n\n```moonbit check\nfn foo() {}\n```\n\nMore text",
     "```python\nprint('hello')\n```\n\n```mbt nocheck\nlet x = 1\n```",
   ]
   for markdown in fixtures {
@@ -49,8 +44,7 @@ test "prop_extract_code_blocks_deterministic" {
 ///|
 test "prop_generate_markdown_preserves_structure" {
   let fixtures = [
-    "# Title\n\nSome text.\n\n```mbt\nfn foo() {}\n```",
-    "```moonbit\nlet x = 1\n```\n\n```mbt check\ntest {}\n```",
+    "# Title\n\nSome text.\n\n```mbt\nfn foo() {}\n```", "```moonbit\nlet x = 1\n```\n\n```mbt check\ntest {}\n```",
   ]
   for markdown in fixtures {
     let blocks1 = @parser.extract_code_blocks(markdown)
