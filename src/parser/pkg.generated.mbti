@@ -2,7 +2,7 @@
 package "f4ah6o/aletheia/parser"
 
 import(
-  "mizchi/markdown"
+  "f4ah6o/aletheia/markdown"
 )
 
 // Values
