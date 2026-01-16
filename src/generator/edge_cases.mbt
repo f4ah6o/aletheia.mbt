@@ -11,6 +11,13 @@ pub struct EdgeCase {
 }
 
 ///|
+/// Frequency distribution entry
+pub struct FrequencyEntry {
+  weight : Int
+  generator_expr : String
+}
+
+///|
 /// 型に応じたエッジケースを生成
 pub fn edge_cases_for_type(type_name : String) -> Array[EdgeCase] {
   match type_name {
@@ -263,4 +270,70 @@ test "edge_cases_for_array_int" {
 test "edge_cases_for_unknown_type" {
   let cases = edge_cases_for_type("MyType")
   inspect(cases.length(), content="0")
+}
+
+///|
+/// Convert edge cases to frequency distribution
+/// Returns: [(weight, generator_expr)]
+pub fn edge_cases_to_frequency(
+  edge_cases : Array[EdgeCase],
+) -> Array[FrequencyEntry] {
+  let result : Array[FrequencyEntry] = []
+  let mut i = 0
+  while i < edge_cases.length() {
+    let ec = edge_cases[i]
+    Array::push(result, { weight: 10, generator_expr: "@pbt.Gen::pure(" + ec.value_expr + ")" })
+    i = i + 1
+  }
+  result
+}
+
+///|
+/// Build frequency distribution from type using edge cases
+pub fn build_frequency_for_type(type_name : String) -> String {
+  let edge_cases = edge_cases_for_type(type_name)
+  let mut result = "@pbt.frequency([\n"
+  // Add normal case with high weight
+  result = result + "    (70, " + generator_expression_for_type(type_name) + "),\n"
+  // Add edge cases with lower weight
+  let mut i = 0
+  while i < edge_cases.length() {
+    let ec = edge_cases[i]
+    result = result + "    (10, @pbt.Gen::pure(" + ec.value_expr + "))"
+    if i < edge_cases.length() - 1 {
+      result = result + ","
+    }
+    result = result + "\n"
+    i = i + 1
+  }
+  result = result + "  ])"
+  result
+}
+
+///|
+test "edge_cases_to_frequency_int" {
+  let cases = edge_cases_for_type("Int")
+  let freq = edge_cases_to_frequency(cases)
+  inspect(freq.length(), content="7")
+  inspect(freq[0].weight, content="10")
+  inspect(freq[0].generator_expr.contains("@pbt.Gen::pure(0)"), content="true")
+  inspect(freq[1].generator_expr.contains("@pbt.Gen::pure(1)"), content="true")
+}
+
+///|
+test "edge_cases_to_frequency_string" {
+  let cases = edge_cases_for_type("String")
+  let freq = edge_cases_to_frequency(cases)
+  inspect(freq.length(), content="6")
+  inspect(freq[0].weight, content="10")
+  inspect(freq[0].generator_expr.contains("@pbt.Gen::pure(\"\")"), content="true")
+}
+
+///|
+test "build_frequency_for_type_int" {
+  let result = build_frequency_for_type("Int")
+  inspect(result.contains("@pbt.frequency"), content="true")
+  inspect(result.contains("@pbt.Gen::choose_int(-100, 100)"), content="true")
+  inspect(result.contains("@pbt.Gen::pure(0)"), content="true")
+  inspect(result.contains("@pbt.Gen::pure(2147483647)"), content="true")
 }

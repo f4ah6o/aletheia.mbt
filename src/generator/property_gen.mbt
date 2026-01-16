@@ -13,7 +13,7 @@ pub struct GeneratedTest {
 }
 
 ///|
-/// Round-Tripプロパティテストを生成
+/// Round-Tripプロパティテストを生成（frequency + stats by default）
 pub fn generate_round_trip_test(
   encoder : String,
   decoder : String,
@@ -21,8 +21,12 @@ pub fn generate_round_trip_test(
 ) -> GeneratedTest {
   let test_name = "prop_" + encoder + "_" + decoder + "_roundtrip"
 
-  // QuickCheckジェネレータ式を取得
-  let gen_expr = generator_expression_for_type(type_name)
+  // Frequency-based generator with edge case emphasis
+  let gen_expr = frequency_generator_for_type(type_name)
+
+  // Build classification conditions based on type
+  let classify_code = build_classification_for_type(type_name, "x")
+
   let test_code = "test \"" +
     test_name +
     "\" {\n" +
@@ -30,16 +34,21 @@ pub fn generate_round_trip_test(
     gen_expr +
     "\n" +
     "  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)\n" +
-    "  let result = @pbt.check(gen, fn(x : " +
+    "  let result = @pbt.check_with_stats(gen, fn(x : " +
     type_name +
     ") {\n" +
+    classify_code +
     "    assert_eq(" +
     decoder +
     "(" +
     encoder +
     "(x)), x)\n" +
-    "    Ok(())\n" +
+    "    (Ok(()), label)\n" +
     "  }, config~)\n" +
+    "  match result.stats {\n" +
+    "    Some(stats) => println(stats.to_string())\n" +
+    "    None => ()\n" +
+    "  }\n" +
     "  assert_true(result.passed)\n" +
     "}"
   {
@@ -123,15 +132,19 @@ fn generate_parse_command_to_round_trip_test(
 }
 
 ///|
-/// べき等性プロパティテストを生成
+/// べき等性プロパティテストを生成（frequency + stats by default）
 pub fn generate_idempotent_test(
   func : String,
   type_name : String,
 ) -> GeneratedTest {
   let test_name = "prop_" + func + "_idempotent"
 
-  // QuickCheckジェネレータ式を取得
-  let gen_expr = generator_expression_for_type(type_name)
+  // Frequency-based generator with edge case emphasis
+  let gen_expr = frequency_generator_for_type(type_name)
+
+  // Build classification conditions based on type
+  let classify_code = build_classification_for_type(type_name, "x")
+
   let test_code = "test \"" +
     test_name +
     "\" {\n" +
@@ -139,9 +152,10 @@ pub fn generate_idempotent_test(
     gen_expr +
     "\n" +
     "  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)\n" +
-    "  let result = @pbt.check(gen, fn(x : " +
+    "  let result = @pbt.check_with_stats(gen, fn(x : " +
     type_name +
     ") {\n" +
+    classify_code +
     "    assert_eq(" +
     func +
     "(" +
@@ -149,8 +163,12 @@ pub fn generate_idempotent_test(
     "(x)), " +
     func +
     "(x))\n" +
-    "    Ok(())\n" +
+    "    (Ok(()), label)\n" +
     "  }, config~)\n" +
+    "  match result.stats {\n" +
+    "    Some(stats) => println(stats.to_string())\n" +
+    "    None => ()\n" +
+    "  }\n" +
     "  assert_true(result.passed)\n" +
     "}"
   {
@@ -530,6 +548,102 @@ pub fn generate_counterexample_section() -> String {
 }
 
 ///|
+/// Build classification code for statistical analysis based on type
+pub fn build_classification_for_type(type_name : String, var_name : String) -> String {
+  match type_name {
+    "Int" =>
+      "    let label = if " +
+      var_name +
+      " == 0 {\n" +
+      "      Some(\"zero\")\n" +
+      "    } else if " +
+      var_name +
+      " == 1 || " +
+      var_name +
+      " == -1 {\n" +
+      "      Some(\"unit\")\n" +
+      "    } else if " +
+      var_name +
+      " > 1000 || " +
+      var_name +
+      " < -1000 {\n" +
+      "      Some(\"large\")\n" +
+      "    } else {\n" +
+      "      Some(\"normal\")\n" +
+      "    }\n"
+    "String" =>
+      "    let label = if " +
+      var_name +
+      ".length() == 0 {\n" +
+      "      Some(\"empty\")\n" +
+      "    } else if " +
+      var_name +
+      ".length() == 1 {\n" +
+      "      Some(\"single_char\")\n" +
+      "    } else if " +
+      var_name +
+      ".length() > 100 {\n" +
+      "      Some(\"long\")\n" +
+      "    } else {\n" +
+      "      Some(\"normal\")\n" +
+      "    }\n"
+    _ =>
+      // Generic classification for container types
+      if type_name.has_prefix("Array[") || type_name.has_prefix("List[") {
+        "    let label = if " +
+        var_name +
+        ".length() == 0 {\n" +
+        "      Some(\"empty\")\n" +
+        "    } else if " +
+        var_name +
+        ".length() == 1 {\n" +
+        "      Some(\"single_element\")\n" +
+        "    } else {\n" +
+        "      Some(\"normal\")\n" +
+        "    }\n"
+      } else if type_name.has_prefix("Option[") {
+        "    let label = match " +
+        var_name +
+        " {\n" +
+        "      None => Some(\"none\")\n" +
+        "      Some(_) => Some(\"some\")\n" +
+        "    }\n"
+      } else {
+        // Default classification
+        "    let label : Option[String] = Some(\"default\")\n"
+      }
+  }
+}
+
+///|
+/// Generate Shrink trait implementation template
+pub fn generate_shrink_template(type_name : String) -> String {
+  "## Shrink Trait Implementation\n\n" +
+  "For type `" +
+  type_name +
+  "`, implement custom shrinking to improve counterexample minimization:\n" +
+  "\n" +
+  "```mbt nocheck\n" +
+  "pub impl Shrink for " +
+  type_name +
+  " with shrink(self) -> Iter[" +
+  type_name +
+  "] {\n" +
+  "  // Strategy: remove elements, simplify values, reduce ranges\n" +
+  "  let mut shrunk : Array[" +
+  type_name +
+  "] = []\n" +
+  "\n" +
+  "  // 1. Try empty/smaller variants\n" +
+  "  // 2. Try simplifying individual fields\n" +
+  "  // 3. Try boundary values\n" +
+  "\n" +
+  "  shrunk.to_iter()\n" +
+  "}\n" +
+  "```\n"
+}
+
+///|
 fn string_to_lower(s : String) -> String {
   let chars = s.to_array()
   let mut result = ""
@@ -715,7 +829,7 @@ pub fn build_pbt_document(
 }
 
 ///|
-/// PbtDocument から完全なMarkdown文字列を生成
+/// PbtDocument から完全なMarkdown文字列を生成（enhanced with new sections）
 pub fn generate_pbt_md(doc : PbtDocument) -> String {
   let mut result = "# Property-Based Tests for " + doc.module_name + "\n\n"
   result = result + "> Auto-generated by Aletheia - MoonBit PBT Tool\n\n"
@@ -726,6 +840,12 @@ pub fn generate_pbt_md(doc : PbtDocument) -> String {
     "- **Patterns Detected**: " +
     doc.patterns.length().to_string() +
     "\n\n"
+
+  // NEW: Add counterexample section at the beginning
+  result = result + generate_counterexample_section()
+
+  // NEW: Add shrink template section
+  result = result + "\n" + generate_shrink_template("T")
 
   // パターン別にセクションを生成
   let roundtrips = filter_by_name_suffix(doc.test_cases, "roundtrip")

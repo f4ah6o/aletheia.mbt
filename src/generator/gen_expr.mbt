@@ -102,6 +102,151 @@ pub fn is_container_type(type_name : String) -> Bool {
 }
 
 ///|
+/// Generate frequency-based generator expression with edge case emphasis
+/// Distribution: 70% normal, 15% empty/zero, 15% boundary values
+pub fn frequency_generator_for_type(type_name : String) -> String {
+  match type_name {
+    "Int" => {
+      let mut r = "@pbt.frequency([\n"
+      r = r + "    (70, @pbt.Gen::choose_int(-100, 100)),\n"
+      r = r + "    (10, @pbt.Gen::pure(0)),\n"
+      r = r + "    (10, @pbt.Gen::pure(1)),\n"
+      r = r + "    (5, @pbt.Gen::pure(-1)),\n"
+      r = r + "    (5, @pbt.Gen::one_of([\n"
+      r = r + "      @pbt.Gen::pure(2147483647),\n"
+      r = r + "      @pbt.Gen::pure(-2147483648)\n"
+      r = r + "    ]))\n"
+      r = r + "  ])"
+      r
+    }
+    "Int64" => {
+      let mut r = "@pbt.frequency([\n"
+      r = r + "    (70, @pbt.Gen::map(@pbt.Gen::choose_int(-100, 100), fn(x : Int) { Int64::from_int(x) })),\n"
+      r = r + "    (10, @pbt.Gen::pure(0L)),\n"
+      r = r + "    (10, @pbt.Gen::pure(1L)),\n"
+      r = r + "    (5, @pbt.Gen::pure(-1L)),\n"
+      r = r + "    (5, @pbt.Gen::one_of([\n"
+      r = r + "      @pbt.Gen::pure(9223372036854775807L),\n"
+      r = r + "      @pbt.Gen::pure(-9223372036854775808L)\n"
+      r = r + "    ]))\n"
+      r = r + "  ])"
+      r
+    }
+    "UInt" => {
+      let mut r = "@pbt.frequency([\n"
+      r = r + "    (70, @pbt.Gen::map(@pbt.Gen::choose_int(0, 100), fn(x : Int) { x.to_uint() })),\n"
+      r = r + "    (15, @pbt.Gen::pure(0u)),\n"
+      r = r + "    (10, @pbt.Gen::pure(1u)),\n"
+      r = r + "    (5, @pbt.Gen::pure(4294967295u))\n"
+      r = r + "  ])"
+      r
+    }
+    "UInt64" => {
+      let mut r = "@pbt.frequency([\n"
+      r = r + "    (70, @pbt.Gen::map(@pbt.Gen::choose_int(0, 100), fn(x : Int) { UInt64::from_int(x) })),\n"
+      r = r + "    (15, @pbt.Gen::pure(0UL)),\n"
+      r = r + "    (10, @pbt.Gen::pure(1UL)),\n"
+      r = r + "    (5, @pbt.Gen::pure(18446744073709551615UL))\n"
+      r = r + "  ])"
+      r
+    }
+    "Float" => {
+      let mut r = "@pbt.frequency([\n"
+      r = r + "    (70, @pbt.Gen::choose_float(-100.0, 100.0)),\n"
+      r = r + "    (15, @pbt.Gen::pure(0.0)),\n"
+      r = r + "    (10, @pbt.Gen::pure(1.0)),\n"
+      r = r + "    (5, @pbt.Gen::one_of([\n"
+      r = r + "      @pbt.Gen::pure(-1.0),\n"
+      r = r + "      @pbt.Gen::pure(0.1)\n"
+      r = r + "    ]))\n"
+      r = r + "  ])"
+      r
+    }
+    "Double" => {
+      let mut r = "@pbt.frequency([\n"
+      r = r + "    (70, @pbt.Gen::choose_float(-100.0, 100.0)),\n"
+      r = r + "    (15, @pbt.Gen::pure(0.0)),\n"
+      r = r + "    (10, @pbt.Gen::pure(1.0)),\n"
+      r = r + "    (5, @pbt.Gen::one_of([\n"
+      r = r + "      @pbt.Gen::pure(-1.0),\n"
+      r = r + "      @pbt.Gen::pure(0.1)\n"
+      r = r + "    ]))\n"
+      r = r + "  ])"
+      r
+    }
+    "Bool" => {
+      let mut r = "@pbt.frequency([\n"
+      r = r + "    (50, @pbt.Gen::pure(true)),\n"
+      r = r + "    (50, @pbt.Gen::pure(false))\n"
+      r = r + "  ])"
+      r
+    }
+    "Char" => {
+      let mut r = "@pbt.frequency([\n"
+      r = r + "    (70, @pbt.Gen::choose_char(32, 126)),\n"
+      r = r + "    (15, @pbt.Gen::pure(' ')),\n"
+      r = r + "    (10, @pbt.Gen::pure('a')),\n"
+      r = r + "    (5, @pbt.Gen::one_of([\n"
+      r = r + "      @pbt.Gen::pure('\\n'),\n"
+      r = r + "      @pbt.Gen::pure('\\t')\n"
+      r = r + "    ]))\n"
+      r = r + "  ])"
+      r
+    }
+    "String" => {
+      let mut r = "@pbt.frequency([\n"
+      r = r + "    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),\n"
+      r = r + "    (15, @pbt.Gen::pure(\"\")),\n"
+      r = r + "    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),\n"
+      r = r + "    (5, @pbt.Gen::one_of([\n"
+      r = r + "      @pbt.Gen::pure(\" \\n\\t\"),\n"
+      r = r + "      @pbt.Gen::pure(\"a\")\n"
+      r = r + "    ]))\n"
+      r = r + "  ])"
+      r
+    }
+    "Byte" => {
+      let mut r = "@pbt.frequency([\n"
+      r = r + "    (70, @pbt.Gen::choose_byte(0, 255)),\n"
+      r = r + "    (15, @pbt.Gen::pure(0uy)),\n"
+      r = r + "    (10, @pbt.Gen::pure(1uy)),\n"
+      r = r + "    (5, @pbt.Gen::pure(255uy))\n"
+      r = r + "  ])"
+      r
+    }
+    _ =>
+      // コンテナ型の場合は要素型のジェネレータを取得
+      if type_name.has_prefix("Array[") {
+        let inner = extract_type_parameter(type_name, "Array[")
+        let mut r = "@pbt.frequency([\n"
+        r = r + "    (70, @pbt.Gen::array_of(" + generator_expression_for_type(inner) + ")),\n"
+        r = r + "    (20, @pbt.Gen::pure([])),\n"
+        r = r + "    (10, @pbt.Gen::array_of(@pbt.Gen::constant(" + inner + "::default())))\n"
+        r = r + "  ])"
+        r
+      } else if type_name.has_prefix("List[") {
+        let inner = extract_type_parameter(type_name, "List[")
+        let mut r = "@pbt.frequency([\n"
+        r = r + "    (70, @pbt.Gen::list_of(" + generator_expression_for_type(inner) + ")),\n"
+        r = r + "    (20, @pbt.Gen::pure([])),\n"
+        r = r + "    (10, @pbt.Gen::list_of(@pbt.Gen::constant(" + inner + "::default())))\n"
+        r = r + "  ])"
+        r
+      } else if type_name.has_prefix("Option[") {
+        let inner = extract_type_parameter(type_name, "Option[")
+        let mut r = "@pbt.frequency([\n"
+        r = r + "    (60, @pbt.Gen::option_of(" + generator_expression_for_type(inner) + ")),\n"
+        r = r + "    (40, @pbt.Gen::pure(None))\n"
+        r = r + "  ])"
+        r
+      } else {
+        // ユーザー定義型はArbitrary実装に依存
+        "@pbt.Gen::arbitrary()"
+      }
+  }
+}
+
+///|
 /// テスト
 test "generator_expression_for_primitive_types" {
   inspect(
@@ -145,4 +290,40 @@ test "is_container_type" {
   inspect(is_container_type("Option[Bool]"), content="true")
   inspect(is_container_type("Int"), content="false")
   inspect(is_container_type("String"), content="false")
+}
+
+///|
+test "frequency_generator_for_int" {
+  let result = frequency_generator_for_type("Int")
+  inspect(result.contains("@pbt.frequency"), content="true")
+  inspect(result.contains("@pbt.Gen::pure(0)"), content="true")
+  inspect(result.contains("@pbt.Gen::pure(1)"), content="true")
+  inspect(result.contains("@pbt.Gen::pure(-1)"), content="true")
+  inspect(result.contains("2147483647"), content="true")
+  inspect(result.contains("-2147483648"), content="true")
+}
+
+///|
+test "frequency_generator_for_string" {
+  let result = frequency_generator_for_type("String")
+  inspect(result.contains("@pbt.frequency"), content="true")
+  inspect(result.contains("@pbt.Gen::pure(\"\")"), content="true")
+  inspect(result.contains("@pbt.Gen::string_of_length"), content="true")
+  inspect(result.contains("@pbt.Gen::string(@pbt.Gen::choose_char(32, 126))"), content="true")
+}
+
+///|
+test "frequency_generator_for_array" {
+  let result = frequency_generator_for_type("Array[Int]")
+  inspect(result.contains("@pbt.frequency"), content="true")
+  inspect(result.contains("@pbt.Gen::pure([])"), content="true")
+  inspect(result.contains("@pbt.Gen::array_of"), content="true")
+}
+
+///|
+test "frequency_generator_for_option" {
+  let result = frequency_generator_for_type("Option[Int]")
+  inspect(result.contains("@pbt.frequency"), content="true")
+  inspect(result.contains("@pbt.Gen::pure(None)"), content="true")
+  inspect(result.contains("@pbt.Gen::option_of"), content="true")
 }
