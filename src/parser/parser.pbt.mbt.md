@@ -5,37 +5,9 @@
 ## Overview
 
 - **Source**: `./src/parser`
-- **Generated**: 2026-01-15
+- **Generated**: 2026-01-16
 - **Patterns Detected**: 1
 
-## Round-Trip Properties
+## Notes
 
-### prop_parse_markdown_generate_markdown_roundtrip
-
-Round-trip property: parse -> generate -> parse preserves code block content
-
-```mbt check
-///|
-test "prop_parse_markdown_generate_markdown_roundtrip" {
-  let fixtures = [
-    "```moonbit\nfn foo() -> Int { 1 }\n```", "Intro\n\n```mbt check\n test { inspect(1) }\n```\nOutro",
-    "plain text",
-  ]
-  for markdown in fixtures {
-    let blocks1 = extract_code_blocks(markdown)
-    let ast = parse_markdown(markdown)
-    let regenerated = generate_markdown(ast)
-    let blocks2 = extract_code_blocks(regenerated)
-    assert_eq(blocks1.length(), blocks2.length())
-    let mut i = 0
-    while i < blocks1.length() {
-      let block1 = blocks1[i]
-      let block2 = blocks2[i]
-      assert_eq(block1.lang, block2.lang)
-      assert_eq(block1.content, block2.content)
-      i = i + 1
-    }
-  }
-}
-```
-
+Tests are defined in src/aletheia.pbt.mbt.md

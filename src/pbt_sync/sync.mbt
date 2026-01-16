@@ -427,9 +427,11 @@ fn resolve_package_dir(
   if !is_dir(dir) {
     return Err("Package directory not found: " + dir)
   }
-  let pkg_file = join_path(dir, "moon.pkg.json")
-  if !is_file(pkg_file) {
-    return Err("Package missing moon.pkg.json: " + dir)
+  // Support both moon.pkg (new format) and moon.pkg.json (legacy)
+  let pkg_file_new = join_path(dir, "moon.pkg")
+  let pkg_file_legacy = join_path(dir, "moon.pkg.json")
+  if !is_file(pkg_file_new) && !is_file(pkg_file_legacy) {
+    return Err("Package missing moon.pkg or moon.pkg.json: " + dir)
   }
   Ok(dir)
 }

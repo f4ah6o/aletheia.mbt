@@ -7,6 +7,9 @@
     "moonbitlang/quickcheck": "0.9.9",
     "mizchi/markdown": "0.4.1"
   },
+  "bin-deps": {
+    "mizchi/markdown": "0.4.1"
+  },
   "readme": "README.mbt.md",
   "repository": "https://github.com/f4ah6o/aletheia.mbt.git",
   "license": "Apache-2.0",
