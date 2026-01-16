@@ -531,20 +531,49 @@ pub fn generate_test_with_stats(
 }
 
 ///|
-/// 反例ログセクションを生成
+/// 反例ログセクションを生成（enhanced with detailed debugging guidance）
 pub fn generate_counterexample_section() -> String {
   "## Counterexample Logging\n\n" +
   "When a property test fails, the following information is logged:\n\n" +
+  "### Failed Test Information\n" +
   "- **Original value**: The first value that caused the failure\n" +
   "- **Shrunk value**: The minimal value that still causes the failure (if shrinking is enabled)\n" +
-  "- **Test case index**: Which test case failed\n" +
-  "- **Size parameter**: The size used to generate the failing value\n" +
-  "- **Random seed**: The seed used for reproducibility\n\n" +
+  "- **Test case index**: Which test case failed (e.g., 42/100)\n" +
+  "- **Random seed**: Seed for reproduction\n" +
+  "- **Shrink count**: Number of shrinking steps performed\n\n" +
+  "### Reproduction Command\n" +
   "To reproduce a failure, use the same seed:\n\n" +
   "```mbt nocheck\n" +
-  "let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=<SEED>, shrink_limit=100)\n" +
-  "@pbt.check(gen, prop, config~)\n" +
-  "```\n"
+  "let config = @pbt.CheckConfig::new(\n" +
+  "  cases=100,\n" +
+  "  max_size=30,\n" +
+  "  seed=<RECORD_SEED_HERE>,\n" +
+  "  shrink_limit=100\n" +
+  ")\n" +
+  "@pbt.check(gen, property, config~)\n" +
+  "```\n\n" +
+  generate_counterexample_analysis_template() +
+  "\n"
+}
+
+///|
+/// Generate counterexample analysis template for debugging
+pub fn generate_counterexample_analysis_template() -> String {
+  "### Shrinking Analysis Template\n\n" +
+  "Use this template to document your counterexample analysis:\n\n" +
+  "```markdown\n" +
+  "| Shrunk Value | Property Check | Notes |\n" +
+  "|--------------|----------------|-------|\n" +
+  "| ...          | ...            | ...   |\n" +
+  "```\n\n" +
+  "### Debugging Checklist\n\n" +
+  "- [ ] Record the original failing value\n" +
+  "- [ ] Record the shrunk minimal counterexample\n" +
+  "- [ ] Note the test case index and random seed\n" +
+  "- [ ] Identify which edge case triggered the failure\n" +
+  "- [ ] Verify the bug exists with the shrunk value\n" +
+  "- [ ] Add regression test using the minimal counterexample\n" +
+  "- [ ] Consider if additional edge cases need testing\n"
 }
 
 ///|
@@ -616,13 +645,17 @@ pub fn build_classification_for_type(type_name : String, var_name : String) -> S
 }
 
 ///|
-/// Generate Shrink trait implementation template
+/// Generate Shrink trait implementation template（enhanced with per-type examples）
 pub fn generate_shrink_template(type_name : String) -> String {
   "## Shrink Trait Implementation\n\n" +
   "For type `" +
   type_name +
-  "`, implement custom shrinking to improve counterexample minimization:\n" +
+  "`, implement custom shrinking to improve counterexample minimization.\n\n" +
+  generate_shrink_examples() +
   "\n" +
+  "### Template for " +
+  type_name +
+  "\n\n" +
   "```mbt nocheck\n" +
   "pub impl Shrink for " +
   type_name +
@@ -641,6 +674,82 @@ pub fn generate_shrink_template(type_name : String) -> String {
   "  shrunk.to_iter()\n" +
   "}\n" +
   "```\n"
+}
+
+///|
+/// Generate shrink trait examples for common types
+pub fn generate_shrink_examples() -> String {
+  "### Shrink Strategy Examples\n\n" +
+  "#### Int/Int64 Shrink Example\n" +
+  "```mbt nocheck\n" +
+  "pub impl Shrink for Int with shrink(self) -> Iter[Int] {\n" +
+  "  let mut shrunk : Array[Int] = []\n" +
+  "  // Try boundary values\n" +
+  "  if self != 0 { Array::push(shrunk, 0) }\n" +
+  "  if self != 1 { Array::push(shrunk, 1) }\n" +
+  "  if self != -1 { Array::push(shrunk, -1) }\n" +
+  "  // Try halving\n" +
+  "  if self > 1 { Array::push(shrunk, self / 2) }\n" +
+  "  if self < -1 { Array::push(shrunk, self / 2) }\n" +
+  "  shrunk.to_iter()\n" +
+  "}\n" +
+  "```\n\n" +
+  "#### String Shrink Example\n" +
+  "```mbt nocheck\n" +
+  "pub impl Shrink for String with shrink(self) -> Iter[String] {\n" +
+  "  let mut shrunk : Array[String] = []\n" +
+  "  // Try empty\n" +
+  "  if self.length() > 0 { Array::push(shrunk, \"\") }\n" +
+  "  // Try removing characters\n" +
+  "  if self.length() > 1 {\n" +
+  "    Array::push(shrunk, substring_range(self, 0, self.length() - 1))\n" +
+  "    Array::push(shrunk, substring_range(self, 1, self.length()))\n" +
+  "  }\n" +
+  "  // Try single character\n" +
+  "  if self.length() > 1 {\n" +
+  "    Array::push(shrunk, self[0].to_string())\n" +
+  "  }\n" +
+  "  shrunk.to_iter()\n" +
+  "}\n" +
+  "```\n\n" +
+  "#### Array[T] Shrink Example\n" +
+  "```mbt nocheck\n" +
+  "pub impl Shrink[T] for Array[T] with shrink(self) -> Iter[Array[T]] {\n" +
+  "  let mut shrunk : Array[Array[T]] = []\n" +
+  "  // Try empty\n" +
+  "  if self.length() > 0 { Array::push(shrunk, []) }\n" +
+  "  // Try removing elements\n" +
+  "  let mut i = 0\n" +
+  "  while i < self.length() {\n" +
+  "    let mut smaller : Array[T] = []\n" +
+  "    let mut j = 0\n" +
+  "    while j < self.length() {\n" +
+  "      if j != i { Array::push(smaller, self[j]) }\n" +
+  "      j = j + 1\n" +
+  "    }\n" +
+  "    Array::push(shrunk, smaller)\n" +
+  "    i = i + 1\n" +
+  "  }\n" +
+  "  // Try smaller subsets (first half, second half)\n" +
+  "  if self.length() > 2 {\n" +
+  "    let half = self.length() / 2\n" +
+  "    let mut first_half : Array[T] = []\n" +
+  "    let mut j = 0\n" +
+  "    while j < half {\n" +
+  "      Array::push(first_half, self[j])\n" +
+  "      j = j + 1\n" +
+  "    }\n" +
+  "    Array::push(shrunk, first_half)\n" +
+  "  }\n" +
+  "  shrunk.to_iter()\n" +
+  "}\n" +
+  "```\n\n" +
+  "### Shrink Tips\n\n" +
+  "- **Start simple**: Try empty/zero values first\n" +
+  "- **Remove elements**: Drop elements from arrays/strings\n" +
+  "- **Simplify values**: Replace with smaller numbers, shorter strings\n" +
+  "- **Boundary values**: Try 0, 1, -1 for numbers; empty for collections\n" +
+  "- **Order matters**: Generate shrunk values from simplest to most complex\n"
 }
 
 ///|
