@@ -235,3 +235,13 @@ test "parse_markdown_ast" {
   let ast = parse_markdown(markdown)
   inspect(ast.document.children.length(), content="3")
 }
+
+///|
+/// ベンチマーク: コードブロック抽出（新しい実装: mizchi/markdown）
+test "bench_extract_code_blocks" (b : @bench.T) {
+  let markdown = "# Title\n\nSome text.\n\n```moonbit\nfn foo() -> Int { 1 }\n```\n\nMore text.\n\n```javascript\nfunction bar() { return 2; }\n```\n\n```mbt check\nlet x = 1\n```"
+  b.bench(fn() {
+    let _ = extract_code_blocks(markdown)
+
+  })
+}
