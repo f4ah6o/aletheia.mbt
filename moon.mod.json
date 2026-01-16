@@ -4,10 +4,8 @@
   "deps": {
     "moonbitlang/parser": "0.1.13",
     "moonbitlang/x": "0.4.38",
-    "moonbitlang/quickcheck": "0.9.9",
-    "mizchi/markdown": "0.4.1"
+    "moonbitlang/quickcheck": "0.9.9"
   },
-  "target": ["js"],
   "readme": "README.mbt.md",
   "repository": "https://github.com/f4ah6o/aletheia.mbt.git",
   "license": "Apache-2.0",
