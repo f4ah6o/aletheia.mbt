@@ -1168,7 +1168,57 @@ fn function_names_from_meta_sorted(
 ) -> Array[String] {
   let names = function_names_from_meta(functions)
   names.sort_by((a, b) => String::compare(a, b))
-  names
+  filter_internal_functions(names)
+}
+
+///|
+/// 内部ヘルパー関数を除外した関数名リストを返す
+fn filter_internal_functions(function_names : Array[String]) -> Array[String] {
+  let result : Array[String] = []
+  let mut i = 0
+  while i < function_names.length() {
+    let name = function_names[i]
+    if !is_internal_function(name) {
+      Array::push(result, name)
+    }
+    i = i + 1
+  }
+  result
+}
+
+///|
+/// 内部ヘルパー関数かどうかを判定
+fn is_internal_function(name : String) -> Bool {
+  // 完全一致で除外する関数名
+  let exact_excludes = [
+    "generated_block_start",
+    "generated_block_end",
+  ]
+  let mut i = 0
+  while i < exact_excludes.length() {
+    if name == exact_excludes[i] {
+      return true
+    }
+    i = i + 1
+  }
+
+  // プレフィックスで除外するパターン
+  let prefix_excludes = [
+    "wrap_generated_",
+    "append_generated_",
+    "merge_generated_",
+    "filter_patterns_",
+    "build_",
+  ]
+  let mut j = 0
+  while j < prefix_excludes.length() {
+    if name.has_prefix(prefix_excludes[j]) {
+      return true
+    }
+    j = j + 1
+  }
+
+  false
 }
 
 ///|
