@@ -73,7 +73,7 @@ pub fn find_round_trips(
         while k < Array::length(function_names) {
           let name2 = function_names[k]
           if name2.has_prefix(dec) || name2.has_suffix(dec) {
-            Array::push(results, RoundTrip(name1, name2))
+            results.push(RoundTrip(name1, name2))
           } else {
             ()
           }
@@ -106,7 +106,7 @@ pub fn find_idempotent_functions(
     while j < Array::length(idempotent_keywords) {
       let keyword = idempotent_keywords[j]
       if name.contains(keyword) {
-        Array::push(results, Idempotent(name))
+        results.push(Idempotent(name))
       } else {
         ()
       }
@@ -140,7 +140,7 @@ pub fn find_producer_consumer(
           while m < Array::length(function_names) {
             let name2 = function_names[m]
             if name2.has_prefix(cons) {
-              Array::push(results, ProducerConsumer(name1, name2))
+              results.push(ProducerConsumer(name1, name2))
             } else {
               ()
             }
@@ -215,7 +215,7 @@ pub fn find_invariant_functions(
     while j < Array::length(length_preserving) {
       let keyword = length_preserving[j]
       if name.contains(keyword) {
-        Array::push(results, Invariant(name, "LengthPreserving"))
+        results.push(Invariant(name, "LengthPreserving"))
       }
       j = j + 1
     }
@@ -225,7 +225,7 @@ pub fn find_invariant_functions(
     while j < Array::length(length_decreasing) {
       let keyword = length_decreasing[j]
       if name.contains(keyword) {
-        Array::push(results, Invariant(name, "LengthDecreasing"))
+        results.push(Invariant(name, "LengthDecreasing"))
       }
       j = j + 1
     }
@@ -235,7 +235,7 @@ pub fn find_invariant_functions(
     while j < Array::length(length_increasing) {
       let keyword = length_increasing[j]
       if name.contains(keyword) {
-        Array::push(results, Invariant(name, "LengthIncreasing"))
+        results.push(Invariant(name, "LengthIncreasing"))
       }
       j = j + 1
     }
@@ -246,7 +246,7 @@ pub fn find_invariant_functions(
       let keyword = order_preserving[j]
       if name.contains(keyword) &&
         !has_pattern(results, name, "OrderPreserving") {
-        Array::push(results, Invariant(name, "OrderPreserving"))
+        results.push(Invariant(name, "OrderPreserving"))
       }
       j = j + 1
     }
@@ -257,7 +257,7 @@ pub fn find_invariant_functions(
       let keyword = content_preserving[j]
       if name.contains(keyword) &&
         !has_pattern(results, name, "ContentPreserving") {
-        Array::push(results, Invariant(name, "ContentPreserving"))
+        results.push(Invariant(name, "ContentPreserving"))
       }
       j = j + 1
     }
@@ -326,7 +326,7 @@ pub fn find_oracle_candidates(
               if other != name &&
                 other.contains(std_func) &&
                 !has_custom_prefix(other, custom_prefixes) {
-                Array::push(results, Oracle(name, other))
+                results.push(Oracle(name, other))
               }
               m = m + 1
             }
@@ -370,6 +370,113 @@ fn has_custom_prefix(name : String, prefixes : Array[String]) -> Bool {
     i = i + 1
   }
   false
+}
+
+///|
+/// Enhanced invariant pattern detection with collection operation inference
+pub fn find_enhanced_invariants(
+  function_names : Array[String],
+) -> Array[PatternCandidate] {
+  let results : Array[PatternCandidate] = []
+
+  // Get basic invariants
+  let basic_invariants = find_invariant_functions(function_names)
+
+  // Get enhanced collection invariants
+  let enhanced_list = infer_enhanced_invariants_for_functions(function_names)
+
+  // Merge results, preferring enhanced invariants where available
+  let mut i = 0
+  while i < basic_invariants.length() {
+    results.push(basic_invariants[i])
+    i = i + 1
+  }
+
+  // Add enhanced invariants that provide additional insight
+  let mut j = 0
+  while j < enhanced_list.length() {
+    let enhanced = enhanced_list[j]
+    // Convert to PatternCandidate
+    let pattern_opt = enhanced_invariant_to_pattern(enhanced)
+
+    match pattern_opt {
+      Some(pattern) => {
+        // Check if we already have this invariant
+        let mut found = false
+        let mut k = 0
+        while k < results.length() {
+          match results[k] {
+            Invariant(func, inv_type) => {
+              if func == enhanced.func_name && inv_type == enhanced.invariants[0] {
+                found = true
+              }
+            }
+            _ => ()
+          }
+          k = k + 1
+        }
+
+        // Add only if not duplicate
+        if !found {
+          results.push(pattern)
+        }
+      }
+      None => ()
+    }
+    j = j + 1
+  }
+
+  results
+}
+
+///|
+/// Combine all pattern detection functions with enhanced invariants
+pub fn detect_all_patterns(
+  function_names : Array[String],
+) -> Array[PatternCandidate] {
+  let results : Array[PatternCandidate] = []
+
+  // Basic patterns
+  let roundtrips = find_round_trips(function_names)
+  let idempotents = find_idempotent_functions(function_names)
+  let producers = find_producer_consumer(function_names)
+  let oracles = find_oracle_candidates(function_names)
+
+  // Enhanced invariants (collection-aware)
+  let invariants = find_enhanced_invariants(function_names)
+
+  // Merge all patterns
+  let mut i = 0
+  while i < roundtrips.length() {
+    results.push(roundtrips[i])
+    i = i + 1
+  }
+
+  let mut i = 0
+  while i < idempotents.length() {
+    results.push(idempotents[i])
+    i = i + 1
+  }
+
+  let mut i = 0
+  while i < producers.length() {
+    results.push(producers[i])
+    i = i + 1
+  }
+
+  let mut i = 0
+  while i < invariants.length() {
+    results.push(invariants[i])
+    i = i + 1
+  }
+
+  let mut i = 0
+  while i < oracles.length() {
+    results.push(oracles[i])
+    i = i + 1
+  }
+
+  results
 }
 
 ///|
@@ -486,4 +593,50 @@ test "make_oracle_helper" {
     }
     _ => inspect("fail", content="ok")
   }
+}
+
+///|
+test "find_enhanced_invariants_map" {
+  let names = ["map_values", "filter_even"]
+  let results = find_enhanced_invariants(names)
+  inspect(results.length() > 0, content="true")
+  // Should detect map-specific invariants
+  let mut found = false
+  let mut i = 0
+  while i < results.length() {
+    match results[i] {
+      Invariant(func, inv_type) => {
+        if func == "map_values" && inv_type == "LengthPreserving" {
+          found = true
+        }
+      }
+      _ => ()
+    }
+    i = i + 1
+  }
+  inspect(found, content="true")
+}
+
+///|
+test "detect_all_patterns_integration" {
+  let names = ["encode_data", "decode_data", "sort_array", "map_values"]
+  let results = detect_all_patterns(names)
+  inspect(results.length() > 0, content="true")
+  // Should detect multiple pattern types
+  let mut found_roundtrip = false
+  let mut found_idempotent = false
+  let mut found_invariant = false
+  let mut i = 0
+  while i < results.length() {
+    match results[i] {
+      RoundTrip(_, _) => found_roundtrip = true
+      Idempotent(_) => found_idempotent = true
+      Invariant(_, _) => found_invariant = true
+      _ => ()
+    }
+    i = i + 1
+  }
+  inspect(found_roundtrip, content="true")
+  inspect(found_idempotent, content="true")
+  inspect(found_invariant, content="true")
 }

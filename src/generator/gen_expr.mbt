@@ -247,6 +247,141 @@ pub fn frequency_generator_for_type(type_name : String) -> String {
 }
 
 ///|
+/// Detect if type is potentially recursive (needs size control)
+pub fn is_recursive_type(type_name : String) -> Bool {
+  // Known recursive types
+  let recursive_keywords = [
+    "Tree", "Node", "Graph", "LinkedList", "Nested", "Recursive",
+  ]
+  let mut i = 0
+  while i < recursive_keywords.length() {
+    if has_substring(type_name, recursive_keywords[i]) {
+      return true
+    }
+    i = i + 1
+  }
+  // Deeply nested container types
+  if has_substring(type_name, "Array[Array[") ||
+    has_substring(type_name, "List[List[") ||
+    has_substring(type_name, "Array[Option[") ||
+    has_substring(type_name, "Option[Array[") {
+    true
+  } else {
+    false
+  }
+}
+
+///|
+/// Generate size-controlled generator expression for complex types
+/// Distribution: Uses @pbt.sized to control generation depth/size
+pub fn sized_generator_for_type(type_name : String) -> String {
+  if is_recursive_type(type_name) {
+    let mut r = "@pbt.sized(fn(size : Int) -> @pbt.Gen["
+    r = r + type_name
+    r = r + "] {\n"
+    r = r + "  let max_depth = min(size, 5)\n"
+    r = r + "  "
+    r = r + generate_sized_variant(type_name, "max_depth")
+    r = r + "\n})"
+    r
+  } else {
+    // For non-recursive types, use frequency generator
+    frequency_generator_for_type(type_name)
+  }
+}
+
+///|
+/// Generate size-controlled variant for recursive types
+fn generate_sized_variant(type_name : String, size_var : String) -> String {
+  match type_name {
+    t if t.has_prefix("Array[") => {
+      let inner = extract_type_parameter(type_name, "Array[")
+      if is_recursive_type(inner) {
+        // Nested array: limit both dimensions
+        "@pbt.Gen::array_of_with_size(" +
+          size_var +
+          ", " +
+          sized_generator_for_type(inner) +
+          ")"
+      } else {
+        "@pbt.Gen::array_of_with_size(" +
+          size_var +
+          ", " +
+          generator_expression_for_type(inner) +
+          ")"
+      }
+    }
+    t if t.has_prefix("List[") => {
+      let inner = extract_type_parameter(type_name, "List[")
+      if is_recursive_type(inner) {
+        "@pbt.Gen::list_of_with_size(" +
+          size_var +
+          ", " +
+          sized_generator_for_type(inner) +
+          ")"
+      } else {
+        "@pbt.Gen::list_of_with_size(" +
+          size_var +
+          ", " +
+          generator_expression_for_type(inner) +
+          ")"
+      }
+    }
+    _ => {
+      // For user-defined recursive types, suggest custom implementation
+      "// TODO: Implement sized generator for " +
+        type_name +
+        "\n  // Use depth-limited generation to avoid infinite recursion\n  @pbt.Gen::arbitrary()"
+    }
+  }
+}
+
+///|
+/// Calculate safe nesting depth for type
+pub fn safe_nesting_depth(type_name : String) -> Int {
+  if has_substring(type_name, "Array[Array[") {
+    2  // Limit nested arrays
+  } else if has_substring(type_name, "List[List[") {
+    2  // Limit nested lists
+  } else if has_substring(type_name, "Tree") || has_substring(type_name, "Node") {
+    3  // Allow deeper trees but limit
+  } else {
+    5  // Default limit
+  }
+}
+
+///|
+/// Helper function to check if string contains substring
+fn has_substring(s : String, pattern : String) -> Bool {
+  let s_len = s.length()
+  let pat_len = pattern.length()
+  if s_len < pat_len {
+    false
+  } else if pat_len == 0 {
+    true
+  } else {
+    let mut i = 0
+    while i <= s_len - pat_len {
+      let mut j = 0
+      let mut found = true
+      while j < pat_len {
+        let s_chars = s.to_array()
+        let pat_chars = pattern.to_array()
+        if s_chars[i + j] != pat_chars[j] {
+          found = false
+        }
+        j = j + 1
+      }
+      if found {
+        return true
+      }
+      i = i + 1
+    }
+    false
+  }
+}
+
+///|
 /// テスト
 test "generator_expression_for_primitive_types" {
   inspect(
@@ -326,4 +461,57 @@ test "frequency_generator_for_option" {
   inspect(result.contains("@pbt.frequency"), content="true")
   inspect(result.contains("@pbt.Gen::pure(None)"), content="true")
   inspect(result.contains("@pbt.Gen::option_of"), content="true")
+}
+
+///|
+test "is_recursive_type_tree" {
+  inspect(is_recursive_type("TreeNode"), content="true")
+  inspect(is_recursive_type("BinaryTree"), content="true")
+  inspect(is_recursive_type("LinkedList"), content="true")
+  inspect(is_recursive_type("Graph"), content="true")
+}
+
+///|
+test "is_recursive_type_nested_containers" {
+  inspect(is_recursive_type("Array[Array[Int]]"), content="true")
+  inspect(is_recursive_type("List[List[String]]"), content="true")
+  inspect(is_recursive_type("Array[Option[Int]]"), content="true")
+  inspect(is_recursive_type("Option[Array[Int]]"), content="true")
+}
+
+///|
+test "is_recursive_type_simple" {
+  inspect(is_recursive_type("Int"), content="false")
+  inspect(is_recursive_type("String"), content="false")
+  inspect(is_recursive_type("Array[Int]"), content="false")
+  inspect(is_recursive_type("Option[Bool]"), content="false")
+}
+
+///|
+test "sized_generator_for_recursive_type" {
+  let result = sized_generator_for_type("BinaryTree")
+  inspect(result.contains("@pbt.sized"), content="true")
+  inspect(result.contains("max_depth"), content="true")
+}
+
+///|
+test "sized_generator_for_nested_array" {
+  let result = sized_generator_for_type("Array[Array[Int]]")
+  inspect(result.contains("@pbt.sized"), content="true")
+  inspect(result.contains("array_of_with_size"), content="true")
+}
+
+///|
+test "sized_generator_for_simple_type_uses_frequency" {
+  let result = sized_generator_for_type("Int")
+  inspect(result.contains("@pbt.frequency"), content="true")
+  inspect(result.contains("@pbt.Gen::pure(0)"), content="true")
+}
+
+///|
+test "safe_nesting_depth_calculation" {
+  inspect(safe_nesting_depth("Array[Array[Int]]"), content="2")
+  inspect(safe_nesting_depth("List[List[String]]"), content="2")
+  inspect(safe_nesting_depth("TreeNode"), content="3")
+  inspect(safe_nesting_depth("Int"), content="5")
 }

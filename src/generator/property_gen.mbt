@@ -264,7 +264,7 @@ pub fn pattern_to_test(
 }
 
 ///|
-/// Producer-Consumerプロパティテストを生成
+/// Producer-Consumerプロパティテストを生成（with frequency + stats）
 pub fn generate_producer_consumer_test(
   producer : String,
   consumer : String,
@@ -272,8 +272,12 @@ pub fn generate_producer_consumer_test(
 ) -> GeneratedTest {
   let test_name = "prop_" + producer + "_" + consumer + "_pipeline"
 
-  // QuickCheckジェネレータ式を取得
-  let gen_expr = generator_expression_for_type(type_name)
+  // Frequency-based generator with edge case emphasis
+  let gen_expr = frequency_generator_for_type(type_name)
+
+  // Build classification conditions based on type
+  let classify_code = build_classification_for_type(type_name, "x")
+
   let test_code = "test \"" +
     test_name +
     "\" {\n" +
@@ -281,16 +285,21 @@ pub fn generate_producer_consumer_test(
     gen_expr +
     "\n" +
     "  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)\n" +
-    "  let result = @pbt.check(gen, fn(x : " +
+    "  let result = @pbt.check_with_stats(gen, fn(x : " +
     type_name +
     ") {\n" +
+    classify_code +
     "    let _ = " +
     consumer +
     "(" +
     producer +
     "(x))\n" +
-    "    Ok(())\n" +
+    "    (Ok(()), label)\n" +
     "  }, config~)\n" +
+    "  match result.stats {\n" +
+    "    Some(stats) => println(stats.to_string())\n" +
+    "    None => ()\n" +
+    "  }\n" +
     "  assert_true(result.passed)\n" +
     "}"
   {
@@ -302,7 +311,7 @@ pub fn generate_producer_consumer_test(
 }
 
 ///|
-/// 不変条件プロパティテストを生成
+/// 不変条件プロパティテストを生成（with frequency + stats）
 pub fn generate_invariant_test(
   func : String,
   inv_type : String,
@@ -344,8 +353,12 @@ pub fn generate_invariant_test(
       )
   }
 
-  // QuickCheckジェネレータ式を取得
-  let gen_expr = generator_expression_for_type(type_name)
+  // Frequency-based generator with edge case emphasis
+  let gen_expr = frequency_generator_for_type(type_name)
+
+  // Build classification conditions based on type
+  let classify_code = build_classification_for_type(type_name, "x")
+
   let test_code = "test \"" +
     test_name +
     "\" {\n" +
@@ -353,21 +366,26 @@ pub fn generate_invariant_test(
     gen_expr +
     "\n" +
     "  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)\n" +
-    "  let result = @pbt.check(gen, fn(x : " +
+    "  let result = @pbt.check_with_stats(gen, fn(x : " +
     type_name +
     ") {\n" +
+    classify_code +
     "    " +
     assertion +
     "\n" +
-    "    Ok(())\n" +
+    "    (Ok(()), label)\n" +
     "  }, config~)\n" +
+    "  match result.stats {\n" +
+    "    Some(stats) => println(stats.to_string())\n" +
+    "    None => ()\n" +
+    "  }\n" +
     "  assert_true(result.passed)\n" +
     "}"
   { name: test_name, code: test_code, description, fence: "mbt nocheck" }
 }
 
 ///|
-/// オラクルプロパティテストを生成
+/// オラクルプロパティテストを生成（with frequency + stats）
 pub fn generate_oracle_test(
   implementation : String,
   oracle : String,
@@ -375,8 +393,12 @@ pub fn generate_oracle_test(
 ) -> GeneratedTest {
   let test_name = "prop_" + implementation + "_vs_" + oracle + "_oracle"
 
-  // QuickCheckジェネレータ式を取得
-  let gen_expr = generator_expression_for_type(type_name)
+  // Frequency-based generator with edge case emphasis
+  let gen_expr = frequency_generator_for_type(type_name)
+
+  // Build classification conditions based on type
+  let classify_code = build_classification_for_type(type_name, "x")
+
   let test_code = "test \"" +
     test_name +
     "\" {\n" +
@@ -384,16 +406,21 @@ pub fn generate_oracle_test(
     gen_expr +
     "\n" +
     "  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)\n" +
-    "  let result = @pbt.check(gen, fn(x : " +
+    "  let result = @pbt.check_with_stats(gen, fn(x : " +
     type_name +
     ") {\n" +
+    classify_code +
     "    assert_eq(" +
     implementation +
     "(x), " +
     oracle +
     "(x))\n" +
-    "    Ok(())\n" +
+    "    (Ok(()), label)\n" +
     "  }, config~)\n" +
+    "  match result.stats {\n" +
+    "    Some(stats) => println(stats.to_string())\n" +
+    "    None => ()\n" +
+    "  }\n" +
     "  assert_true(result.passed)\n" +
     "}"
   {
@@ -528,6 +555,54 @@ pub fn generate_test_with_stats(
     description: "Property test with statistical classification",
     fence: "mbt nocheck",
   }
+}
+
+///|
+/// Quick Startセクションを生成
+pub fn generate_quick_start_section() -> String {
+  "## Quick Start Guide\n\n" +
+  "### Getting Started with Property-Based Testing\n\n" +
+  "**Property-Based Testing (PBT)** generates hundreds of random test cases to find edge cases that traditional tests miss.\n\n" +
+  "### Basic Workflow\n\n" +
+  "1. **Copy the test template** from the relevant section below\n" +
+  "2. **Paste it into your test file** (e.g., `src/<module>_test.mbt`)\n" +
+  "3. **Run the test** with `moon test`\n" +
+  "4. **Review statistics** output to understand test data distribution\n" +
+  "5. **Fix any failures** and re-run to verify\n\n" +
+  "### Understanding Statistics Output\n\n" +
+  "Each test with `@pbt.check_with_stats` will show:\n\n" +
+  "```\n" +
+  "Statistics:\n" +
+  "- empty: 20% (20/100 cases)\n" +
+  "- single_element: 10% (10/100 cases)\n" +
+  "- normal: 70% (70/100 cases)\n" +
+  "```\n\n" +
+  "This distribution ensures:\n" +
+  "- **20% edge cases**: Empty/zero/boundary values that often trigger bugs\n" +
+  "- **10% minimal cases**: Single-element/simplest valid inputs\n" +
+  "- **70% normal cases**: Typical everyday inputs\n\n" +
+  "### Best Practices\n\n" +
+  "- **Start simple**: Run with default 100 test cases, increase if needed\n" +
+  "- **Check statistics**: Verify edge cases are being tested (should see 20-30% edge case ratio)\n" +
+  "- **Fix seeds for reproducibility**: Use the seed from failed tests to debug\n" +
+  "- **Trust shrink results**: The shrunk counterexample is the minimal failing case\n" +
+  "- **Add regression tests**: When a PBT finds a bug, add the shrunk counterexample as a unit test\n\n" +
+  "### When Tests Fail\n\n" +
+  "1. **Record the seed**: Look for `seed=<number>` in the error message\n" +
+  "2. **Check the counterexample**: The failing value will be shown\n" +
+  "3. **Review shrunk value**: The minimal failing case helps identify the root cause\n" +
+  "4. **Reproduce with seed**: Use `@pbt.CheckConfig::new(seed=<recorded_seed>)` to debug\n" +
+  "5. **Fix and verify**: After fixing, the same test should pass with the same seed\n\n" +
+  "### Customizing Test Generation\n\n" +
+  "- **Adjust case count**: Modify `cases=100` in `CheckConfig::new()`\n" +
+  "- **Change max_size**: Control data structure size with `max_size=30`\n" +
+  "- **Use custom generators**: Replace generator expressions for domain-specific needs\n\n" +
+  "### Need More Help?\n\n" +
+  "See the sections below for:\n" +
+  "- **Counterexample Logging**: Debugging failed tests\n" +
+  "- **Shrink Implementation**: Custom shrinking for your types\n" +
+  "- **Shim Modules**: Testing stateful systems\n" +
+  "- **Deterministic Models**: State machine testing patterns\n\n"
 }
 
 ///|
@@ -1071,6 +1146,9 @@ pub fn generate_pbt_md(doc : PbtDocument) -> String {
     "- **Patterns Detected**: " +
     doc.patterns.length().to_string() +
     "\n\n"
+
+  // NEW: Add Quick Start section
+  result = result + generate_quick_start_section()
 
   // NEW: Add counterexample section at the beginning
   result = result + generate_counterexample_section()
