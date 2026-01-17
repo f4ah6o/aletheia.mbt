@@ -193,13 +193,17 @@ pub fn generate_state_machine_test_template(
   // Shimレイヤー定義（副作用を制御）
   code = code + "// Shim: Control side effects in test environment\n"
   code = code + "pub trait " + name + "Shim {\n"
-  code = code + "  execute_command(Self, " + cmd_type + ") -> " + result_type + "\n"
+  code = code +
+    "  execute_command(Self, " +
+    cmd_type +
+    ") -> " +
+    result_type +
+    "\n"
   code = code + "  // Add methods to observe/control side effects\n"
   code = code + "}\n\n"
 
   // 状態マシン定義（決定論的モデル）
-  code = code +
-    "// Deterministic model: Pure state transition function\n"
+  code = code + "// Deterministic model: Pure state transition function\n"
   code = code +
     "fn create_" +
     string_to_lower(name) +
@@ -213,8 +217,7 @@ pub fn generate_state_machine_test_template(
   code = code + "  @state_machine.StateM::new(\n"
   code = code + "    \"" + name + "\",\n"
   code = code + "    " + state_type + "::{ /* initial state */ },\n"
-  code = code +
-    "    fn(state, cmd) {\n"
+  code = code + "    fn(state, cmd) {\n"
   code = code +
     "      // Deterministic state transition: Same state + cmd = same next state\n"
   code = code +
@@ -222,8 +225,7 @@ pub fn generate_state_machine_test_template(
   code = code +
     "      state\n" +
     "      // TODO: Implement pure state transition logic\n"
-  code = code +
-    "    },\n"
+  code = code + "    },\n"
   code = code + "  )\n"
   code = code + "  .with_precondition(fn(state, cmd) {\n"
   code = code + "    // Check if command is valid for current state\n"
@@ -238,7 +240,16 @@ pub fn generate_state_machine_test_template(
   // 実システム用Shim実装
   code = code + "// Real system Shim: Wraps actual implementation\n"
   code = code + "pub struct Real" + name + "Shim {}\n\n"
-  code = code + "pub impl " + name + "Shim for Real" + name + "Shim with execute_command(_self, cmd : " + cmd_type + ") -> " + result_type + " {\n"
+  code = code +
+    "pub impl " +
+    name +
+    "Shim for Real" +
+    name +
+    "Shim with execute_command(_self, cmd : " +
+    cmd_type +
+    ") -> " +
+    result_type +
+    " {\n"
   code = code + "  // TODO: Call actual system implementation\n"
   code = code + "  // This is where side effects happen in production\n"
   code = code + "  { /* return result */ }\n"
@@ -247,7 +258,16 @@ pub fn generate_state_machine_test_template(
   // モデル用Shim実装
   code = code + "// Model Shim: Pure implementation for comparison\n"
   code = code + "pub struct Model" + name + "Shim {}\n\n"
-  code = code + "pub impl " + name + "Shim for Model" + name + "Shim with execute_command(_self, cmd : " + cmd_type + ") -> " + result_type + " {\n"
+  code = code +
+    "pub impl " +
+    name +
+    "Shim for Model" +
+    name +
+    "Shim with execute_command(_self, cmd : " +
+    cmd_type +
+    ") -> " +
+    result_type +
+    " {\n"
   code = code + "  // TODO: Implement pure model logic\n"
   code = code + "  // This model should be simple and obviously correct\n"
   code = code + "  { /* return result */ }\n"
@@ -264,7 +284,8 @@ pub fn generate_state_machine_test_template(
   code = code + "    commands,\n"
   code = code + "    fn(cmd, shim) {\n"
   code = code + "      // Execute command through Shim layer\n"
-  code = code + "      // Shim isolates side effects and makes them observable\n"
+  code = code +
+    "      // Shim isolates side effects and makes them observable\n"
   code = code + "      { /* return " + result_type + " */ }\n"
   code = code + "    },\n"
   code = code + "    shim,\n"

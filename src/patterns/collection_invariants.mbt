@@ -65,13 +65,17 @@ pub fn infer_collection_operation(func_name : String) -> CollectionOperation {
     Filter
   } else if name_lower.contains("reduce") {
     Reduce
-  } else if name_lower.contains("fold") || name_lower.contains("foldl") || name_lower.contains("foldr") {
+  } else if name_lower.contains("fold") ||
+    name_lower.contains("foldl") ||
+    name_lower.contains("foldr") {
     Fold
   } else if name_lower.contains("sort") || name_lower.contains("order") {
     Sort
   } else if name_lower.contains("reverse") {
     Reverse
-  } else if name_lower.contains("flat_map") || name_lower.contains("flatmap") || name_lower.contains("bind") {
+  } else if name_lower.contains("flat_map") ||
+    name_lower.contains("flatmap") ||
+    name_lower.contains("bind") {
     FlatMap
   } else if name_lower.contains("zip") {
     Zip
@@ -79,7 +83,9 @@ pub fn infer_collection_operation(func_name : String) -> CollectionOperation {
     Unzip
   } else if name_lower.contains("take") || name_lower.contains("first") {
     Take
-  } else if name_lower.contains("drop") || name_lower.contains("skip") || name_lower.contains("tail") {
+  } else if name_lower.contains("drop") ||
+    name_lower.contains("skip") ||
+    name_lower.contains("tail") {
     Drop
   } else if name_lower.contains("partition") || name_lower.contains("split") {
     Partition
@@ -97,62 +103,19 @@ pub fn suggest_invariants_for_operation(
   func_name : String,
 ) -> Array[String] {
   match operation {
-    Map => [
-      "LengthPreserving",
-      "OrderPreserving",
-      "ElementCountPreserving",
-    ]
-    Filter => [
-      "LengthDecreasing",
-      "OrderPreserving",
-      "NoDuplicatesInOutput",
-    ]
-    Reduce => [
-      "AssociativeProperty",
-      "IdentityElement",
-    ]
-    Fold => [
-      "TypeConsistency",
-      "AccumulatorCorrectness",
-    ]
-    Sort => [
-      "ContentPreserving",
-      "OrderPreserving",
-      "Stability",
-    ]
-    Reverse => [
-      "LengthPreserving",
-      "ContentPreserving",
-    ]
-    FlatMap => [
-      "TypeConsistency",
-      "FlatteningCorrectness",
-    ]
-    Zip => [
-      "LengthPreserving",
-      "PairAlignment",
-    ]
-    Unzip => [
-      "LengthPreserving",
-      "PairAlignment",
-    ]
-    Take => [
-      "LengthDecreasing",
-      "OrderPreserving",
-    ]
-    Drop => [
-      "LengthDecreasing",
-      "OrderPreserving",
-    ]
-    Partition => [
-      "LengthPreserving",
-      "DisjointSets",
-      "CompleteCoverage",
-    ]
-    GroupBy => [
-      "CompleteCoverage",
-      "NonEmptyGroups",
-    ]
+    Map => ["LengthPreserving", "OrderPreserving", "ElementCountPreserving"]
+    Filter => ["LengthDecreasing", "OrderPreserving", "NoDuplicatesInOutput"]
+    Reduce => ["AssociativeProperty", "IdentityElement"]
+    Fold => ["TypeConsistency", "AccumulatorCorrectness"]
+    Sort => ["ContentPreserving", "OrderPreserving", "Stability"]
+    Reverse => ["LengthPreserving", "ContentPreserving"]
+    FlatMap => ["TypeConsistency", "FlatteningCorrectness"]
+    Zip => ["LengthPreserving", "PairAlignment"]
+    Unzip => ["LengthPreserving", "PairAlignment"]
+    Take => ["LengthDecreasing", "OrderPreserving"]
+    Drop => ["LengthDecreasing", "OrderPreserving"]
+    Partition => ["LengthPreserving", "DisjointSets", "CompleteCoverage"]
+    GroupBy => ["CompleteCoverage", "NonEmptyGroups"]
     Unknown => []
   }
 }
@@ -161,32 +124,19 @@ pub fn suggest_invariants_for_operation(
 /// 操作の説明を生成
 pub fn describe_operation(operation : CollectionOperation) -> String {
   match operation {
-    Map =>
-      "Transforms each element using a function while preserving structure"
-    Filter =>
-      "Selects elements that satisfy a predicate"
-    Reduce =>
-      "Combines all elements into a single value"
-    Fold =>
-      "Traverses elements while accumulating state"
-    Sort =>
-      "Arranges elements according to an ordering"
-    Reverse =>
-      "Reverses the order of elements"
-    FlatMap =>
-      "Maps each element to a collection and flattens the result"
-    Zip =>
-      "Combines two collections into pairs"
-    Unzip =>
-      "Separates a collection of pairs into two collections"
-    Take =>
-      "Selects the first n elements"
-    Drop =>
-      "Skips the first n elements"
-    Partition =>
-      "Splits elements into two groups based on a predicate"
-    GroupBy =>
-      "Groups elements by a key function"
+    Map => "Transforms each element using a function while preserving structure"
+    Filter => "Selects elements that satisfy a predicate"
+    Reduce => "Combines all elements into a single value"
+    Fold => "Traverses elements while accumulating state"
+    Sort => "Arranges elements according to an ordering"
+    Reverse => "Reverses the order of elements"
+    FlatMap => "Maps each element to a collection and flattens the result"
+    Zip => "Combines two collections into pairs"
+    Unzip => "Separates a collection of pairs into two collections"
+    Take => "Selects the first n elements"
+    Drop => "Skips the first n elements"
+    Partition => "Splits elements into two groups based on a predicate"
+    GroupBy => "Groups elements by a key function"
     Unknown => "Unknown operation"
   }
 }
@@ -195,59 +145,49 @@ pub fn describe_operation(operation : CollectionOperation) -> String {
 /// 操作の例を生成
 pub fn examples_for_operation(operation : CollectionOperation) -> Array[String] {
   match operation {
-    Map => [
-      "map([1, 2, 3], fn(x) { x * 2 }) == [2, 4, 6]",
-      "length(map(xs, f)) == length(xs)",
-      "map(xs, id) == xs",
-    ]
-    Filter => [
-      "filter([1, 2, 3, 4], fn(x) { x % 2 == 0 }) == [2, 4]",
-      "length(filter(xs, p)) <= length(xs)",
-      "filter(filter(xs, p), q) == filter(xs, fn(x) { p(x) && q(x) })",
-    ]
-    Reduce => [
-      "reduce([1, 2, 3], 0, fn(acc, x) { acc + x }) == 6",
-      "reduce([1, 2, 3], 1, fn(acc, x) { acc * x }) == 6",
-    ]
-    Fold => [
-      "foldl([1, 2, 3], 0, fn(acc, x) { acc + x }) == 6",
-      "foldr([1, 2, 3], 0, fn(x, acc) { x + acc }) == 6",
-    ]
-    Sort => [
-      "sort([3, 1, 2]) == [1, 2, 3]",
-      "is_sorted(sort(xs))",
-      "length(sort(xs)) == length(xs)",
-    ]
-    Reverse => [
-      "reverse([1, 2, 3]) == [3, 2, 1]",
-      "length(reverse(xs)) == length(xs)",
-      "reverse(reverse(xs)) == xs",
-    ]
-    FlatMap => [
-      "flat_map([[1, 2], [3]], fn(x) { x }) == [1, 2, 3]",
-    ]
-    Zip => [
-      "zip([1, 2], [3, 4]) == [(1, 3), (2, 4)]",
-      "length(zip(xs, ys)) == min(length(xs), length(ys))",
-    ]
-    Unzip => [
-      "unzip([(1, 2), (3, 4)]) == ([1, 3], [2, 4])",
-    ]
-    Take => [
-      "take([1, 2, 3, 4], 2) == [1, 2]",
-      "length(take(xs, n)) <= n",
-    ]
-    Drop => [
-      "drop([1, 2, 3, 4], 2) == [3, 4]",
-      "length(drop(xs, n)) == max(0, length(xs) - n)",
-    ]
-    Partition => [
-      "partition([1, 2, 3, 4], fn(x) { x % 2 == 0 }) == ([2, 4], [1, 3])",
-      "length(partition(xs, p).0) + length(partition(xs, p).1) == length(xs)",
-    ]
-    GroupBy => [
-      "group_by([1, 2, 3, 4], fn(x) { x % 2 }) == {0: [2, 4], 1: [1, 3]}",
-    ]
+    Map =>
+      [
+        "map([1, 2, 3], fn(x) { x * 2 }) == [2, 4, 6]", "length(map(xs, f)) == length(xs)",
+        "map(xs, id) == xs",
+      ]
+    Filter =>
+      [
+        "filter([1, 2, 3, 4], fn(x) { x % 2 == 0 }) == [2, 4]", "length(filter(xs, p)) <= length(xs)",
+        "filter(filter(xs, p), q) == filter(xs, fn(x) { p(x) && q(x) })",
+      ]
+    Reduce =>
+      [
+        "reduce([1, 2, 3], 0, fn(acc, x) { acc + x }) == 6", "reduce([1, 2, 3], 1, fn(acc, x) { acc * x }) == 6",
+      ]
+    Fold =>
+      [
+        "foldl([1, 2, 3], 0, fn(acc, x) { acc + x }) == 6", "foldr([1, 2, 3], 0, fn(x, acc) { x + acc }) == 6",
+      ]
+    Sort =>
+      [
+        "sort([3, 1, 2]) == [1, 2, 3]", "is_sorted(sort(xs))", "length(sort(xs)) == length(xs)",
+      ]
+    Reverse =>
+      [
+        "reverse([1, 2, 3]) == [3, 2, 1]", "length(reverse(xs)) == length(xs)", "reverse(reverse(xs)) == xs",
+      ]
+    FlatMap => ["flat_map([[1, 2], [3]], fn(x) { x }) == [1, 2, 3]"]
+    Zip =>
+      [
+        "zip([1, 2], [3, 4]) == [(1, 3), (2, 4)]", "length(zip(xs, ys)) == min(length(xs), length(ys))",
+      ]
+    Unzip => ["unzip([(1, 2), (3, 4)]) == ([1, 3], [2, 4])"]
+    Take => ["take([1, 2, 3, 4], 2) == [1, 2]", "length(take(xs, n)) <= n"]
+    Drop =>
+      [
+        "drop([1, 2, 3, 4], 2) == [3, 4]", "length(drop(xs, n)) == max(0, length(xs) - n)",
+      ]
+    Partition =>
+      [
+        "partition([1, 2, 3, 4], fn(x) { x % 2 == 0 }) == ([2, 4], [1, 3])", "length(partition(xs, p).0) + length(partition(xs, p).1) == length(xs)",
+      ]
+    GroupBy =>
+      ["group_by([1, 2, 3, 4], fn(x) { x % 2 }) == {0: [2, 4], 1: [1, 3]}"]
     Unknown => []
   }
 }
@@ -259,14 +199,7 @@ pub fn infer_enhanced_invariants(func_name : String) -> EnhancedInvariant {
   let invariants = suggest_invariants_for_operation(operation, func_name)
   let description = describe_operation(operation)
   let examples = examples_for_operation(operation)
-
-  {
-    func_name,
-    operation,
-    invariants,
-    description,
-    examples,
-  }
+  { func_name, operation, invariants, description, examples }
 }
 
 ///|
@@ -292,7 +225,7 @@ pub fn infer_enhanced_invariants_for_functions(
 /// EnhancedInvariantをPatternCandidateに変換（既存パターンとの統合用）
 pub fn enhanced_invariant_to_pattern(
   enhanced : EnhancedInvariant,
-) -> Option[PatternCandidate] {
+) -> PatternCandidate? {
   if enhanced.invariants.length() > 0 {
     // 最初の不変条件をメインのパターンとして使用
     let primary_invariant = enhanced.invariants[0]
@@ -307,7 +240,6 @@ pub fn enhanced_invariant_to_pattern(
 test "infer_collection_operation_map" {
   let op = infer_collection_operation("map_values")
   inspect(op.to_string(), content="Map")
-
   let op2 = infer_collection_operation("transform_map")
   inspect(op2.to_string(), content="Map")
 }
@@ -316,7 +248,6 @@ test "infer_collection_operation_map" {
 test "infer_collection_operation_filter" {
   let op = infer_collection_operation("filter_even")
   inspect(op.to_string(), content="Filter")
-
   let op2 = infer_collection_operation("where_clause")
   inspect(op2.to_string(), content="Filter")
 }
@@ -325,7 +256,6 @@ test "infer_collection_operation_filter" {
 test "infer_collection_operation_sort" {
   let op = infer_collection_operation("quick_sort")
   inspect(op.to_string(), content="Sort")
-
   let op2 = infer_collection_operation("ordered_list")
   inspect(op2.to_string(), content="Sort")
 }
@@ -371,7 +301,7 @@ test "enhanced_invariant_to_pattern_integration" {
   let enhanced = infer_enhanced_invariants("map_values")
   let pattern_opt = enhanced_invariant_to_pattern(enhanced)
   match pattern_opt {
-    Some(pattern) => {
+    Some(pattern) =>
       match pattern {
         Invariant(func, inv_type) => {
           inspect(func, content="map_values")
@@ -379,7 +309,6 @@ test "enhanced_invariant_to_pattern_integration" {
         }
         _ => inspect("fail", content="ok")
       }
-    }
     None => inspect("fail", content="ok")
   }
 }

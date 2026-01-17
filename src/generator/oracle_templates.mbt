@@ -31,10 +31,13 @@ pub fn generate_oracle_test_with_guidance(
   type_name : String,
 ) -> OracleTestTemplate {
   let test_name = "prop_" + implementation + "_vs_" + oracle + "_oracle"
-  let comparison_strategy = determine_comparison_strategy(implementation, oracle)
-  let guidance = generate_oracle_guidance(implementation, oracle, comparison_strategy)
+  let comparison_strategy = determine_comparison_strategy(
+    implementation, oracle,
+  )
+  let guidance = generate_oracle_guidance(
+    implementation, oracle, comparison_strategy,
+  )
   let examples = generate_oracle_examples(implementation, oracle, type_name)
-
   {
     name: test_name,
     implementation,
@@ -52,11 +55,13 @@ pub fn determine_comparison_strategy(
   oracle : String,
 ) -> String {
   // Based on naming patterns, suggest comparison strategy
-  if has_prefix_str(implementation, "my_") || has_prefix_str(implementation, "custom_") {
+  if has_prefix_str(implementation, "my_") ||
+    has_prefix_str(implementation, "custom_") {
     "direct_comparison"
   } else if contains_str(implementation, "sort") {
     "ordered_comparison"
-  } else if contains_str(implementation, "optimize") || contains_str(implementation, "fast") {
+  } else if contains_str(implementation, "optimize") ||
+    contains_str(implementation, "fast") {
     "equivalence_comparison"
   } else {
     "direct_comparison"
@@ -72,7 +77,6 @@ pub fn generate_oracle_guidance(
 ) -> String {
   let mut result = "## Oracle Test Guidance\n\n"
   result = result + "### Comparison Strategy: " + strategy + "\n\n"
-
   let strategy_desc = match strategy {
     "direct_comparison" =>
       "Direct comparison checks that both implementations produce identical outputs.\n\n" +
@@ -109,25 +113,29 @@ pub fn generate_oracle_guidance(
       "- Check that invariants are preserved\n"
     _ => "Standard comparison strategy\n"
   }
-
   result = result + strategy_desc
-
   result = result + "\n### Mismatch Classification\n\n"
   result = result +
     "When tests fail, classify the mismatch to understand the root cause:\n\n"
-  result = result + "- **Edge case difference**: Only fails on boundary values\n"
-  result = result + "- **Algorithm difference**: Different approach leads to different results\n"
-  result = result + "- **Error handling difference**: One version fails, other succeeds\n"
+  result = result +
+    "- **Edge case difference**: Only fails on boundary values\n"
+  result = result +
+    "- **Algorithm difference**: Different approach leads to different results\n"
+  result = result +
+    "- **Error handling difference**: One version fails, other succeeds\n"
   result = result + "- **Performance edge case**: Timeout or excessive memory\n"
-  result = result + "- **Floating point precision**: Numerical differences within epsilon\n\n"
-
+  result = result +
+    "- **Floating point precision**: Numerical differences within epsilon\n\n"
   result = result + "### Debugging Steps\n\n"
-  result = result + "1. **Identify the failing input**: Record the counterexample\n"
-  result = result + "2. **Compare outputs step-by-step**: Print intermediate values\n"
-  result = result + "3. **Check assumptions**: Verify both implementations handle edge cases\n"
-  result = result + "4. **Add unit tests**: Convert counterexample to unit test for both\n"
+  result = result +
+    "1. **Identify the failing input**: Record the counterexample\n"
+  result = result +
+    "2. **Compare outputs step-by-step**: Print intermediate values\n"
+  result = result +
+    "3. **Check assumptions**: Verify both implementations handle edge cases\n"
+  result = result +
+    "4. **Add unit tests**: Convert counterexample to unit test for both\n"
   result = result + "5. **Verify the fix**: Ensure both pass the unit test\n\n"
-
   result = result + "### Common Pitfalls\n\n"
   result = result +
     "- **Different error handling**: One returns Option, other throws\n"
@@ -136,8 +144,8 @@ pub fn generate_oracle_guidance(
   result = result +
     "- **Non-determinism**: Randomness, time-based, or concurrent behavior\n"
   result = result + "- **Floating point**: Accumulated rounding errors\n"
-  result = result + "- **Undefined behavior**: Relying on implementation details\n\n"
-
+  result = result +
+    "- **Undefined behavior**: Relying on implementation details\n\n"
   result
 }
 
@@ -216,7 +224,6 @@ pub fn generate_oracle_examples(
     "}\n" +
     "```"
   examples.push(ex2)
-
   examples
 }
 
@@ -331,7 +338,9 @@ fn contains_str(s : String, pattern : String) -> Bool {
 ///|
 /// Tests
 test "generate_oracle_test_with_guidance_structure" {
-  let template = generate_oracle_test_with_guidance("my_sort", "sort", "Array[Int]")
+  let template = generate_oracle_test_with_guidance(
+    "my_sort", "sort", "Array[Int]",
+  )
   inspect(template.name, content="prop_my_sort_vs_sort_oracle")
   inspect(template.implementation, content="my_sort")
   inspect(template.oracle, content="sort")
@@ -343,17 +352,17 @@ test "generate_oracle_test_with_guidance_structure" {
 test "determine_comparison_strategy_custom" {
   let strategy1 = determine_comparison_strategy("my_sort", "sort")
   inspect(strategy1, content="direct_comparison")
-
   let strategy2 = determine_comparison_strategy("custom_sort", "std_sort")
   inspect(strategy2, content="direct_comparison")
-
   let strategy3 = determine_comparison_strategy("quick_sort", "merge_sort")
   inspect(strategy3, content="ordered_comparison")
 }
 
 ///|
 test "generate_oracle_guidance_contains_key_sections" {
-  let guidance = generate_oracle_guidance("my_sort", "sort", "direct_comparison")
+  let guidance = generate_oracle_guidance(
+    "my_sort", "sort", "direct_comparison",
+  )
   inspect(guidance.contains("Comparison Strategy"), content="true")
   inspect(guidance.contains("Mismatch Classification"), content="true")
   inspect(guidance.contains("Debugging Steps"), content="true")

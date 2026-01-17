@@ -26,7 +26,6 @@ pub fn generate_round_trip_test(
 
   // Build classification conditions based on type
   let classify_code = build_classification_for_type(type_name, "x")
-
   let test_code = "test \"" +
     test_name +
     "\" {\n" +
@@ -144,7 +143,6 @@ pub fn generate_idempotent_test(
 
   // Build classification conditions based on type
   let classify_code = build_classification_for_type(type_name, "x")
-
   let test_code = "test \"" +
     test_name +
     "\" {\n" +
@@ -277,7 +275,6 @@ pub fn generate_producer_consumer_test(
 
   // Build classification conditions based on type
   let classify_code = build_classification_for_type(type_name, "x")
-
   let test_code = "test \"" +
     test_name +
     "\" {\n" +
@@ -358,7 +355,6 @@ pub fn generate_invariant_test(
 
   // Build classification conditions based on type
   let classify_code = build_classification_for_type(type_name, "x")
-
   let test_code = "test \"" +
     test_name +
     "\" {\n" +
@@ -398,7 +394,6 @@ pub fn generate_oracle_test(
 
   // Build classification conditions based on type
   let classify_code = build_classification_for_type(type_name, "x")
-
   let test_code = "test \"" +
     test_name +
     "\" {\n" +
@@ -653,7 +648,10 @@ pub fn generate_counterexample_analysis_template() -> String {
 
 ///|
 /// Build classification code for statistical analysis based on type
-pub fn build_classification_for_type(type_name : String, var_name : String) -> String {
+pub fn build_classification_for_type(
+  type_name : String,
+  var_name : String,
+) -> String {
   match type_name {
     "Int" =>
       "    let label = if " +
@@ -723,7 +721,10 @@ pub fn build_classification_for_type(type_name : String, var_name : String) -> S
 /// Generate shrink hints for a type (local version)
 fn generate_shrink_hints_for_type(type_name : String) -> String {
   let mut result = "## Shrink Hints for " + type_name + "\n\n"
-  result = result + "When implementing Shrink trait for `" + type_name + "`, consider:\n\n"
+  result = result +
+    "When implementing Shrink trait for `" +
+    type_name +
+    "`, consider:\n\n"
   result = result + "### Shrink Ordering\n\n"
   result = result + "Try shrunk candidates in this order:\n"
   result = result + "1. Empty/zero/simple variants\n"
@@ -737,7 +738,8 @@ fn generate_shrink_hints_for_type(type_name : String) -> String {
 /// Generate Shrink trait implementation template（enhanced with per-type examples）
 pub fn generate_shrink_template(type_name : String) -> String {
   let mut result = "## Shrink Trait Implementation\n\n"
-  result = result + "For type `" +
+  result = result +
+    "For type `" +
     type_name +
     "`, implement custom shrinking to improve counterexample minimization.\n\n"
 
@@ -748,18 +750,15 @@ pub fn generate_shrink_template(type_name : String) -> String {
   result = result + "\n" + generate_shrink_examples()
 
   // NEW: Add enhanced template with phase structure
-  result = result + "\n### Template for " +
-    type_name +
-    "\n\n"
+  result = result + "\n### Template for " + type_name + "\n\n"
   result = result + "```mbt nocheck\n"
-  result = result + "pub impl Shrink for " +
+  result = result +
+    "pub impl Shrink for " +
     type_name +
     " with shrink(self) -> Iter[" +
     type_name +
     "] {\n"
-  result = result + "  let mut shrunk : Array[" +
-    type_name +
-    "] = []\n\n"
+  result = result + "  let mut shrunk : Array[" + type_name + "] = []\n\n"
   result = result + "  // Phase 1: Try empty/simple variants\n"
   result = result + "  // TODO: Add empty/zero candidates\n\n"
   result = result + "  // Phase 2: Simplify individual fields\n"
@@ -778,7 +777,6 @@ pub fn generate_shrink_template(type_name : String) -> String {
     "- **Preserve failures**: Only include candidates that still fail the property\n"
   result = result +
     "- **Limit depth**: For nested structures, limit shrink depth to avoid exponential explosion\n"
-
   result
 }
 

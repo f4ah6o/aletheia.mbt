@@ -121,7 +121,8 @@ pub fn frequency_generator_for_type(type_name : String) -> String {
     }
     "Int64" => {
       let mut r = "@pbt.frequency([\n"
-      r = r + "    (70, @pbt.Gen::map(@pbt.Gen::choose_int(-100, 100), fn(x : Int) { Int64::from_int(x) })),\n"
+      r = r +
+        "    (70, @pbt.Gen::map(@pbt.Gen::choose_int(-100, 100), fn(x : Int) { Int64::from_int(x) })),\n"
       r = r + "    (10, @pbt.Gen::pure(0L)),\n"
       r = r + "    (10, @pbt.Gen::pure(1L)),\n"
       r = r + "    (5, @pbt.Gen::pure(-1L)),\n"
@@ -134,7 +135,8 @@ pub fn frequency_generator_for_type(type_name : String) -> String {
     }
     "UInt" => {
       let mut r = "@pbt.frequency([\n"
-      r = r + "    (70, @pbt.Gen::map(@pbt.Gen::choose_int(0, 100), fn(x : Int) { x.to_uint() })),\n"
+      r = r +
+        "    (70, @pbt.Gen::map(@pbt.Gen::choose_int(0, 100), fn(x : Int) { x.to_uint() })),\n"
       r = r + "    (15, @pbt.Gen::pure(0u)),\n"
       r = r + "    (10, @pbt.Gen::pure(1u)),\n"
       r = r + "    (5, @pbt.Gen::pure(4294967295u))\n"
@@ -143,7 +145,8 @@ pub fn frequency_generator_for_type(type_name : String) -> String {
     }
     "UInt64" => {
       let mut r = "@pbt.frequency([\n"
-      r = r + "    (70, @pbt.Gen::map(@pbt.Gen::choose_int(0, 100), fn(x : Int) { UInt64::from_int(x) })),\n"
+      r = r +
+        "    (70, @pbt.Gen::map(@pbt.Gen::choose_int(0, 100), fn(x : Int) { UInt64::from_int(x) })),\n"
       r = r + "    (15, @pbt.Gen::pure(0UL)),\n"
       r = r + "    (10, @pbt.Gen::pure(1UL)),\n"
       r = r + "    (5, @pbt.Gen::pure(18446744073709551615UL))\n"
@@ -197,7 +200,8 @@ pub fn frequency_generator_for_type(type_name : String) -> String {
       let mut r = "@pbt.frequency([\n"
       r = r + "    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),\n"
       r = r + "    (15, @pbt.Gen::pure(\"\")),\n"
-      r = r + "    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),\n"
+      r = r +
+        "    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),\n"
       r = r + "    (5, @pbt.Gen::one_of([\n"
       r = r + "      @pbt.Gen::pure(\" \\n\\t\"),\n"
       r = r + "      @pbt.Gen::pure(\"a\")\n"
@@ -219,23 +223,38 @@ pub fn frequency_generator_for_type(type_name : String) -> String {
       if type_name.has_prefix("Array[") {
         let inner = extract_type_parameter(type_name, "Array[")
         let mut r = "@pbt.frequency([\n"
-        r = r + "    (70, @pbt.Gen::array_of(" + generator_expression_for_type(inner) + ")),\n"
+        r = r +
+          "    (70, @pbt.Gen::array_of(" +
+          generator_expression_for_type(inner) +
+          ")),\n"
         r = r + "    (20, @pbt.Gen::pure([])),\n"
-        r = r + "    (10, @pbt.Gen::array_of(@pbt.Gen::constant(" + inner + "::default())))\n"
+        r = r +
+          "    (10, @pbt.Gen::array_of(@pbt.Gen::constant(" +
+          inner +
+          "::default())))\n"
         r = r + "  ])"
         r
       } else if type_name.has_prefix("List[") {
         let inner = extract_type_parameter(type_name, "List[")
         let mut r = "@pbt.frequency([\n"
-        r = r + "    (70, @pbt.Gen::list_of(" + generator_expression_for_type(inner) + ")),\n"
+        r = r +
+          "    (70, @pbt.Gen::list_of(" +
+          generator_expression_for_type(inner) +
+          ")),\n"
         r = r + "    (20, @pbt.Gen::pure([])),\n"
-        r = r + "    (10, @pbt.Gen::list_of(@pbt.Gen::constant(" + inner + "::default())))\n"
+        r = r +
+          "    (10, @pbt.Gen::list_of(@pbt.Gen::constant(" +
+          inner +
+          "::default())))\n"
         r = r + "  ])"
         r
       } else if type_name.has_prefix("Option[") {
         let inner = extract_type_parameter(type_name, "Option[")
         let mut r = "@pbt.frequency([\n"
-        r = r + "    (60, @pbt.Gen::option_of(" + generator_expression_for_type(inner) + ")),\n"
+        r = r +
+          "    (60, @pbt.Gen::option_of(" +
+          generator_expression_for_type(inner) +
+          ")),\n"
         r = r + "    (40, @pbt.Gen::pure(None))\n"
         r = r + "  ])"
         r
@@ -299,40 +318,39 @@ fn generate_sized_variant(type_name : String, size_var : String) -> String {
       if is_recursive_type(inner) {
         // Nested array: limit both dimensions
         "@pbt.Gen::array_of_with_size(" +
-          size_var +
-          ", " +
-          sized_generator_for_type(inner) +
-          ")"
+        size_var +
+        ", " +
+        sized_generator_for_type(inner) +
+        ")"
       } else {
         "@pbt.Gen::array_of_with_size(" +
-          size_var +
-          ", " +
-          generator_expression_for_type(inner) +
-          ")"
+        size_var +
+        ", " +
+        generator_expression_for_type(inner) +
+        ")"
       }
     }
     t if t.has_prefix("List[") => {
       let inner = extract_type_parameter(type_name, "List[")
       if is_recursive_type(inner) {
         "@pbt.Gen::list_of_with_size(" +
-          size_var +
-          ", " +
-          sized_generator_for_type(inner) +
-          ")"
+        size_var +
+        ", " +
+        sized_generator_for_type(inner) +
+        ")"
       } else {
         "@pbt.Gen::list_of_with_size(" +
-          size_var +
-          ", " +
-          generator_expression_for_type(inner) +
-          ")"
+        size_var +
+        ", " +
+        generator_expression_for_type(inner) +
+        ")"
       }
     }
-    _ => {
+    _ =>
       // For user-defined recursive types, suggest custom implementation
       "// TODO: Implement sized generator for " +
-        type_name +
-        "\n  // Use depth-limited generation to avoid infinite recursion\n  @pbt.Gen::arbitrary()"
-    }
+      type_name +
+      "\n  // Use depth-limited generation to avoid infinite recursion\n  @pbt.Gen::arbitrary()"
   }
 }
 
@@ -340,13 +358,13 @@ fn generate_sized_variant(type_name : String, size_var : String) -> String {
 /// Calculate safe nesting depth for type
 pub fn safe_nesting_depth(type_name : String) -> Int {
   if has_substring(type_name, "Array[Array[") {
-    2  // Limit nested arrays
+    2 // Limit nested arrays
   } else if has_substring(type_name, "List[List[") {
-    2  // Limit nested lists
+    2 // Limit nested lists
   } else if has_substring(type_name, "Tree") || has_substring(type_name, "Node") {
-    3  // Allow deeper trees but limit
+    3 // Allow deeper trees but limit
   } else {
-    5  // Default limit
+    5 // Default limit
   }
 }
 
@@ -444,7 +462,10 @@ test "frequency_generator_for_string" {
   inspect(result.contains("@pbt.frequency"), content="true")
   inspect(result.contains("@pbt.Gen::pure(\"\")"), content="true")
   inspect(result.contains("@pbt.Gen::string_of_length"), content="true")
-  inspect(result.contains("@pbt.Gen::string(@pbt.Gen::choose_char(32, 126))"), content="true")
+  inspect(
+    result.contains("@pbt.Gen::string(@pbt.Gen::choose_char(32, 126))"),
+    content="true",
+  )
 }
 
 ///|

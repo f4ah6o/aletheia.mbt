@@ -282,7 +282,10 @@ pub fn edge_cases_to_frequency(
   let mut i = 0
   while i < edge_cases.length() {
     let ec = edge_cases[i]
-    Array::push(result, { weight: 10, generator_expr: "@pbt.Gen::pure(" + ec.value_expr + ")" })
+    Array::push(result, {
+      weight: 10,
+      generator_expr: "@pbt.Gen::pure(" + ec.value_expr + ")",
+    })
     i = i + 1
   }
   result
@@ -294,7 +297,10 @@ pub fn build_frequency_for_type(type_name : String) -> String {
   let edge_cases = edge_cases_for_type(type_name)
   let mut result = "@pbt.frequency([\n"
   // Add normal case with high weight
-  result = result + "    (70, " + generator_expression_for_type(type_name) + "),\n"
+  result = result +
+    "    (70, " +
+    generator_expression_for_type(type_name) +
+    "),\n"
   // Add edge cases with lower weight
   let mut i = 0
   while i < edge_cases.length() {
@@ -326,7 +332,10 @@ test "edge_cases_to_frequency_string" {
   let freq = edge_cases_to_frequency(cases)
   inspect(freq.length(), content="6")
   inspect(freq[0].weight, content="10")
-  inspect(freq[0].generator_expr.contains("@pbt.Gen::pure(\"\")"), content="true")
+  inspect(
+    freq[0].generator_expr.contains("@pbt.Gen::pure(\"\")"),
+    content="true",
+  )
 }
 
 ///|

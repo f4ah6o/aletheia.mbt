@@ -398,7 +398,6 @@ pub fn find_enhanced_invariants(
     let enhanced = enhanced_list[j]
     // Convert to PatternCandidate
     let pattern_opt = enhanced_invariant_to_pattern(enhanced)
-
     match pattern_opt {
       Some(pattern) => {
         // Check if we already have this invariant
@@ -406,11 +405,11 @@ pub fn find_enhanced_invariants(
         let mut k = 0
         while k < results.length() {
           match results[k] {
-            Invariant(func, inv_type) => {
-              if func == enhanced.func_name && inv_type == enhanced.invariants[0] {
+            Invariant(func, inv_type) =>
+              if func == enhanced.func_name &&
+                inv_type == enhanced.invariants[0] {
                 found = true
               }
-            }
             _ => ()
           }
           k = k + 1
@@ -425,7 +424,6 @@ pub fn find_enhanced_invariants(
     }
     j = j + 1
   }
-
   results
 }
 
@@ -451,31 +449,26 @@ pub fn detect_all_patterns(
     results.push(roundtrips[i])
     i = i + 1
   }
-
   let mut i = 0
   while i < idempotents.length() {
     results.push(idempotents[i])
     i = i + 1
   }
-
   let mut i = 0
   while i < producers.length() {
     results.push(producers[i])
     i = i + 1
   }
-
   let mut i = 0
   while i < invariants.length() {
     results.push(invariants[i])
     i = i + 1
   }
-
   let mut i = 0
   while i < oracles.length() {
     results.push(oracles[i])
     i = i + 1
   }
-
   results
 }
 
@@ -605,11 +598,10 @@ test "find_enhanced_invariants_map" {
   let mut i = 0
   while i < results.length() {
     match results[i] {
-      Invariant(func, inv_type) => {
+      Invariant(func, inv_type) =>
         if func == "map_values" && inv_type == "LengthPreserving" {
           found = true
         }
-      }
       _ => ()
     }
     i = i + 1
