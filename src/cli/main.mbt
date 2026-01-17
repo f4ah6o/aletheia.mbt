@@ -1248,10 +1248,48 @@ fn infer_default_type(
           Some(func) => type_name_from_function(func)
           None => None
         }
-      @patterns.ProducerConsumer(producer, _) =>
-        match find_function_meta(functions, producer) {
-          Some(func) => type_name_from_function(func)
-          None => None
+      @patterns.ProducerConsumer(producer, consumer) =>
+        // For producer-consumer, prefer consumer's input type if available
+        // This handles cases like "new" -> "consume_str" where we need String
+        match find_function_meta(functions, consumer) {
+          Some(func) =>
+            if func.args.length() > 1 {
+              // Method like consume_str(self, s) -> use second arg type
+              let arg_type = func.args[1].type_.simple_name()
+              if arg_type != "Unit" && arg_type != "Self" {
+                Some(arg_type)
+              } else {
+                // Fallback to producer's type
+                match find_function_meta(functions, producer) {
+                  Some(p) => type_name_from_function(p)
+                  None => None
+                }
+              }
+            } else if func.args.length() > 0 {
+              // Regular function, use first arg type
+              let arg_type = func.args[0].type_.simple_name()
+              if arg_type != "Unit" && arg_type != "Self" {
+                Some(arg_type)
+              } else {
+                // Fallback to producer's type
+                match find_function_meta(functions, producer) {
+                  Some(p) => type_name_from_function(p)
+                  None => None
+                }
+              }
+            } else {
+              // No args, use producer's type
+              match find_function_meta(functions, producer) {
+                Some(p) => type_name_from_function(p)
+                None => None
+              }
+            }
+          None =>
+            // Consumer not found, try producer
+            match find_function_meta(functions, producer) {
+              Some(func) => type_name_from_function(func)
+              None => None
+            }
         }
       @patterns.Invariant(func, _) =>
         match find_function_meta(functions, func) {

@@ -140,7 +140,13 @@ pub fn find_producer_consumer(
           while m < Array::length(function_names) {
             let name2 = function_names[m]
             if name2.has_prefix(cons) {
-              results.push(ProducerConsumer(name1, name2))
+              // Skip overly generic matches to avoid non-determinism
+              // "new" -> "consume" is too generic when there are multiple "new" functions
+              if is_valid_producer_consumer_pair(name1, name2) {
+                results.push(ProducerConsumer(name1, name2))
+              } else {
+                ()
+              }
             } else {
               ()
             }
@@ -156,6 +162,22 @@ pub fn find_producer_consumer(
     i = i + 1
   }
   results
+}
+
+///|
+/// Check if a producer-consumer pair is valid (not overly generic)
+fn is_valid_producer_consumer_pair(
+  producer : String,
+  consumer : String,
+) -> Bool {
+  // Skip generic "new" -> "consume" matches
+  // They're too ambiguous when there are multiple "new" functions
+  if producer == "new" && consumer == "consume" {
+    return false
+  }
+  // Keep "new" -> "consume_*" matches (they're more specific)
+  // Also keep "*_new" -> "*_consume" matches (context-specific)
+  true
 }
 
 ///|
