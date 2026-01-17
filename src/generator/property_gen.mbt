@@ -645,35 +645,66 @@ pub fn build_classification_for_type(type_name : String, var_name : String) -> S
 }
 
 ///|
+/// Generate shrink hints for a type (local version)
+fn generate_shrink_hints_for_type(type_name : String) -> String {
+  let mut result = "## Shrink Hints for " + type_name + "\n\n"
+  result = result + "When implementing Shrink trait for `" + type_name + "`, consider:\n\n"
+  result = result + "### Shrink Ordering\n\n"
+  result = result + "Try shrunk candidates in this order:\n"
+  result = result + "1. Empty/zero/simple variants\n"
+  result = result + "2. Remove elements/components\n"
+  result = result + "3. Simplify individual fields\n"
+  result = result + "4. Try boundary values\n"
+  result
+}
+
+///|
 /// Generate Shrink trait implementation template（enhanced with per-type examples）
 pub fn generate_shrink_template(type_name : String) -> String {
-  "## Shrink Trait Implementation\n\n" +
-  "For type `" +
-  type_name +
-  "`, implement custom shrinking to improve counterexample minimization.\n\n" +
-  generate_shrink_examples() +
-  "\n" +
-  "### Template for " +
-  type_name +
-  "\n\n" +
-  "```mbt nocheck\n" +
-  "pub impl Shrink for " +
-  type_name +
-  " with shrink(self) -> Iter[" +
-  type_name +
-  "] {\n" +
-  "  // Strategy: remove elements, simplify values, reduce ranges\n" +
-  "  let mut shrunk : Array[" +
-  type_name +
-  "] = []\n" +
-  "\n" +
-  "  // 1. Try empty/smaller variants\n" +
-  "  // 2. Try simplifying individual fields\n" +
-  "  // 3. Try boundary values\n" +
-  "\n" +
-  "  shrunk.to_iter()\n" +
-  "}\n" +
-  "```\n"
+  let mut result = "## Shrink Trait Implementation\n\n"
+  result = result + "For type `" +
+    type_name +
+    "`, implement custom shrinking to improve counterexample minimization.\n\n"
+
+  // NEW: Add shrink hints section
+  result = result + generate_shrink_hints_for_type(type_name)
+
+  // Existing: Add examples
+  result = result + "\n" + generate_shrink_examples()
+
+  // NEW: Add enhanced template with phase structure
+  result = result + "\n### Template for " +
+    type_name +
+    "\n\n"
+  result = result + "```mbt nocheck\n"
+  result = result + "pub impl Shrink for " +
+    type_name +
+    " with shrink(self) -> Iter[" +
+    type_name +
+    "] {\n"
+  result = result + "  let mut shrunk : Array[" +
+    type_name +
+    "] = []\n\n"
+  result = result + "  // Phase 1: Try empty/simple variants\n"
+  result = result + "  // TODO: Add empty/zero candidates\n\n"
+  result = result + "  // Phase 2: Simplify individual fields\n"
+  result = result + "  // TODO: Add field-specific shrink logic\n\n"
+  result = result + "  // Phase 3: Try boundary values\n"
+  result = result + "  // TODO: Add boundary value candidates\n\n"
+  result = result + "  shrunk.to_iter()\n"
+  result = result + "}\n"
+  result = result + "```\n\n"
+
+  // NEW: Add shrink termination hints
+  result = result + "### Shrinking Tips\n\n"
+  result = result +
+    "- **Order matters**: Generate shrunk values from simplest to most complex\n"
+  result = result +
+    "- **Preserve failures**: Only include candidates that still fail the property\n"
+  result = result +
+    "- **Limit depth**: For nested structures, limit shrink depth to avoid exponential explosion\n"
+
+  result
 }
 
 ///|
