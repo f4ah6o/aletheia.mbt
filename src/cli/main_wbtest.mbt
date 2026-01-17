@@ -1,8 +1,7 @@
 ///|
 test "filter_internal_functions_excludes_helpers" {
   let names = [
-    "generated_block_start", "generated_block_end", "parse_markdown",
-    "generate_markdown",
+    "generated_block_start", "generated_block_end", "parse_markdown", "generate_markdown",
   ]
   let filtered = filter_internal_functions(names)
   // Only parse_markdown and generate_markdown should remain

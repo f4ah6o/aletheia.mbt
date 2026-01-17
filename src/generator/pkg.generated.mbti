@@ -46,9 +46,13 @@ pub fn generate_oracle_test(String, String, String) -> GeneratedTest
 
 pub fn generate_oracle_test_with_guidance(String, String, String) -> OracleTestTemplate
 
+pub fn generate_package_section(String, Array[@patterns.PatternCandidate], String) -> String
+
+pub fn generate_package_section_from_tests(String, Array[GeneratedTest]) -> String
+
 pub fn generate_pbt_md(PbtDocument) -> String
 
-pub fn generate_pbt_targets_md(PbtDocument) -> String
+pub fn generate_pbt_targets_md(PbtDocument, Bool) -> String
 
 pub fn generate_producer_consumer_test(String, String, String) -> GeneratedTest
 

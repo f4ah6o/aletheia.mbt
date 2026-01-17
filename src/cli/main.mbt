@@ -1190,10 +1190,7 @@ fn filter_internal_functions(function_names : Array[String]) -> Array[String] {
 /// 内部ヘルパー関数かどうかを判定
 fn is_internal_function(name : String) -> Bool {
   // 完全一致で除外する関数名
-  let exact_excludes = [
-    "generated_block_start",
-    "generated_block_end",
-  ]
+  let exact_excludes = ["generated_block_start", "generated_block_end"]
   let mut i = 0
   while i < exact_excludes.length() {
     if name == exact_excludes[i] {
@@ -1204,10 +1201,7 @@ fn is_internal_function(name : String) -> Bool {
 
   // プレフィックスで除外するパターン
   let prefix_excludes = [
-    "wrap_generated_",
-    "append_generated_",
-    "merge_generated_",
-    "filter_patterns_",
+    "wrap_generated_", "append_generated_", "merge_generated_", "filter_patterns_",
     "build_",
   ]
   let mut j = 0
@@ -1217,7 +1211,6 @@ fn is_internal_function(name : String) -> Bool {
     }
     j = j + 1
   }
-
   false
 }
 

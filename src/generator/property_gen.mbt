@@ -1271,7 +1271,10 @@ pub fn generate_package_section(
 
 ///|
 /// PbtDocument からターゲット一覧Markdownを生成
-pub fn generate_pbt_targets_md(doc : PbtDocument, include_packages : Bool) -> String {
+pub fn generate_pbt_targets_md(
+  doc : PbtDocument,
+  include_packages : Bool,
+) -> String {
   let mut result = "# Property-Based Test Targets for " +
     doc.module_name +
     "\n\n"
@@ -1374,8 +1377,8 @@ pub fn generate_pbt_targets_md(doc : PbtDocument, include_packages : Bool) -> St
   let base = result.trim_end().to_string()
   if include_packages && doc.test_cases.length() > 0 {
     base +
-      "\n\n---\n\n# Property-Based Tests\n\n" +
-      generate_package_section_from_tests(doc.module_name, doc.test_cases)
+    "\n\n---\n\n# Property-Based Tests\n\n" +
+    generate_package_section_from_tests(doc.module_name, doc.test_cases)
   } else {
     base
   }
