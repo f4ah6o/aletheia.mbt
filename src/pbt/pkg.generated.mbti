@@ -19,7 +19,15 @@ pub fn[T] classify(String, Bool, (T) -> Result[Unit, String]) -> (T) -> (Result[
 
 pub fn[T, V : Show] collect(V, (T) -> Result[Unit, String]) -> (T) -> (Result[Unit, String], String?)
 
+pub fn generate_enum_shrink_strategy(String, Array[String], EnumShrinkStrategy) -> String
+
+pub fn generate_hierarchical_shrink(String, Array[String]) -> String
+
+pub fn generate_shrink_hints(String, Array[String], Array[(String, String)]) -> String
+
 pub fn generate_shrink_template(String, Array[(String, String)]) -> String
+
+pub fn generate_struct_shrink_strategy(String, Array[(String, String)], Array[FieldShrinkStrategy]) -> String
 
 pub fn[T] shrink_array(Array[T]) -> Iter[Array[T]]
 
@@ -54,6 +62,12 @@ pub struct CheckResult[T] {
 }
 pub impl[T : Show] Show for CheckResult[T]
 
+pub enum EnumShrinkStrategy {
+  TryFirst(Array[String])
+  RemoveVariants
+  BoundaryFirst
+}
+
 pub struct Failure {
   case_index : Int
   size : Int
@@ -63,6 +77,13 @@ pub struct Failure {
   shrunk : String?
 }
 pub impl Show for Failure
+
+pub enum FieldShrinkStrategy {
+  PreferNil
+  PreferZero
+  PreserveInvariants
+  DepthFirst
+}
 
 pub struct Gen[T] {
   run : (Int, @splitmix.RandomState) -> T

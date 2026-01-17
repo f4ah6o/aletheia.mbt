@@ -2,6 +2,16 @@
 package "f4ah6o/aletheia/patterns"
 
 // Values
+pub fn describe_operation(CollectionOperation) -> String
+
+pub fn detect_all_patterns(Array[String]) -> Array[PatternCandidate]
+
+pub fn enhanced_invariant_to_pattern(EnhancedInvariant) -> PatternCandidate?
+
+pub fn examples_for_operation(CollectionOperation) -> Array[String]
+
+pub fn find_enhanced_invariants(Array[String]) -> Array[PatternCandidate]
+
 pub fn find_idempotent_functions(Array[String]) -> Array[PatternCandidate]
 
 pub fn find_invariant_functions(Array[String]) -> Array[PatternCandidate]
@@ -11,6 +21,12 @@ pub fn find_oracle_candidates(Array[String]) -> Array[PatternCandidate]
 pub fn find_producer_consumer(Array[String]) -> Array[PatternCandidate]
 
 pub fn find_round_trips(Array[String]) -> Array[PatternCandidate]
+
+pub fn infer_collection_operation(String) -> CollectionOperation
+
+pub fn infer_enhanced_invariants(String) -> EnhancedInvariant
+
+pub fn infer_enhanced_invariants_for_functions(Array[String]) -> Array[EnhancedInvariant]
 
 pub fn make_idempotent(String) -> PatternCandidate
 
@@ -22,9 +38,37 @@ pub fn make_producer_consumer(String, String) -> PatternCandidate
 
 pub fn make_round_trip(String, String) -> PatternCandidate
 
+pub fn suggest_invariants_for_operation(CollectionOperation, String) -> Array[String]
+
 // Errors
 
 // Types and methods
+pub enum CollectionOperation {
+  Map
+  Filter
+  Reduce
+  Fold
+  Sort
+  Reverse
+  FlatMap
+  Zip
+  Unzip
+  Take
+  Drop
+  Partition
+  GroupBy
+  Unknown
+}
+pub fn CollectionOperation::to_string(Self) -> String
+
+pub struct EnhancedInvariant {
+  func_name : String
+  operation : CollectionOperation
+  invariants : Array[String]
+  description : String
+  examples : Array[String]
+}
+
 pub enum InvariantType {
   LengthPreserving
   LengthDecreasing
