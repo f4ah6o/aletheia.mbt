@@ -33,36 +33,31 @@
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_new_consume_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = consume(new(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = consume(new(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -76,36 +71,31 @@ test "prop_new_consume_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_new_consume_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = consume(new(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = consume(new(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -119,36 +109,31 @@ test "prop_new_consume_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_new_consume_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = consume(new(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = consume(new(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -162,28 +147,23 @@ test "prop_new_consume_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_new_consume_str_pipeline" {
   let gen = @pbt.frequency([
-    (70, @pbt.Gen::choose_int(-100, 100)),
-    (10, @pbt.Gen::pure(0)),
-    (10, @pbt.Gen::pure(1)),
-    (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
   let result = @pbt.check_with_stats(
     gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
       } else {
         Some("normal")
       }
@@ -205,28 +185,23 @@ test "prop_new_consume_str_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_new_consume_str_pipeline" {
   let gen = @pbt.frequency([
-    (70, @pbt.Gen::choose_int(-100, 100)),
-    (10, @pbt.Gen::pure(0)),
-    (10, @pbt.Gen::pure(1)),
-    (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
   let result = @pbt.check_with_stats(
     gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
       } else {
         Some("normal")
       }
@@ -248,28 +223,23 @@ test "prop_new_consume_str_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_new_consume_str_pipeline" {
   let gen = @pbt.frequency([
-    (70, @pbt.Gen::choose_int(-100, 100)),
-    (10, @pbt.Gen::pure(0)),
-    (10, @pbt.Gen::pure(1)),
-    (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
   let result = @pbt.check_with_stats(
     gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
       } else {
         Some("normal")
       }
