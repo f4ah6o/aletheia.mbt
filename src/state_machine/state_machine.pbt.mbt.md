@@ -16,4 +16,49 @@
 ## Notes
 
 - Property definitions are intentionally omitted. Define them in a separate process.
+
+---
+
+# Property-Based Tests
+
+## Package: state_machine
+
+### prop_add_command_invariant_lengthincreasing
+
+Invariant property: add_command does not decrease length
+
+```mbt nocheck
+///|
+test "prop_add_command_invariant_lengthincreasing" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      assert_true(add_command(x).length() >= x.length())
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
 <!-- aletheia:end -->

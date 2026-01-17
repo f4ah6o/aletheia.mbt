@@ -33,4 +33,595 @@
 ## Notes
 
 - Property definitions are intentionally omitted. Define them in a separate process.
+
+---
+
+# Property-Based Tests
+
+## Package: ast
+
+### prop_new_user_defined_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_new_user_defined_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      let _ = user_defined(new(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_new_user_defined_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_new_user_defined_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      let _ = user_defined(new(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_new_user_defined_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_new_user_defined_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      let _ = user_defined(new(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_new_user_defined_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_new_user_defined_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      let _ = user_defined(new(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_new_user_defined_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_new_user_defined_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      let _ = user_defined(new(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_new_user_defined_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_new_user_defined_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      let _ = user_defined(new(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_add_edge_invariant_lengthincreasing
+
+Invariant property: add_edge does not decrease length
+
+```mbt nocheck
+///|
+test "prop_add_edge_invariant_lengthincreasing" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      assert_true(add_edge(x).length() >= x.length())
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_add_node_invariant_lengthincreasing
+
+Invariant property: add_node does not decrease length
+
+```mbt nocheck
+///|
+test "prop_add_node_invariant_lengthincreasing" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      assert_true(add_node(x).length() >= x.length())
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_make_public_user_defined_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_make_public_user_defined_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      let _ = user_defined(make_public(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_make_private_user_defined_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_make_private_user_defined_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      let _ = user_defined(make_private(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_make_internal_user_defined_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_make_internal_user_defined_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      let _ = user_defined(make_internal(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_make_chain_call_user_defined_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_make_chain_call_user_defined_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      let _ = user_defined(make_chain_call(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_make_direct_call_user_defined_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_make_direct_call_user_defined_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      let _ = user_defined(make_direct_call(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_make_method_call_user_defined_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_make_method_call_user_defined_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      let _ = user_defined(make_method_call(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_make_pipeline_call_user_defined_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_make_pipeline_call_user_defined_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      let _ = user_defined(make_pipeline_call(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
 <!-- aletheia:end -->

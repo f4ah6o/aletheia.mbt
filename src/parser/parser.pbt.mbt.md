@@ -16,4 +16,39 @@
 ## Notes
 
 - Property definitions are intentionally omitted. Define them in a separate process.
+
+---
+
+# Property-Based Tests
+
+## Package: parser
+
+### prop_parse_markdown_generate_markdown_roundtrip
+
+Round-trip property: parse -> generate -> parse preserves code block content
+
+```mbt check
+///|
+test "prop_parse_markdown_generate_markdown_roundtrip" {
+  let fixtures = [
+    "```moonbit\nfn foo() -> Int { 1 }\n```", "Intro\n\n```mbt check\n test { inspect(1) }\n```\nOutro",
+    "```mbt nocheck\nlet x = 1\n```\n```moonbit\nfn bar() -> Int { 2 }\n```", "```\nfn baz() -> Int { 3 }\n```",
+    "plain text",
+  ]
+  for markdown in fixtures {
+    let ast = parse_markdown(markdown)
+    let regenerated = generate_markdown(ast)
+    let ast2 = parse_markdown(regenerated)
+    assert_eq(ast.code_blocks.length(), ast2.code_blocks.length())
+    let mut i = 0
+    while i < ast.code_blocks.length() {
+      let block1 = ast.code_blocks[i]
+      let block2 = ast2.code_blocks[i]
+      assert_eq(block1.lang, block2.lang)
+      assert_eq(block1.content, block2.content)
+      i = i + 1
+    }
+  }
+}
+```
 <!-- aletheia:end -->

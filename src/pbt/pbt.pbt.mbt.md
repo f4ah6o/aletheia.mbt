@@ -18,4 +18,127 @@
 ## Notes
 
 - Property definitions are intentionally omitted. Define them in a separate process.
+
+---
+
+# Property-Based Tests
+
+## Package: pbt
+
+### prop_map_invariant_orderpreserving
+
+Invariant property: map preserves element order
+
+```mbt nocheck
+///|
+test "prop_map_invariant_orderpreserving" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      // Order of elements is preserved by map
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_map_invariant_lengthpreserving
+
+Invariant property: map preserves length
+
+```mbt nocheck
+///|
+test "prop_map_invariant_lengthpreserving" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      assert_eq(map(x).length(), x.length())
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_add_label_invariant_lengthincreasing
+
+Invariant property: add_label does not decrease length
+
+```mbt nocheck
+///|
+test "prop_add_label_invariant_lengthincreasing" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::string(@pbt.Gen::choose_char(32, 126))),
+    (15, @pbt.Gen::pure("")),
+    (10, @pbt.Gen::string_of_length(1, @pbt.Gen::choose_char(32, 126))),
+    (5, @pbt.Gen::one_of([@pbt.Gen::pure(" \n\t"), @pbt.Gen::pure("a")])),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : String) {
+      let label = if x.length() == 0 {
+        Some("empty")
+      } else if x.length() == 1 {
+        Some("single_char")
+      } else if x.length() > 100 {
+        Some("long")
+      } else {
+        Some("normal")
+      }
+      assert_true(add_label(x).length() >= x.length())
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
 <!-- aletheia:end -->

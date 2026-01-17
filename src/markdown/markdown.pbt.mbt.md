@@ -21,4 +21,268 @@
 ## Notes
 
 - Property definitions are intentionally omitted. Define them in a separate process.
+
+---
+
+# Property-Based Tests
+
+## Package: markdown
+
+### prop_new_consume_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_new_consume_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::choose_int(-100, 100)),
+    (10, @pbt.Gen::pure(0)),
+    (10, @pbt.Gen::pure(1)),
+    (5, @pbt.Gen::pure(-1)),
+    (
+      5,
+      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
+    ),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : Int) {
+      let label = if x == 0 {
+        Some("zero")
+      } else if x == 1 || x == -1 {
+        Some("unit")
+      } else if x > 1000 || x < -1000 {
+        Some("large")
+      } else {
+        Some("normal")
+      }
+      let _ = consume(new(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_new_consume_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_new_consume_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::choose_int(-100, 100)),
+    (10, @pbt.Gen::pure(0)),
+    (10, @pbt.Gen::pure(1)),
+    (5, @pbt.Gen::pure(-1)),
+    (
+      5,
+      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
+    ),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : Int) {
+      let label = if x == 0 {
+        Some("zero")
+      } else if x == 1 || x == -1 {
+        Some("unit")
+      } else if x > 1000 || x < -1000 {
+        Some("large")
+      } else {
+        Some("normal")
+      }
+      let _ = consume(new(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_new_consume_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_new_consume_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::choose_int(-100, 100)),
+    (10, @pbt.Gen::pure(0)),
+    (10, @pbt.Gen::pure(1)),
+    (5, @pbt.Gen::pure(-1)),
+    (
+      5,
+      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
+    ),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : Int) {
+      let label = if x == 0 {
+        Some("zero")
+      } else if x == 1 || x == -1 {
+        Some("unit")
+      } else if x > 1000 || x < -1000 {
+        Some("large")
+      } else {
+        Some("normal")
+      }
+      let _ = consume(new(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_new_consume_str_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_new_consume_str_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::choose_int(-100, 100)),
+    (10, @pbt.Gen::pure(0)),
+    (10, @pbt.Gen::pure(1)),
+    (5, @pbt.Gen::pure(-1)),
+    (
+      5,
+      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
+    ),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : Int) {
+      let label = if x == 0 {
+        Some("zero")
+      } else if x == 1 || x == -1 {
+        Some("unit")
+      } else if x > 1000 || x < -1000 {
+        Some("large")
+      } else {
+        Some("normal")
+      }
+      let _ = consume_str(new(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_new_consume_str_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_new_consume_str_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::choose_int(-100, 100)),
+    (10, @pbt.Gen::pure(0)),
+    (10, @pbt.Gen::pure(1)),
+    (5, @pbt.Gen::pure(-1)),
+    (
+      5,
+      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
+    ),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : Int) {
+      let label = if x == 0 {
+        Some("zero")
+      } else if x == 1 || x == -1 {
+        Some("unit")
+      } else if x > 1000 || x < -1000 {
+        Some("large")
+      } else {
+        Some("normal")
+      }
+      let _ = consume_str(new(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
+
+### prop_new_consume_str_pipeline
+
+Pipeline property: producer output is valid consumer input
+
+```mbt nocheck
+///|
+test "prop_new_consume_str_pipeline" {
+  let gen = @pbt.frequency([
+    (70, @pbt.Gen::choose_int(-100, 100)),
+    (10, @pbt.Gen::pure(0)),
+    (10, @pbt.Gen::pure(1)),
+    (5, @pbt.Gen::pure(-1)),
+    (
+      5,
+      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
+    ),
+  ])
+  let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
+  let result = @pbt.check_with_stats(
+    gen,
+    fn(x : Int) {
+      let label = if x == 0 {
+        Some("zero")
+      } else if x == 1 || x == -1 {
+        Some("unit")
+      } else if x > 1000 || x < -1000 {
+        Some("large")
+      } else {
+        Some("normal")
+      }
+      let _ = consume_str(new(x))
+      (Ok(()), label)
+    },
+    config~,
+  )
+  match result.stats {
+    Some(stats) => println(stats.to_string())
+    None => ()
+  }
+  assert_true(result.passed)
+}
+```
 <!-- aletheia:end -->
