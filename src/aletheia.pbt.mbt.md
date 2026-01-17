@@ -128,22 +128,7 @@ Round-trip property: command_to_args(parse_args(args)) keeps args stable
 ```mbt check
 ///|
 test "prop_parse_args_command_to_args_roundtrip" {
-  let fixtures : Array[Array[String]] = [
-    // Basic commands
-    ["moon-pbt-gen", "analyze", "./src"],
-    ["moon-pbt-gen", "generate", "./src"],
-    ["moon-pbt-gen", "sync", "src/aletheia.pbt.mbt.md"],
-    ["moon-pbt-gen", "help"],
-    // With options
-    ["moon-pbt-gen", "analyze", "./src", "--dry-run"],
-    ["moon-pbt-gen", "analyze", "./src", "--explain"],
-    ["moon-pbt-gen", "analyze", "./src", "--format", "json"],
-    ["moon-pbt-gen", "generate", "./src", "--dry-run", "--explain"],
-    ["moon-pbt-gen", "generate", "./src", "--format", "json"],
-    ["moon-pbt-gen", "sync", "src/aletheia.pbt.mbt.md", "--dry-run"],
-    // Multiple options combined
-    ["moon-pbt-gen", "analyze", "./src", "--dry-run", "--explain", "--format", "json"],
-  ]
+  let fixtures = @cli.all_command_fixtures()
   for args in fixtures {
     let args2 = @cli.command_to_args(@cli.parse_args(args))
     assert_eq(args2, args)
@@ -158,16 +143,7 @@ Property: invalid arguments should return Help command
 ```mbt check
 ///|
 test "prop_parse_args_invalid_is_help" {
-  let invalid_args : Array[Array[String]] = [
-    [],
-    ["moon-pbt-gen"],
-    ["moon-pbt-gen", "unknown"],
-    ["moon-pbt-gen", "analyze"],  // missing path
-    ["moon-pbt-gen", "generate"], // missing path
-    ["moon-pbt-gen", "analyze", "./src", "--unknown-flag"],
-    ["moon-pbt-gen", "analyze", "./src", "--format"],  // missing format value
-    ["moon-pbt-gen", "analyze", "./src", "--format", "invalid"],
-  ]
+  let invalid_args = @cli.invalid_command_fixtures()
   for args in invalid_args {
     let cmd = @cli.parse_args(args)
     // For invalid args, round-trip should at least produce valid args
@@ -188,13 +164,7 @@ Round-trip property: parse -> generate -> parse preserves code block content
 ```mbt check
 ///|
 test "prop_parse_markdown_generate_markdown_roundtrip" {
-  let fixtures = [
-    "```moonbit\nfn foo() -> Int { 1 }\n```",
-    "Intro\n\n```mbt check\n test { inspect(1) }\n```\nOutro",
-    "```mbt nocheck\nlet x = 1\n```\n```moonbit\nfn bar() -> Int { 2 }\n```",
-    "```\nfn baz() -> Int { 3 }\n```",
-    "plain text",
-  ]
+  let fixtures = @parser.roundtrip_markdown_fixtures()
   for markdown in fixtures {
     let blocks1 = extract_code_blocks(markdown)
     let ast = parse_markdown(markdown)
@@ -220,13 +190,7 @@ Property: extract_code_blocks should be deterministic
 ```mbt check
 ///|
 test "prop_extract_code_blocks_deterministic" {
-  let fixtures = [
-    "",
-    "plain text without code blocks",
-    "```mbt\ntest {}\n```",
-    "# Heading\n\n```moonbit check\nfn foo() {}\n```\n\nMore text",
-    "```python\nprint('hello')\n```\n\n```mbt nocheck\nlet x = 1\n```",
-  ]
+  let fixtures = @parser.deterministic_markdown_fixtures()
   for markdown in fixtures {
     let blocks1 = extract_code_blocks(markdown)
     let blocks2 = extract_code_blocks(markdown)
@@ -248,10 +212,7 @@ Property: generate_markdown should preserve AST structure
 ```mbt check
 ///|
 test "prop_generate_markdown_preserves_structure" {
-  let fixtures = [
-    "# Title\n\nSome text.\n\n```mbt\nfn foo() {}\n```",
-    "```moonbit\nlet x = 1\n```\n\n```mbt check\ntest {}\n```",
-  ]
+  let fixtures = @parser.structure_markdown_fixtures()
   for markdown in fixtures {
     let blocks1 = @parser.extract_code_blocks(markdown)
     let ast = @parser.parse_markdown(markdown)
