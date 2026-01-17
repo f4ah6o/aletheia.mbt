@@ -198,11 +198,16 @@ fn convert_type(ty : @syntax.Type?) -> @ast.TypeMeta {
 /// Type を TypeMeta に変換
 fn convert_type_to_meta(ty : @syntax.Type) -> @ast.TypeMeta {
   match ty {
-    Name(constr_id~, ..) => {
-      // 名前付き型: Int, String, など
+    Name(constr_id~, tys~, ..) => {
+      // 名前付き型: Int, String, Array[Int] など
       let name = extract_constr_id_name(constr_id)
-      // とりあえず型パラメータを含む型は簡略化
-      @ast.TypeMeta::named(name)
+      // 型パラメータを抽出して再帰的に変換
+      let inner_types = convert_type_list(tys)
+      if inner_types.length() > 0 {
+        @ast.TypeMeta::generic(name, inner_types)
+      } else {
+        @ast.TypeMeta::named(name)
+      }
     }
     Arrow(..) => @ast.TypeMeta::named("Function")
     Tuple(..) => @ast.TypeMeta::named("Tuple")
@@ -210,6 +215,14 @@ fn convert_type_to_meta(ty : @syntax.Type) -> @ast.TypeMeta {
     Object(_) => @ast.TypeMeta::named("Object")
     Any(_) => @ast.TypeMeta::named("Any")
   }
+}
+
+///|
+/// Type リストを TypeMeta 配列に変換
+fn convert_type_list(types : @list.List[@syntax.Type]) -> Array[@ast.TypeMeta] {
+  let result : Array[@ast.TypeMeta] = []
+  types.each(fn(t) { Array::push(result, convert_type_to_meta(t)) })
+  result
 }
 
 ///|
@@ -245,4 +258,43 @@ fn extract_type_params(
   let result : Array[String] = []
   quantifiers.each(fn(binder) { Array::push(result, binder.name) })
   result
+}
+
+///|
+/// ソースコードから関数とテスト可能性をまとめて抽出
+pub fn extract_with_testability(
+  source : String,
+  source_file : String,
+) -> @ast.ExtractionResult {
+  let functions = extract_public_functions(source, source_file)
+  let arbitrary_impls = detect_arbitrary_impls(source)
+
+  let testable_functions : Array[String] = []
+  let needs_arbitrary : Array[String] = []
+
+  let mut i = 0
+  while i < functions.length() {
+    let func = functions[i]
+    let testability = check_function_testability(func, arbitrary_impls)
+    match testability {
+      @ast.Testability::Testable => Array::push(testable_functions, func.name)
+      @ast.Testability::NeedsUserArbitrary(types) => {
+        let mut j = 0
+        while j < types.length() {
+          if !string_array_contains(needs_arbitrary, types[j]) {
+            Array::push(needs_arbitrary, types[j])
+          }
+          j = j + 1
+        }
+      }
+      @ast.Testability::NotTestable(_) => ()
+    }
+    i = i + 1
+  }
+
+  @ast.ExtractionResult::new(source_file)
+  |> @ast.ExtractionResult::with_functions(functions)
+  |> @ast.ExtractionResult::with_arbitrary_impls(arbitrary_impls)
+  |> @ast.ExtractionResult::with_testable_functions(testable_functions)
+  |> @ast.ExtractionResult::with_needs_arbitrary(needs_arbitrary)
 }

@@ -78,6 +78,11 @@ pub fn TypeMeta::named(name : String) -> TypeMeta {
 }
 
 ///|
+pub fn TypeMeta::generic(name : String, inner_types : Array[TypeMeta]) -> TypeMeta {
+  Generic(name, inner_types)
+}
+
+///|
 /// 引数メタデータ
 pub struct ArgMeta {
   name : String
@@ -397,5 +402,82 @@ pub fn call_type_to_string(ct : CallType) -> String {
     MethodCall => "method"
     PipelineCall => "pipeline"
     ChainCall => "chain"
+  }
+}
+
+///|
+/// 抽出結果（関数とテスト可能性をまとめた構造）
+pub struct ExtractionResult {
+  source_file : String
+  functions : Array[FunctionMeta]
+  arbitrary_impls : Array[ArbitraryImpl]
+  testable_functions : Array[String]
+  needs_arbitrary : Array[String]
+}
+
+///|
+pub fn ExtractionResult::new(source_file : String) -> ExtractionResult {
+  {
+    source_file,
+    functions: [],
+    arbitrary_impls: [],
+    testable_functions: [],
+    needs_arbitrary: [],
+  }
+}
+
+///|
+pub fn ExtractionResult::with_functions(
+  self : ExtractionResult,
+  functions : Array[FunctionMeta],
+) -> ExtractionResult {
+  {
+    source_file: self.source_file,
+    functions,
+    arbitrary_impls: self.arbitrary_impls,
+    testable_functions: self.testable_functions,
+    needs_arbitrary: self.needs_arbitrary,
+  }
+}
+
+///|
+pub fn ExtractionResult::with_arbitrary_impls(
+  self : ExtractionResult,
+  arbitrary_impls : Array[ArbitraryImpl],
+) -> ExtractionResult {
+  {
+    source_file: self.source_file,
+    functions: self.functions,
+    arbitrary_impls,
+    testable_functions: self.testable_functions,
+    needs_arbitrary: self.needs_arbitrary,
+  }
+}
+
+///|
+pub fn ExtractionResult::with_testable_functions(
+  self : ExtractionResult,
+  testable_functions : Array[String],
+) -> ExtractionResult {
+  {
+    source_file: self.source_file,
+    functions: self.functions,
+    arbitrary_impls: self.arbitrary_impls,
+    testable_functions,
+    needs_arbitrary: self.needs_arbitrary,
+  }
+}
+
+///|
+pub fn ExtractionResult::with_needs_arbitrary(
+  self : ExtractionResult,
+  needs_arbitrary : Array[String],
+) -> ExtractionResult {
+  {
+    source_file: self.source_file,
+    functions: self.functions,
+    arbitrary_impls: self.arbitrary_impls,
+    testable_functions: self.testable_functions,
+    needs_arbitrary,
   }
 }

@@ -306,6 +306,81 @@ test "prop_check_function_testability_custom_type" {
   }
 }
 
+///|
+/// extract_with_testability は関数とテスト可能性を抽出する
+test "prop_extract_with_testability_basic" {
+  let source = "pub fn add(x : Int, y : Int) -> Int { x + y }\npub fn process(s : String) -> Int { 0 }"
+  let result = @analyzer.extract_with_testability(source, "test.mbt")
+
+  // 2つの公開関数が見つかる
+  inspect(result.functions.length(), content="2")
+  // 両方ともプリミティブ型のみなので testable
+  inspect(result.testable_functions.length(), content="2")
+  // ユーザー定義型は不要
+  inspect(result.needs_arbitrary.length(), content="0")
+}
+
+///|
+/// extract_with_testability はジェネリック型のテスト可能性を判定する
+test "prop_extract_with_testability_generic_types" {
+  let source = "pub fn process_list(xs : Array[Int]) -> Int { 0 }\npub fn process_custom(x : MyType) -> Int { 0 }"
+  let result = @analyzer.extract_with_testability(source, "test.mbt")
+
+  // 2つの公開関数が見つかる
+  inspect(result.functions.length(), content="2")
+  // Array[Int] は testable (Int はプリミティブ)
+  inspect(result.testable_functions.length(), content="1")
+  inspect(result.testable_functions[0], content="process_list")
+  // MyType はユーザー定義型が必要
+  inspect(result.needs_arbitrary.length(), content="1")
+  inspect(result.needs_arbitrary[0], content="MyType")
+}
+
+///|
+/// extract_public_functions はジェネリック型を正しく抽出する
+test "prop_extract_public_functions_generic_types" {
+  let source = "pub fn process_array(xs : Array[Int]) -> Int { 0 }\npub fn process_map(m : Map[String, Int]) -> Int { 0 }"
+  let functions = @analyzer.extract_public_functions(source, "test.mbt")
+
+  inspect(functions.length(), content="2")
+
+  // 最初の関数: process_array(xs : Array[Int]) -> Int
+  let func1 = functions[0]
+  inspect(func1.name, content="process_array")
+  inspect(func1.args.length(), content="1")
+  match func1.args[0].type_ {
+    @ast.TypeMeta::Generic(name, inner_types) => {
+      inspect(name, content="Array")
+      inspect(inner_types.length(), content="1")
+      match inner_types[0] {
+        @ast.TypeMeta::Named(inner_name) => inspect(inner_name, content="Int")
+        _ => inspect("should be Named", content="fail")
+      }
+    }
+    _ => inspect("should be Generic", content="fail")
+  }
+
+  // 2番目の関数: process_map(m : Map[String, Int]) -> Int
+  let func2 = functions[1]
+  inspect(func2.name, content="process_map")
+  inspect(func2.args.length(), content="1")
+  match func2.args[0].type_ {
+    @ast.TypeMeta::Generic(name, inner_types) => {
+      inspect(name, content="Map")
+      inspect(inner_types.length(), content="2")
+      match inner_types[0] {
+        @ast.TypeMeta::Named(inner_name) => inspect(inner_name, content="String")
+        _ => inspect("should be Named", content="fail")
+      }
+      match inner_types[1] {
+        @ast.TypeMeta::Named(inner_name) => inspect(inner_name, content="Int")
+        _ => inspect("should be Named", content="fail")
+      }
+    }
+    _ => inspect("should be Generic", content="fail")
+  }
+}
+
 //==============================================================
 // ユーティリティ関数
 //==============================================================

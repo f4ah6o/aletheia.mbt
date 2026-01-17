@@ -430,36 +430,125 @@ pub fn check_type_testability(
 }
 
 ///|
-/// 関数のテスト可能性を判定
+/// TypeMeta から必要なArbitrary実装を収集
+fn collect_needed_from_type_meta(
+  type_meta : @ast.TypeMeta,
+  known_impls : Array[@ast.ArbitraryImpl],
+) -> Array[String] {
+  let needed : Array[String] = []
+  match type_meta {
+    @ast.TypeMeta::Generic(_, inner_types) => {
+      // コンテナ型の内部型をチェック
+      let inner_names = collect_inner_type_names(inner_types, known_impls)
+      let mut i = 0
+      while i < inner_names.length() {
+        Array::push(needed, inner_names[i])
+        i = i + 1
+      }
+    }
+    @ast.TypeMeta::Named(name) => {
+      // 名前付き型をチェック
+      if !has_arbitrary(name, known_impls) {
+        Array::push(needed, name)
+      }
+    }
+    @ast.TypeMeta::Primitive(_) => {
+      // プリミティブ型は常にOK
+      ()
+    }
+    @ast.TypeMeta::Unit => {
+      // Unit型は常にOK
+      ()
+    }
+    @ast.TypeMeta::Unknown(name) => {
+      // 不明な型は必要とみなす
+      Array::push(needed, name)
+    }
+    _ => {
+      // Function, Tuple などはとりあえず簡易対応
+      let name = type_meta.simple_name()
+      Array::push(needed, name)
+    }
+  }
+  needed
+}
+
+///|
+/// TypeMeta配列から内部型名を収集（再帰的）
+fn collect_inner_type_names(
+  types : Array[@ast.TypeMeta],
+  known_impls : Array[@ast.ArbitraryImpl],
+) -> Array[String] {
+  let needed : Array[String] = []
+  let mut i = 0
+  while i < types.length() {
+    let inner_needed = collect_needed_from_type_meta(types[i], known_impls)
+    let mut j = 0
+    while j < inner_needed.length() {
+      Array::push(needed, inner_needed[j])
+      j = j + 1
+    }
+    i = i + 1
+  }
+  needed
+}
+
+///|
+/// 関数のテスト可能性を判定（TypeMeta対応版）
 pub fn check_function_testability(
   func : @ast.FunctionMeta,
   known_impls : Array[@ast.ArbitraryImpl],
 ) -> @ast.Testability {
-  let all_types : Array[String] = []
+  let all_needed : Array[String] = []
 
   // 引数の型を収集
   let mut i = 0
   while i < func.args.length() {
-    let arg_type = func.args[i].type_.simple_name()
-    Array::push(all_types, arg_type)
-    i = i + 1
-  }
-
-  // 各型がArbitraryを実装しているかチェック
-  let needed : Array[String] = []
-  let mut i = 0
-  while i < all_types.length() {
-    let type_str = all_types[i]
-    if !has_arbitrary(type_str, known_impls) {
-      Array::push(needed, type_str)
+    let arg_type = func.args[i].type_
+    let needed = collect_needed_from_type_meta(arg_type, known_impls)
+    let mut j = 0
+    while j < needed.length() {
+      Array::push(all_needed, needed[j])
+      j = j + 1
     }
     i = i + 1
   }
-  if needed.length() == 0 {
+
+  // 重複を除去して判定
+  let unique_needed = dedupe_strings(all_needed)
+  if unique_needed.length() == 0 {
     @ast.testable()
   } else {
-    @ast.needs_user_arbitrary(needed)
+    @ast.needs_user_arbitrary(unique_needed)
   }
+}
+
+///|
+/// 文字列配列から重複を除去
+fn dedupe_strings(strings : Array[String]) -> Array[String] {
+  let result : Array[String] = []
+  let mut i = 0
+  while i < strings.length() {
+    let s = strings[i]
+    if !string_array_contains(result, s) {
+      Array::push(result, s)
+    }
+    i = i + 1
+  }
+  result
+}
+
+///|
+/// 文字列配列に要素が含まれるか判定
+pub fn string_array_contains(arr : Array[String], item : String) -> Bool {
+  let mut i = 0
+  while i < arr.length() {
+    if arr[i] == item {
+      return true
+    }
+    i = i + 1
+  }
+  false
 }
 
 // テスト
