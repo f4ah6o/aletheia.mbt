@@ -25,6 +25,17 @@
       },
       "license": "Apache-2.0",
       "repository": "https://github.com/f4ah6o/aletheia.mbt.git"
+    },
+    {
+      "name": "pbt-workflow-guide",
+      "source": "./plugins/pbt-workflow-guide",
+      "description": "Interactive guide for applying PBT patterns to MoonBit modules.",
+      "version": "v2026.1.1",
+      "author": {
+        "name": "f4ah6o"
+      },
+      "license": "Apache-2.0",
+      "repository": "https://github.com/f4ah6o/aletheia.mbt.git"
     }
   ]
 }
