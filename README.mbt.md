@@ -202,6 +202,38 @@ moon run src/aletheia -- generate ./src
 grep "Manual Notes" src/aletheia.pbt.mbt.md  # Manual Notes still present
 ```
 
+### Verifying Determinism
+
+To verify that generation is deterministic (produces identical output on multiple runs):
+
+```bash
+# Generate first time
+moon run src/aletheia -- generate ./src
+cp src/aletheia.pbt.mbt.md /tmp/original.md
+
+# Generate second time
+moon run src/aletheia -- generate ./src
+
+# Compare - should have no differences
+diff /tmp/original.md src/aletheia.pbt.mbt.md
+```
+
+Expected: No output (files are identical). If there are differences, generation is non-deterministic.
+
+### Marker Specification
+
+Generated files use HTML comment markers to delimit auto-generated content:
+
+- **Start marker**: `<!-- aletheia:begin -->`
+- **End marker**: `<!-- aletheia:end -->`
+
+**Behavior**:
+1. Content between markers is replaced on each generation
+2. Content outside markers is preserved unchanged
+3. If markers don't exist, they are created with all generated content inside
+4. Manual edits should be placed outside markers to persist across regenerations
+
+
 ## Dependencies
 
 - `moonbitlang/parser` - AST parsing

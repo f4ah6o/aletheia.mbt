@@ -948,6 +948,7 @@ fn resolve_package_dirs(path : String) -> Array[String] {
 fn collect_package_dirs(root : String) -> Array[String] {
   let result : Array[String] = []
   let entries = read_dir_entries(root)
+  entries.sort_by((a, b) => String::compare(a, b))
   let mut i = 0
   while i < entries.length() {
     let entry = entries[i]
@@ -976,6 +977,7 @@ fn collect_functions_from_package(
 ) -> Array[@ast.FunctionMeta] {
   let result : Array[@ast.FunctionMeta] = []
   let entries = read_dir_entries(package_dir)
+  entries.sort_by((a, b) => String::compare(a, b))
   let mut i = 0
   while i < entries.length() {
     let entry = entries[i]
@@ -1028,6 +1030,7 @@ fn collect_arbitrary_impls_from_package(
 ) -> Array[@ast.ArbitraryImpl] {
   let result : Array[@ast.ArbitraryImpl] = []
   let entries = read_dir_entries(package_dir)
+  entries.sort_by((a, b) => String::compare(a, b))
   let mut i = 0
   while i < entries.length() {
     let entry = entries[i]

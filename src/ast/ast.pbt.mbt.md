@@ -45,36 +45,31 @@
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_new_user_defined_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = user_defined(new(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = user_defined(new(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -88,36 +83,31 @@ test "prop_new_user_defined_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_new_user_defined_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = user_defined(new(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = user_defined(new(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -131,36 +121,31 @@ test "prop_new_user_defined_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_new_user_defined_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = user_defined(new(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = user_defined(new(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -174,36 +159,31 @@ test "prop_new_user_defined_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_new_user_defined_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = user_defined(new(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = user_defined(new(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -217,36 +197,31 @@ test "prop_new_user_defined_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_new_user_defined_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = user_defined(new(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = user_defined(new(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -260,36 +235,31 @@ test "prop_new_user_defined_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_new_user_defined_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = user_defined(new(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = user_defined(new(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -303,36 +273,31 @@ test "prop_new_user_defined_pipeline" {
 Invariant property: add_edge does not decrease length
 
 ```mbt nocheck
-///|
 test "prop_add_edge_invariant_lengthincreasing" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      assert_true(add_edge(x).length() >= x.length())
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    assert_true(add_edge(x).length() >= x.length())
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -346,36 +311,31 @@ test "prop_add_edge_invariant_lengthincreasing" {
 Invariant property: add_node does not decrease length
 
 ```mbt nocheck
-///|
 test "prop_add_node_invariant_lengthincreasing" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      assert_true(add_node(x).length() >= x.length())
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    assert_true(add_node(x).length() >= x.length())
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -389,36 +349,31 @@ test "prop_add_node_invariant_lengthincreasing" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_make_public_user_defined_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = user_defined(make_public(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = user_defined(make_public(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -432,36 +387,31 @@ test "prop_make_public_user_defined_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_make_private_user_defined_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = user_defined(make_private(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = user_defined(make_private(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -475,36 +425,31 @@ test "prop_make_private_user_defined_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_make_internal_user_defined_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = user_defined(make_internal(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = user_defined(make_internal(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -518,36 +463,31 @@ test "prop_make_internal_user_defined_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_make_chain_call_user_defined_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = user_defined(make_chain_call(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = user_defined(make_chain_call(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -561,36 +501,31 @@ test "prop_make_chain_call_user_defined_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_make_direct_call_user_defined_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = user_defined(make_direct_call(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = user_defined(make_direct_call(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -604,36 +539,31 @@ test "prop_make_direct_call_user_defined_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_make_method_call_user_defined_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = user_defined(make_method_call(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = user_defined(make_method_call(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()
@@ -647,36 +577,31 @@ test "prop_make_method_call_user_defined_pipeline" {
 Pipeline property: producer output is valid consumer input
 
 ```mbt nocheck
-///|
 test "prop_make_pipeline_call_user_defined_pipeline" {
   let gen = @pbt.frequency([
     (70, @pbt.Gen::choose_int(-100, 100)),
     (10, @pbt.Gen::pure(0)),
     (10, @pbt.Gen::pure(1)),
     (5, @pbt.Gen::pure(-1)),
-    (
-      5,
-      @pbt.Gen::one_of([@pbt.Gen::pure(2147483647), @pbt.Gen::pure(-2147483648)]),
-    ),
+    (5, @pbt.Gen::one_of([
+      @pbt.Gen::pure(2147483647),
+      @pbt.Gen::pure(-2147483648)
+    ]))
   ])
   let config = @pbt.CheckConfig::new(cases=100, max_size=30, seed=42)
-  let result = @pbt.check_with_stats(
-    gen,
-    fn(x : Int) {
-      let label = if x == 0 {
-        Some("zero")
-      } else if x == 1 || x == -1 {
-        Some("unit")
-      } else if x > 1000 || x < -1000 {
-        Some("large")
-      } else {
-        Some("normal")
-      }
-      let _ = user_defined(make_pipeline_call(x))
-      (Ok(()), label)
-    },
-    config~,
-  )
+  let result = @pbt.check_with_stats(gen, fn(x : Int) {
+    let label = if x == 0 {
+      Some("zero")
+    } else if x == 1 || x == -1 {
+      Some("unit")
+    } else if x > 1000 || x < -1000 {
+      Some("large")
+    } else {
+      Some("normal")
+    }
+    let _ = user_defined(make_pipeline_call(x))
+    (Ok(()), label)
+  }, config~)
   match result.stats {
     Some(stats) => println(stats.to_string())
     None => ()

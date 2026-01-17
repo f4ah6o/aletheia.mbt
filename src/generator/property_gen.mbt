@@ -1679,3 +1679,18 @@ test "merge_with_unbalanced_markers_replaces_all" {
   inspect(merged2.contains("NEW2"), content="true")
   inspect(merged2.contains("NEW1"), content="false")
 }
+
+///|
+test "full_pipeline_is_deterministic" {
+  // 全パターン種別を含むパイプラインで決定性を検証
+  let names = [
+    "parse_foo", "generate_foo", "normalize", "sort_array", "encode_data",
+    "decode_data", "trim_string", "to_upper", "process_list",
+  ]
+  let patterns = @patterns.detect_all_patterns(names)
+  let doc1 = build_pbt_document("test_module", "src", patterns, "String")
+  let md1 = generate_pbt_targets_md(doc1, true)
+  let doc2 = build_pbt_document("test_module", "src", patterns, "String")
+  let md2 = generate_pbt_targets_md(doc2, true)
+  inspect(md1 == md2, content="true")
+}
