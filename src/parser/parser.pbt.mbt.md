@@ -37,14 +37,15 @@ test "prop_parse_markdown_generate_markdown_roundtrip" {
     "plain text"
   ]
   for markdown in fixtures {
+    let blocks1 = extract_code_blocks(markdown)
     let ast = parse_markdown(markdown)
     let regenerated = generate_markdown(ast)
-    let ast2 = parse_markdown(regenerated)
-    assert_eq(ast.code_blocks.length(), ast2.code_blocks.length())
+    let blocks2 = extract_code_blocks(regenerated)
+    assert_eq(blocks1.length(), blocks2.length())
     let mut i = 0
-    while i < ast.code_blocks.length() {
-      let block1 = ast.code_blocks[i]
-      let block2 = ast2.code_blocks[i]
+    while i < blocks1.length() {
+      let block1 = blocks1[i]
+      let block2 = blocks2[i]
       assert_eq(block1.lang, block2.lang)
       assert_eq(block1.content, block2.content)
       i = i + 1

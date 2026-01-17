@@ -67,13 +67,11 @@ fn generate_parse_generate_round_trip_test(
   let test_name = "prop_" + parser + "_" + generator + "_roundtrip"
   let test_code = "test \"" +
     test_name +
-    "\" {\n  let fixtures = [\n    \"```moonbit\\nfn foo() -> Int { 1 }\\n```\",\n    \"Intro\\n\\n```mbt check\\n test { inspect(1) }\\n```\\nOutro\",\n    \"```mbt nocheck\\nlet x = 1\\n```\\n```moonbit\\nfn bar() -> Int { 2 }\\n```\",\n    \"```\\nfn baz() -> Int { 3 }\\n```\",\n    \"plain text\"\n  ]\n  for markdown in fixtures {\n    let ast = " +
+    "\" {\n  let fixtures = [\n    \"```moonbit\\nfn foo() -> Int { 1 }\\n```\",\n    \"Intro\\n\\n```mbt check\\n test { inspect(1) }\\n```\\nOutro\",\n    \"```mbt nocheck\\nlet x = 1\\n```\\n```moonbit\\nfn bar() -> Int { 2 }\\n```\",\n    \"```\\nfn baz() -> Int { 3 }\\n```\",\n    \"plain text\"\n  ]\n  for markdown in fixtures {\n    let blocks1 = extract_code_blocks(markdown)\n    let ast = " +
     parser +
     "(markdown)\n    let regenerated = " +
     generator +
-    "(ast)\n    let ast2 = " +
-    parser +
-    "(regenerated)\n    assert_eq(ast.code_blocks.length(), ast2.code_blocks.length())\n    let mut i = 0\n    while i < ast.code_blocks.length() {\n      let block1 = ast.code_blocks[i]\n      let block2 = ast2.code_blocks[i]\n      assert_eq(block1.lang, block2.lang)\n      assert_eq(block1.content, block2.content)\n      i = i + 1\n    }\n  }\n}"
+    "(ast)\n    let blocks2 = extract_code_blocks(regenerated)\n    assert_eq(blocks1.length(), blocks2.length())\n    let mut i = 0\n    while i < blocks1.length() {\n      let block1 = blocks1[i]\n      let block2 = blocks2[i]\n      assert_eq(block1.lang, block2.lang)\n      assert_eq(block1.content, block2.content)\n      i = i + 1\n    }\n  }\n}"
   {
     name: test_name,
     code: test_code,

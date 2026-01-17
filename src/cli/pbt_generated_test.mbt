@@ -14,9 +14,7 @@ test "prop_parse_args_command_to_args_roundtrip" {
     ["moon-pbt-gen", "generate", "./src", "--format", "json"],
     ["moon-pbt-gen", "sync", "src/aletheia.pbt.mbt.md", "--dry-run"],
     // Multiple options combined
-    [
-      "moon-pbt-gen", "analyze", "./src", "--dry-run", "--explain", "--format", "json",
-    ],
+    ["moon-pbt-gen", "analyze", "./src", "--dry-run", "--explain", "--format", "json"],
   ]
   for args in fixtures {
     let args2 = @cli.command_to_args(@cli.parse_args(args))
@@ -30,10 +28,10 @@ test "prop_parse_args_invalid_is_help" {
     [],
     ["moon-pbt-gen"],
     ["moon-pbt-gen", "unknown"],
-    ["moon-pbt-gen", "analyze"], // missing path
+    ["moon-pbt-gen", "analyze"],  // missing path
     ["moon-pbt-gen", "generate"], // missing path
     ["moon-pbt-gen", "analyze", "./src", "--unknown-flag"],
-    ["moon-pbt-gen", "analyze", "./src", "--format"], // missing format value
+    ["moon-pbt-gen", "analyze", "./src", "--format"],  // missing format value
     ["moon-pbt-gen", "analyze", "./src", "--format", "invalid"],
   ]
   for args in invalid_args {
