@@ -342,7 +342,7 @@ test "prop_generate_pbt_targets_md_lists_roundtrip" {
   let doc = build_pbt_document(
     "generator", "./src/generator", patterns, "String",
   )
-  let md = generate_pbt_targets_md(doc)
+  let md = generate_pbt_targets_md(doc, false)
   inspect(md.contains("## Round-Trip Targets"), content="true")
   inspect(md.contains("`parse_args` <-> `command_to_args`"), content="true")
 }

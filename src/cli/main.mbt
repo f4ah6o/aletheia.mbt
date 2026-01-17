@@ -1366,7 +1366,7 @@ fn build_generate_report(
   let doc = @generator.build_pbt_document(
     module_name, path, all_patterns, default_type,
   )
-  let content = @generator.generate_pbt_targets_md(doc)
+  let content = @generator.generate_pbt_targets_md(doc, true)
   let output_path = output_path_for_pbt(path, module_name)
   let mut write_error : String? = None
   if !options.dry_run {
@@ -1615,7 +1615,7 @@ fn build_per_package_reports(
     let doc = @generator.build_pbt_document(
       module_name, pkg_dir, all_patterns, default_type,
     )
-    let content = @generator.generate_pbt_targets_md(doc)
+    let content = @generator.generate_pbt_targets_md(doc, true)
     let output_path = output_path_for_pbt(pkg_dir, module_name)
     let mut write_error : String? = None
     if !options.dry_run {

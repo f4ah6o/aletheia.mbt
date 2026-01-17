@@ -1225,8 +1225,53 @@ pub fn generate_pbt_md(doc : PbtDocument) -> String {
 }
 
 ///|
+/// パッケージセクションを生成（## Package: ヘッディングとテストコード）
+pub fn generate_package_section_from_tests(
+  package_name : String,
+  tests : Array[GeneratedTest],
+) -> String {
+  if tests.length() == 0 {
+    ""
+  } else {
+    let mut result = "## Package: " + package_name + "\n\n"
+    let mut i = 0
+    while i < tests.length() {
+      let t = tests[i]
+      result = result + "### " + t.name + "\n\n"
+      result = result + t.description + "\n\n"
+      result = result + "```" + t.fence + "\n" + t.code + "\n```\n\n"
+      i = i + 1
+    }
+    result
+  }
+}
+
+///|
+/// パッケージセクションを生成（## Package: ヘッディングとテストコード）
+pub fn generate_package_section(
+  package_name : String,
+  patterns : Array[@patterns.PatternCandidate],
+  default_type : String,
+) -> String {
+  if patterns.length() == 0 {
+    ""
+  } else {
+    let mut result = "## Package: " + package_name + "\n\n"
+    let mut i = 0
+    while i < patterns.length() {
+      let t = pattern_to_test(patterns[i], default_type)
+      result = result + "### " + t.name + "\n\n"
+      result = result + t.description + "\n\n"
+      result = result + "```" + t.fence + "\n" + t.code + "\n```\n\n"
+      i = i + 1
+    }
+    result
+  }
+}
+
+///|
 /// PbtDocument からターゲット一覧Markdownを生成
-pub fn generate_pbt_targets_md(doc : PbtDocument) -> String {
+pub fn generate_pbt_targets_md(doc : PbtDocument, include_packages : Bool) -> String {
   let mut result = "# Property-Based Test Targets for " +
     doc.module_name +
     "\n\n"
@@ -1326,7 +1371,14 @@ pub fn generate_pbt_targets_md(doc : PbtDocument) -> String {
   result = result +
     "## Notes\n\n" +
     "- Property definitions are intentionally omitted. Define them in a separate process.\n"
-  result.trim_end().to_string()
+  let base = result.trim_end().to_string()
+  if include_packages && doc.test_cases.length() > 0 {
+    base +
+      "\n\n---\n\n# Property-Based Tests\n\n" +
+      generate_package_section_from_tests(doc.module_name, doc.test_cases)
+  } else {
+    base
+  }
 }
 
 ///|
@@ -1569,7 +1621,7 @@ test "generate_pbt_targets_md" {
     i = i + 1
   }
   let doc = build_pbt_document("sample", "src", patterns, "T")
-  let md = generate_pbt_targets_md(doc)
+  let md = generate_pbt_targets_md(doc, false)
   inspect(md.contains("Round-Trip Targets"), content="true")
   inspect(md.contains("normalize"), content="true")
 }
@@ -1581,8 +1633,8 @@ test "generate_is_deterministic" {
   let patterns = @patterns.find_round_trips(names)
   let doc1 = build_pbt_document("test_module", "src", patterns, "String")
   let doc2 = build_pbt_document("test_module", "src", patterns, "String")
-  let md1 = generate_pbt_targets_md(doc1)
-  let md2 = generate_pbt_targets_md(doc2)
+  let md1 = generate_pbt_targets_md(doc1, false)
+  let md2 = generate_pbt_targets_md(doc2, false)
   inspect(md1 == md2, content="true")
 }
 
