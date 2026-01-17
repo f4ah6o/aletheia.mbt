@@ -8,7 +8,7 @@
       "name": "aletheia-self-pbt",
       "source": "./plugins/aletheia-self-pbt",
       "description": "Self-dogfooding workflow for generating and validating Aletheia PBT templates.",
-      "version": "0.1.0",
+      "version": "v2026.1.1",
       "author": {
         "name": "f4ah6o"
       },
@@ -19,7 +19,7 @@
       "name": "aletheia-pbt",
       "source": "./plugins/aletheia-pbt",
       "description": "Generate and sync MoonBit property-based tests with Aletheia.",
-      "version": "0.1.0",
+      "version": "v2026.1.1",
       "author": {
         "name": "f4ah6o"
       },
