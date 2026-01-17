@@ -123,6 +123,7 @@ fn convert_fun_decl(
         args,
         return_type,
         location,
+        type_params=_type_params,
       )
     @ast.Private => @ast.FunctionMeta::new(decl.name.name, location)
     @ast.Internal => @ast.FunctionMeta::new(decl.name.name, location)

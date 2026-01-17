@@ -40,3 +40,42 @@ test "prop_detect_arbitrary_impls_finds_user_defined" {
   }
   inspect(found, content="true")
 }
+
+///|
+test "prop_extract_generic_function_captures_type_params" {
+  let source : String =
+    #|pub fn identity[T](x : T) -> T { x }
+    #|
+  let funcs = extract_public_functions(source, "sample.mbt")
+  inspect(funcs.length(), content="1")
+  let f = funcs[0]
+  inspect(f.name, content="identity")
+  inspect(f.type_params.length(), content="1")
+  inspect(f.type_params[0], content="T")
+}
+
+///|
+test "prop_extract_generic_function_with_multiple_type_params" {
+  let source : String =
+    #|pub fn swap[A, B](x : A, y : B) -> (B, A) { (y, x) }
+    #|
+  let funcs = extract_public_functions(source, "sample.mbt")
+  inspect(funcs.length(), content="1")
+  let f = funcs[0]
+  inspect(f.name, content="swap")
+  inspect(f.type_params.length(), content="2")
+  inspect(f.type_params[0], content="A")
+  inspect(f.type_params[1], content="B")
+}
+
+///|
+test "prop_extract_non_generic_function_has_empty_type_params" {
+  let source : String =
+    #|pub fn add(x : Int, y : Int) -> Int { x + y }
+    #|
+  let funcs = extract_public_functions(source, "sample.mbt")
+  inspect(funcs.length(), content="1")
+  let f = funcs[0]
+  inspect(f.name, content="add")
+  inspect(f.type_params.length(), content="0")
+}
