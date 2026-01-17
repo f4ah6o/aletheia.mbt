@@ -6,11 +6,25 @@ import(
 )
 
 // Values
+pub fn build_classification_for_type(String, String) -> String
+
+pub fn build_frequency_for_type(String) -> String
+
 pub fn build_pbt_document(String, String, Array[@patterns.PatternCandidate], String) -> PbtDocument
+
+pub fn determine_comparison_strategy(String, String) -> String
 
 pub fn edge_cases_for_type(String) -> Array[EdgeCase]
 
+pub fn edge_cases_to_frequency(Array[EdgeCase]) -> Array[FrequencyEntry]
+
+pub fn frequency_generator_for_type(String) -> String
+
+pub fn generate_counterexample_analysis_template() -> String
+
 pub fn generate_counterexample_section() -> String
+
+pub fn generate_deterministic_model_section() -> String
 
 pub fn generate_edge_case_tests(String, String) -> GeneratedTest
 
@@ -22,7 +36,15 @@ pub fn generate_invariant_test(String, String, String) -> GeneratedTest
 
 pub fn generate_mbt_md_section(Array[GeneratedTest]) -> String
 
+pub fn generate_oracle_examples(String, String, String) -> Array[String]
+
+pub fn generate_oracle_guidance(String, String, String) -> String
+
+pub fn generate_oracle_guidance_section() -> String
+
 pub fn generate_oracle_test(String, String, String) -> GeneratedTest
+
+pub fn generate_oracle_test_with_guidance(String, String, String) -> OracleTestTemplate
 
 pub fn generate_pbt_md(PbtDocument) -> String
 
@@ -30,7 +52,15 @@ pub fn generate_pbt_targets_md(PbtDocument) -> String
 
 pub fn generate_producer_consumer_test(String, String, String) -> GeneratedTest
 
+pub fn generate_quick_start_section() -> String
+
 pub fn generate_round_trip_test(String, String, String) -> GeneratedTest
+
+pub fn generate_shim_guidance_section() -> String
+
+pub fn generate_shrink_examples() -> String
+
+pub fn generate_shrink_template(String) -> String
 
 pub fn generate_test_with_stats(String, String, String, Array[(String, String)]) -> GeneratedTest
 
@@ -40,13 +70,21 @@ pub fn generated_block_start() -> String
 
 pub fn generator_expression_for_type(String) -> String
 
+pub fn has_prefix_str(String, String) -> Bool
+
 pub fn is_container_type(String) -> Bool
 
 pub fn is_primitive_type(String) -> Bool
 
+pub fn is_recursive_type(String) -> Bool
+
 pub fn merge_generated_markdown(String, String) -> String
 
 pub fn pattern_to_test(@patterns.PatternCandidate, String) -> GeneratedTest
+
+pub fn safe_nesting_depth(String) -> Int
+
+pub fn sized_generator_for_type(String) -> String
 
 pub fn wrap_generated_block(String) -> String
 
@@ -64,11 +102,32 @@ pub struct EdgeCase {
   description : String
 }
 
+pub struct FrequencyEntry {
+  weight : Int
+  generator_expr : String
+}
+
 pub struct GeneratedTest {
   name : String
   code : String
   description : String
   fence : String
+}
+
+pub struct OracleTestTemplate {
+  name : String
+  implementation : String
+  oracle : String
+  comparison_strategy : String
+  guidance : String
+  examples : Array[String]
+}
+
+pub enum OracleTestType {
+  SameOutputOracle
+  PropertyOracle
+  InverseOracle
+  StateOracle
 }
 
 pub enum PatternKind {

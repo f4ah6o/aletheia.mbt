@@ -8,6 +8,10 @@ pub fn create_state_machine(String, String) -> StateMachine
 
 pub fn execute_commands(StateMachine, String) -> ExecutionResult
 
+pub fn generate_deterministic_model_section() -> String
+
+pub fn generate_shim_guidance_section() -> String
+
 pub fn generate_state_machine_test(StateMachine, String) -> String
 
 pub fn generate_state_machine_test_template(String, String, String, String) -> String
