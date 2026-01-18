@@ -2,11 +2,15 @@
 package "f4ah6o/aletheia/cli"
 
 // Values
+pub fn all_command_fixtures() -> Array[Array[String]]
+
 pub fn command_to_args(Command) -> Array[String]
 
 pub fn default_options() -> CommandOptions
 
 pub fn help_message() -> String
+
+pub fn invalid_command_fixtures() -> Array[Array[String]]
 
 pub fn parse_args(Array[String]) -> Command
 

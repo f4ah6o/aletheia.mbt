@@ -86,6 +86,19 @@ pub struct EnumVariant {
   data : TypeMeta?
 }
 
+pub struct ExtractionResult {
+  source_file : String
+  functions : Array[FunctionMeta]
+  arbitrary_impls : Array[ArbitraryImpl]
+  testable_functions : Array[String]
+  needs_arbitrary : Array[String]
+}
+pub fn ExtractionResult::new(String) -> Self
+pub fn ExtractionResult::with_arbitrary_impls(Self, Array[ArbitraryImpl]) -> Self
+pub fn ExtractionResult::with_functions(Self, Array[FunctionMeta]) -> Self
+pub fn ExtractionResult::with_needs_arbitrary(Self, Array[String]) -> Self
+pub fn ExtractionResult::with_testable_functions(Self, Array[String]) -> Self
+
 pub struct FunctionMeta {
   name : String
   args : Array[ArgMeta]
@@ -157,6 +170,7 @@ pub enum TypeMeta {
   Unknown(String)
   Unit
 }
+pub fn TypeMeta::generic(String, Array[Self]) -> Self
 pub fn TypeMeta::named(String) -> Self
 pub fn TypeMeta::simple_name(Self) -> String
 pub fn TypeMeta::unit() -> Self

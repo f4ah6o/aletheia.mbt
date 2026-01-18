@@ -6,7 +6,11 @@ import(
 )
 
 // Values
+pub fn all_markdown_fixtures() -> Array[String]
+
 pub fn code_block_to_string(CodeBlock) -> String
+
+pub fn deterministic_markdown_fixtures() -> Array[String]
 
 pub fn extract_code_blocks(String) -> Array[CodeBlock]
 
@@ -19,6 +23,10 @@ pub fn extract_test_blocks(String) -> Array[CodeBlock]
 pub fn generate_markdown(MarkdownAST) -> String
 
 pub fn parse_markdown(String) -> MarkdownAST
+
+pub fn roundtrip_markdown_fixtures() -> Array[String]
+
+pub fn structure_markdown_fixtures() -> Array[String]
 
 // Errors
 

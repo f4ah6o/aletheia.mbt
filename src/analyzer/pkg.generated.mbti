@@ -26,9 +26,13 @@ pub fn extract_function_names(String) -> Array[String]
 
 pub fn extract_public_functions(String, String) -> Array[@ast.FunctionMeta]
 
+pub fn extract_with_testability(String, String) -> @ast.ExtractionResult
+
 pub fn has_arbitrary(String, Array[@ast.ArbitraryImpl]) -> Bool
 
 pub fn primitive_types() -> Array[String]
+
+pub fn string_array_contains(Array[String], String) -> Bool
 
 // Errors
 
