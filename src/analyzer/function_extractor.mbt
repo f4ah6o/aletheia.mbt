@@ -269,10 +269,8 @@ pub fn extract_with_testability(
 ) -> @ast.ExtractionResult {
   let functions = extract_public_functions(source, source_file)
   let arbitrary_impls = detect_arbitrary_impls(source)
-
   let testable_functions : Array[String] = []
   let needs_arbitrary : Array[String] = []
-
   let mut i = 0
   while i < functions.length() {
     let func = functions[i]
@@ -292,7 +290,6 @@ pub fn extract_with_testability(
     }
     i = i + 1
   }
-
   @ast.ExtractionResult::new(source_file)
   |> @ast.ExtractionResult::with_functions(functions)
   |> @ast.ExtractionResult::with_arbitrary_impls(arbitrary_impls)

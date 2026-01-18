@@ -78,7 +78,10 @@ pub fn TypeMeta::named(name : String) -> TypeMeta {
 }
 
 ///|
-pub fn TypeMeta::generic(name : String, inner_types : Array[TypeMeta]) -> TypeMeta {
+pub fn TypeMeta::generic(
+  name : String,
+  inner_types : Array[TypeMeta],
+) -> TypeMeta {
   Generic(name, inner_types)
 }
 

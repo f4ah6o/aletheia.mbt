@@ -341,7 +341,6 @@ test "prop_extract_with_testability_generic_types" {
 test "prop_extract_public_functions_generic_types" {
   let source = "pub fn process_array(xs : Array[Int]) -> Int { 0 }\npub fn process_map(m : Map[String, Int]) -> Int { 0 }"
   let functions = @analyzer.extract_public_functions(source, "test.mbt")
-
   inspect(functions.length(), content="2")
 
   // 最初の関数: process_array(xs : Array[Int]) -> Int
@@ -369,7 +368,8 @@ test "prop_extract_public_functions_generic_types" {
       inspect(name, content="Map")
       inspect(inner_types.length(), content="2")
       match inner_types[0] {
-        @ast.TypeMeta::Named(inner_name) => inspect(inner_name, content="String")
+        @ast.TypeMeta::Named(inner_name) =>
+          inspect(inner_name, content="String")
         _ => inspect("should be Named", content="fail")
       }
       match inner_types[1] {

@@ -20,7 +20,9 @@ pub fn all_command_fixtures() -> Array[Array[String]] {
     ["moon-pbt-gen", "generate", "./src", "--format", "json"],
     ["moon-pbt-gen", "sync", "src/aletheia.pbt.mbt.md", "--dry-run"],
     // Multiple options combined
-    ["moon-pbt-gen", "analyze", "./src", "--dry-run", "--explain", "--format", "json"],
+    [
+      "moon-pbt-gen", "analyze", "./src", "--dry-run", "--explain", "--format", "json",
+    ],
   ]
 }
 
@@ -31,10 +33,10 @@ pub fn invalid_command_fixtures() -> Array[Array[String]] {
     [],
     ["moon-pbt-gen"],
     ["moon-pbt-gen", "unknown"],
-    ["moon-pbt-gen", "analyze"],  // missing path
-    ["moon-pbt-gen", "generate"],  // missing path
+    ["moon-pbt-gen", "analyze"], // missing path
+    ["moon-pbt-gen", "generate"], // missing path
     ["moon-pbt-gen", "analyze", "./src", "--unknown-flag"],
-    ["moon-pbt-gen", "analyze", "./src", "--format"],  // missing format value
+    ["moon-pbt-gen", "analyze", "./src", "--format"], // missing format value
     ["moon-pbt-gen", "analyze", "./src", "--format", "invalid"],
   ]
 }

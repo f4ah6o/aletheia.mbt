@@ -1682,8 +1682,8 @@ test "merge_with_unbalanced_markers_replaces_all" {
 test "full_pipeline_is_deterministic" {
   // 全パターン種別を含むパイプラインで決定性を検証
   let names = [
-    "parse_foo", "generate_foo", "normalize", "sort_array", "encode_data",
-    "decode_data", "trim_string", "to_upper", "process_list",
+    "parse_foo", "generate_foo", "normalize", "sort_array", "encode_data", "decode_data",
+    "trim_string", "to_upper", "process_list",
   ]
   let patterns = @patterns.detect_all_patterns(names)
   let doc1 = build_pbt_document("test_module", "src", patterns, "String")

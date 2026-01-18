@@ -446,24 +446,20 @@ fn collect_needed_from_type_meta(
         i = i + 1
       }
     }
-    @ast.TypeMeta::Named(name) => {
+    @ast.TypeMeta::Named(name) =>
       // 名前付き型をチェック
       if !has_arbitrary(name, known_impls) {
         Array::push(needed, name)
       }
-    }
-    @ast.TypeMeta::Primitive(_) => {
+    @ast.TypeMeta::Primitive(_) =>
       // プリミティブ型は常にOK
       ()
-    }
-    @ast.TypeMeta::Unit => {
+    @ast.TypeMeta::Unit =>
       // Unit型は常にOK
       ()
-    }
-    @ast.TypeMeta::Unknown(name) => {
+    @ast.TypeMeta::Unknown(name) =>
       // 不明な型は必要とみなす
       Array::push(needed, name)
-    }
     _ => {
       // Function, Tuple などはとりあえず簡易対応
       let name = type_meta.simple_name()
