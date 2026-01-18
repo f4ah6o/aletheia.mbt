@@ -28,14 +28,9 @@
 Round-trip property: command_to(parse(args)) keeps args stable
 
 ```mbt check
+///|
 test "prop_parse_args_command_to_args_roundtrip" {
-  let fixtures : Array[Array[String]] = [
-    ["moon-pbt-gen", "analyze", "./src"],
-    ["moon-pbt-gen", "analyze", "./examples"],
-    ["moon-pbt-gen", "generate", "./src"],
-    ["moon-pbt-gen", "sync", "./src"],
-    ["moon-pbt-gen", "help"],
-  ]
+  let fixtures = @cli.all_command_fixtures()
   for args in fixtures {
     let args2 = command_to_args(parse_args(args))
     assert_eq(args2, args)

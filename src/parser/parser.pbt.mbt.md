@@ -28,14 +28,9 @@
 Round-trip property: parse -> generate -> parse preserves code block content
 
 ```mbt check
+///|
 test "prop_parse_markdown_generate_markdown_roundtrip" {
-  let fixtures = [
-    "```moonbit\nfn foo() -> Int { 1 }\n```",
-    "Intro\n\n```mbt check\n test { inspect(1) }\n```\nOutro",
-    "```mbt nocheck\nlet x = 1\n```\n```moonbit\nfn bar() -> Int { 2 }\n```",
-    "```\nfn baz() -> Int { 3 }\n```",
-    "plain text"
-  ]
+  let fixtures = @parser.roundtrip_markdown_fixtures()
   for markdown in fixtures {
     let blocks1 = extract_code_blocks(markdown)
     let ast = parse_markdown(markdown)
