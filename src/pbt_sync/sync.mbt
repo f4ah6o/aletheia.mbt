@@ -60,7 +60,7 @@ pub fn sync(markdown_path : String) -> Result[SyncReport, SyncError] {
       if write_errors.length() > 0 {
         return Err(write_errors)
       }
-      match remove_stale_files(plan.source_root, expected_paths) {
+      match remove_stale_files(expected_paths) {
         Err(errors) => Err(errors)
         Ok(removed) => Ok({ written, removed, unchanged })
       }
@@ -578,11 +578,54 @@ fn collect_generated_files(path : String) -> Array[String] {
 }
 
 ///|
+fn extract_package_dirs(expected_paths : Array[String]) -> Array[String] {
+  let result : Array[String] = []
+  let mut i = 0
+  while i < expected_paths.length() {
+    let path = expected_paths[i]
+    let dir = path_dirname(path)
+    if !contains_dir(result, dir) {
+      Array::push(result, dir)
+    }
+    i = i + 1
+  }
+  result
+}
+
+///|
+fn contains_dir(dirs : Array[String], dir : String) -> Bool {
+  let normalized = normalize_path(dir)
+  let mut i = 0
+  while i < dirs.length() {
+    if normalize_path(dirs[i]) == normalized {
+      return true
+    }
+    i = i + 1
+  }
+  false
+}
+
+///|
+fn collect_generated_files_from_dirs(dirs : Array[String]) -> Array[String] {
+  let result : Array[String] = []
+  if dirs.length() == 0 {
+    return result
+  }
+  let mut i = 0
+  while i < dirs.length() {
+    result.append(collect_generated_files(dirs[i]))
+    i = i + 1
+  }
+  result.sort_by((a, b) => String::compare(a, b))
+  result
+}
+
+///|
 fn remove_stale_files(
-  source_root : String,
   expected_paths : Array[String],
 ) -> Result[Array[String], SyncError] {
-  let generated = collect_generated_files(source_root)
+  let package_dirs = extract_package_dirs(expected_paths)
+  let generated = collect_generated_files_from_dirs(package_dirs)
   let removed : Array[String] = []
   let errors : Array[String] = []
   let mut i = 0
