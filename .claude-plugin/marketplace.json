@@ -8,7 +8,7 @@
       "name": "aletheia-self-pbt",
       "source": "./.claude-plugin/plugins/aletheia-self-pbt",
       "description": "Sub skill for pbt-workflow-guide: self-dogfooding workflow for the aletheia.mbt repo (generate/sync/validate PBT).",
-      "version": "v2026.1.3",
+      "version": "v2026.1.4",
       "author": {
         "name": "f4ah6o"
       },
@@ -19,7 +19,7 @@
       "name": "aletheia-pbt",
       "source": "./.claude-plugin/plugins/aletheia-pbt",
       "description": "Sub skill for pbt-workflow-guide: generate and sync MoonBit PBT templates/tests with Aletheia for non-aletheia repos.",
-      "version": "v2026.1.3",
+      "version": "v2026.1.4",
       "author": {
         "name": "f4ah6o"
       },
@@ -30,7 +30,7 @@
       "name": "pbt-workflow-guide",
       "source": "./.claude-plugin/plugins/pbt-workflow-guide",
       "description": "Root workflow for introducing, updating, migrating, and improving PBT in MoonBit repos; delegates to the Aletheia sub skills.",
-      "version": "v2026.1.3",
+      "version": "v2026.1.4",
       "author": {
         "name": "f4ah6o"
       },
