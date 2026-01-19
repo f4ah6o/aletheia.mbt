@@ -1,6 +1,6 @@
 ---
 name: aletheia-pbt
-description: Apply Aletheia to generate and sync property-based tests for any MoonBit module. Use when asked to add or update .pbt.mbt.md templates and per-package tests.
+description: Sub skill for pbt-workflow-guide. Apply Aletheia to generate and sync PBT templates/tests for any non-aletheia MoonBit repo.
 ---
 
 # Aletheia PBT
@@ -9,7 +9,9 @@ description: Apply Aletheia to generate and sync property-based tests for any Mo
 
 Apply Aletheia to a target MoonBit module or package to generate .pbt.mbt.md templates and sync them into per-package tests.
 
-## When to use which skill
+## Role in the Root Workflow
+
+This is a sub skill of `pbt-workflow-guide`. Use it when the target repository is not `f4ah6o/aletheia.mbt`.
 
 Use this skill to generate/sync templates. For property design details (generators, shrinking, state machines), use `pbt-workflow-guide`. For changes to Aletheia itself in this repo, use `aletheia-self-pbt`.
 

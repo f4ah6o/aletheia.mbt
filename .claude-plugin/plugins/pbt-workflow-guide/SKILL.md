@@ -1,36 +1,48 @@
 ---
 name: pbt-workflow-guide
-description: Interactive guide for applying PBT patterns to MoonBit modules. Use for pattern selection, generator design, Shrink implementation, and state machine test design.
+description: Root workflow for introducing, updating, migrating, and improving PBT in MoonBit repos. Delegates to aletheia-pbt or aletheia-self-pbt and includes CI/worktree flow.
 ---
 
 # PBT Workflow Guide
 
 ## Overview
 
-This skill provides an interactive guide for applying Property-Based Testing (PBT) patterns to MoonBit modules, with Aletheia used to bootstrap templates and MoonBit QuickCheck used for generators, shrinking, and statistics. Unlike `aletheia-pbt` which focuses on automatic template generation and sync, this guide helps developers:
+This skill provides a root workflow for introducing, updating, migrating, and improving Property-Based Testing (PBT) in MoonBit repositories. It delegates Aletheia template generation/sync to sub skills, and provides design guidance for patterns, generators, shrinking, and state machines. Use this guide to orchestrate the workflow end-to-end, including CI practices (branch + git worktree + PR).
 
 - Select appropriate PBT patterns based on function characteristics
 - Design effective generators with proper distribution control
 - Implement custom `Shrink` for complex types
 - Design state machine tests with shim abstractions
 
-## When to use which skill
+## Root vs Sub Skills (Selection Rules)
 
-- Use `pbt-workflow-guide` for PBT design choices: pattern selection, generator distribution, custom shrink, and state machine modeling.
-- Use `aletheia-pbt` to generate/sync `.pbt.mbt.md` templates for any MoonBit module.
-- Use `aletheia-self-pbt` when modifying Aletheia's own analyzer/patterns/generator/cli pipeline or regenerating this repo's templates.
+This skill is the root workflow. It chooses a sub skill based on the repository:
 
-## Aletheia-Assisted Setup (Recommended)
+- If the target repo is `f4ah6o/aletheia.mbt` (this repo), use `aletheia-self-pbt`.
+- Otherwise, use `aletheia-pbt`.
 
-Use Aletheia to detect patterns, generate `.pbt.mbt.md` templates, and sync them into package tests:
+Use this guide for PBT design choices (pattern selection, generator distribution, custom shrink, and state machine modeling) regardless of repository.
+
+## Workflow Modes
+
+Use the matching mode for your task:
+
+1. New adoption (no existing `.pbt.mbt.md` or PBT tests)
+2. Update (sync/regenerate after code changes)
+3. Migration/Improvement (existing Aletheia usage, but templates/tests need refactor, expansion, or modernization)
+4. Expansion (add new coverage areas, patterns, or state-machine tests)
+
+## Aletheia-Assisted Setup (Delegated to Sub Skill)
+
+Use the appropriate sub skill to detect patterns, generate `.pbt.mbt.md` templates, and sync them into package tests:
 
 ```bash
-# In a project that depends on Aletheia (mooncakes.io)
+# In a project that depends on Aletheia (mooncakes.io) -> aletheia-pbt
 moon run f4ah6o/aletheia/aletheia -- analyze <target> --explain
 moon run f4ah6o/aletheia/aletheia -- generate <target>
 moon run f4ah6o/aletheia/aletheia -- sync <target>
 
-# In the aletheia.mbt repo itself
+# In the aletheia.mbt repo itself -> aletheia-self-pbt
 moon run src/aletheia -- analyze <target> --explain
 moon run src/aletheia -- generate <target>
 moon run src/aletheia -- sync <target>
@@ -333,6 +345,60 @@ Implement the actual property tests using the selected patterns.
 - Run tests and analyze failures
 - Use statistics to improve coverage
 - Refine generators based on discovered edge cases
+
+## Migration/Improvement Guide (Existing Aletheia Users)
+
+Use this when the repo already has `.pbt.mbt.md` or PBT tests but needs modernization or expansion.
+
+1. Inventory existing templates/tests and identify gaps:
+   - Missing patterns for key functions
+   - Weak generators (no edge/boundary distribution)
+   - Missing shrinks for complex types
+   - No state-machine coverage for stateful APIs
+2. Regenerate or resync templates with the correct sub skill.
+3. Merge Aletheia-generated sections and keep manual edits outside markers.
+4. Refine properties using the Pattern Decision Tree and Generator Design Guide.
+5. Add statistics (`classify`, `collect`) to validate distribution.
+6. Convert stable `mbt nocheck` blocks to `mbt check`.
+7. Update snapshots if behavior changes are intentional.
+
+## CI Workflow (Branch + Worktree + PR)
+
+When applying this workflow in CI-oriented repos, follow a worktree-based flow:
+
+1. Create a branch:
+   - `git checkout -b pbt/<short-topic>`
+2. Create a worktree for isolated edits:
+   - `git worktree add ../<repo>-pbt pbt/<short-topic>`
+3. Run the sub skill workflow in the worktree:
+   - Analyze/generate/sync
+   - Update properties/generators/shrinks
+   - Run `moon info && moon fmt`
+   - Run `moon test` (or `moon test --update` if snapshots change)
+4. Commit changes and push the branch.
+5. Create a PR from the branch.
+6. Remove the worktree after merge:
+   - `git worktree remove ../<repo>-pbt`
+
+## End-to-End Scenarios
+
+### Scenario A: New Adoption in a Non-Aletheia Repo
+
+1. Create a branch and worktree.
+2. Use `aletheia-pbt` to analyze/generate/sync templates for the target module.
+3. Refine properties and generators per this guide.
+4. Run `moon info && moon fmt`, then `moon test` (or `moon test --update` if snapshots change).
+5. Commit, push, and open a PR.
+
+### Scenario B: Migration/Improvement in an Existing Aletheia Repo
+
+1. Create a branch and worktree.
+2. Inventory existing `.pbt.mbt.md` and `_test.mbt` coverage; list gaps.
+3. Regenerate or resync with the correct sub skill (`aletheia-pbt` for most repos, `aletheia-self-pbt` for this repo).
+4. Merge generated sections and keep manual edits outside markers.
+5. Upgrade generators and add missing shrinks/statistics.
+6. Run `moon info && moon fmt`, then `moon test --update` if snapshots change.
+7. Commit, push, and open a PR.
 
 ## Quick Reference
 
