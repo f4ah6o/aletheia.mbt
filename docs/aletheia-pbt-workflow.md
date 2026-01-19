@@ -9,6 +9,12 @@ description: Comprehensive workflow guide for applying Aletheia PBT to any MoonB
 
 This guide provides a comprehensive workflow for using Aletheia to add property-based tests (PBT) to any MoonBit module. It covers pattern detection, template generation, test synchronization, and best practices.
 
+## When to use which guide
+
+- Use this guide to generate/sync `.pbt.mbt.md` templates with Aletheia and to validate the workflow end-to-end.
+- Use `pbt-workflow-guide` when you need deeper PBT design guidance: pattern selection, generator distribution, custom shrink, and state machine testing.
+- Use `aletheia-self-pbt` when modifying Aletheia's analyzer/patterns/generator/cli pipeline or regenerating templates in this repo.
+
 ## Workflow
 
 ### Phase 1: Analyze and Generate Templates

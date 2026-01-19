@@ -9,6 +9,12 @@ description: Self-dogfooding workflow for the f4ah6o/aletheia.mbt MoonBit repo, 
 
 Generate or sync Aletheia's own PBT templates, then iterate on detection and templates until they are mbt check ready.
 
+## When to use which guide
+
+- Use this guide when changing Aletheia's analyzer/patterns/generator/cli pipeline or regenerating templates in this repo.
+- Use `aletheia-pbt` for applying Aletheia to other MoonBit modules.
+- Use `pbt-workflow-guide` for PBT design guidance: pattern selection, generator distribution, custom shrink, and state machine testing.
+
 ## Workflow
 
 ### Phase 1: Generate or sync PBT templates

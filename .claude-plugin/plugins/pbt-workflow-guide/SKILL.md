@@ -7,12 +7,39 @@ description: Interactive guide for applying PBT patterns to MoonBit modules. Use
 
 ## Overview
 
-This skill provides an interactive guide for applying Property-Based Testing (PBT) patterns to MoonBit modules. Unlike `aletheia-pbt` which generates and syncs test templates automatically, this guide helps developers:
+This skill provides an interactive guide for applying Property-Based Testing (PBT) patterns to MoonBit modules, with Aletheia used to bootstrap templates and MoonBit QuickCheck used for generators, shrinking, and statistics. Unlike `aletheia-pbt` which focuses on automatic template generation and sync, this guide helps developers:
 
 - Select appropriate PBT patterns based on function characteristics
 - Design effective generators with proper distribution control
 - Implement custom `Shrink` for complex types
 - Design state machine tests with shim abstractions
+
+## When to use which skill
+
+- Use `pbt-workflow-guide` for PBT design choices: pattern selection, generator distribution, custom shrink, and state machine modeling.
+- Use `aletheia-pbt` to generate/sync `.pbt.mbt.md` templates for any MoonBit module.
+- Use `aletheia-self-pbt` when modifying Aletheia's own analyzer/patterns/generator/cli pipeline or regenerating this repo's templates.
+
+## Aletheia-Assisted Setup (Recommended)
+
+Use Aletheia to detect patterns, generate `.pbt.mbt.md` templates, and sync them into package tests:
+
+```bash
+# In a project that depends on Aletheia (mooncakes.io)
+moon run f4ah6o/aletheia/aletheia -- analyze <target> --explain
+moon run f4ah6o/aletheia/aletheia -- generate <target>
+moon run f4ah6o/aletheia/aletheia -- sync <target>
+
+# In the aletheia.mbt repo itself
+moon run src/aletheia -- analyze <target> --explain
+moon run src/aletheia -- generate <target>
+moon run src/aletheia -- sync <target>
+```
+
+Then refine the generated properties using the rest of this guide:
+- Keep manual edits outside `<!-- aletheia:begin -->` / `<!-- aletheia:end -->`.
+- Start code blocks as `mbt nocheck`, switch to `mbt check` after validating logic.
+- Prefer public APIs in generated blackbox tests.
 
 ## Pattern Decision Tree
 
@@ -260,6 +287,10 @@ let sm = StateM::new(
 4. **Use shims for non-determinism** - Wrap timestamps, random values, I/O
 
 ## Workflow Steps
+
+### Step 0: Bootstrap with Aletheia (optional but recommended)
+
+Let Aletheia generate the initial test templates, then use this guide to refine the properties, generators, and shrinkers.
 
 ### Step 1: Identify Target Functions
 
