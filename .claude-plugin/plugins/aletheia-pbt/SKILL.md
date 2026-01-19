@@ -9,6 +9,10 @@ description: Apply Aletheia to generate and sync property-based tests for any Mo
 
 Apply Aletheia to a target MoonBit module or package to generate .pbt.mbt.md templates and sync them into per-package tests.
 
+## When to use which skill
+
+Use this skill to generate/sync templates. For property design details (generators, shrinking, state machines), use `pbt-workflow-guide`. For changes to Aletheia itself in this repo, use `aletheia-self-pbt`.
+
 ## Prerequisites & Installation
 
 This skill assumes a working MoonBit toolchain. Aletheia is published on mooncakes.io, so you can install it directly:
@@ -55,6 +59,7 @@ If you already have the aletheia.mbt repo locally, you can also run `moon run sr
 4. Refine templates
    - Keep manual edits outside `<!-- aletheia:begin -->` / `<!-- aletheia:end -->`.
    - Leave code blocks as `mbt nocheck` until properties are validated; switch to `mbt check` afterward.
+   - Use `@qc` (MoonBit QuickCheck) helpers for generators, shrinkers, and statistics.
 
 5. Sync tests
    - `moon run src/aletheia -- sync [path]` (defaults to `<source>/<module>.pbt.mbt.md`).

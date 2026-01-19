@@ -9,6 +9,10 @@ description: Self-dogfooding workflow for the f4ah6o/aletheia.mbt MoonBit repo, 
 
 Self-dogfooding workflow for the f4ah6o/aletheia.mbt MoonBit repo. This skill covers the complete pipeline: analyzer/patterns/generator/cli. The tool validates its own quality using comprehensive property-based testing with 50+ tests and 100% pass rate.
 
+## When to use which skill
+
+Use this skill when changing Aletheia's analyzer/patterns/generator/cli pipeline or regenerating this repo's `.pbt.mbt.md` files. For using Aletheia on other repos, use `aletheia-pbt`. For PBT design guidance (patterns, generators, shrinking, state machines), use `pbt-workflow-guide`.
+
 ## v0.4.0 Enhancement Plan (Complete)
 
 The comprehensive PBT enhancement plan has been completed across 6 phases:
