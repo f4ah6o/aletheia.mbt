@@ -15,6 +15,10 @@ Generate or sync Aletheia's own PBT templates, then iterate on detection and tem
 - Use `aletheia-pbt` for applying Aletheia to other MoonBit modules.
 - Use `pbt-workflow-guide` for PBT design guidance: pattern selection, generator distribution, custom shrink, and state machine testing.
 
+## QuickCheck usage note
+
+When refining generated templates, prefer MoonBit QuickCheck helpers (`@qc`) for generators, shrinking, and statistics. Start as `mbt nocheck` and switch to `mbt check` after validating the property logic.
+
 ## Workflow
 
 ### Phase 1: Generate or sync PBT templates
