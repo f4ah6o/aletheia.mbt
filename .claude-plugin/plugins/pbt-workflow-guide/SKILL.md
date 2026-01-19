@@ -27,14 +27,14 @@ Use this guide for PBT design choices (pattern selection, generator distribution
 
 Use the matching mode for your task:
 
-1. New adoption (no existing `.pbt.mbt.md` or PBT tests)
+1. New adoption (no existing `.pbt.md` or PBT tests)
 2. Update (sync/regenerate after code changes)
 3. Migration/Improvement (existing Aletheia usage, but templates/tests need refactor, expansion, or modernization)
 4. Expansion (add new coverage areas, patterns, or state-machine tests)
 
 ## Aletheia-Assisted Setup (Delegated to Sub Skill)
 
-Use the appropriate sub skill to detect patterns, generate `.pbt.mbt.md` templates, and sync them into package tests:
+Use the appropriate sub skill to detect patterns, generate `.pbt.md` templates, and sync them into package tests:
 
 ```bash
 # In a project that depends on Aletheia (mooncakes.io) -> aletheia-pbt
@@ -52,6 +52,17 @@ Then refine the generated properties using the rest of this guide:
 - Keep manual edits outside `<!-- aletheia:begin -->` / `<!-- aletheia:end -->`.
 - Start code blocks as `mbt nocheck`, switch to `mbt check` after validating logic.
 - Prefer public APIs in generated blackbox tests.
+
+### MoonBit Markdown-Oriented Programming (MOP) Integration
+
+- Prefer `.pbt.md` for Aletheia templates to avoid MoonBit treating them as source.
+- If you find `.pbt.mbt.md`, rename it to `.pbt.md`.
+- When using MoonBit-native `.mbt.md`, place tests in ` ```mbt test` / ` ```mbt check` blocks and sync with Aletheia.
+
+**Migration snippet:**
+```bash
+find . -name "*.pbt.mbt.md" -exec sh -c 'mv "$1" "${1%.pbt.mbt.md}.pbt.md"' _ {} \;
+```
 
 ## Pattern Decision Tree
 
@@ -348,7 +359,7 @@ Implement the actual property tests using the selected patterns.
 
 ## Migration/Improvement Guide (Existing Aletheia Users)
 
-Use this when the repo already has `.pbt.mbt.md` or PBT tests but needs modernization or expansion.
+Use this when the repo already has `.pbt.md` or PBT tests but needs modernization or expansion.
 
 1. Inventory existing templates/tests and identify gaps:
    - Missing patterns for key functions
@@ -393,7 +404,7 @@ When applying this workflow in CI-oriented repos, follow a worktree-based flow:
 ### Scenario B: Migration/Improvement in an Existing Aletheia Repo
 
 1. Create a branch and worktree.
-2. Inventory existing `.pbt.mbt.md` and `_test.mbt` coverage; list gaps.
+2. Inventory existing `.pbt.md` and `_test.mbt` coverage; list gaps.
 3. Regenerate or resync with the correct sub skill (`aletheia-pbt` for most repos, `aletheia-self-pbt` for this repo).
 4. Merge generated sections and keep manual edits outside markers.
 5. Upgrade generators and add missing shrinks/statistics.

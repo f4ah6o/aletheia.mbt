@@ -10,7 +10,7 @@ pub fn all_command_fixtures() -> Array[Array[String]] {
     // Basic commands
     ["moon-pbt-gen", "analyze", "./src"],
     ["moon-pbt-gen", "generate", "./src"],
-    ["moon-pbt-gen", "sync", "src/aletheia.pbt.mbt.md"],
+    ["moon-pbt-gen", "sync", "src/aletheia.pbt.md"],
     ["moon-pbt-gen", "help"],
     // With options
     ["moon-pbt-gen", "analyze", "./src", "--dry-run"],
@@ -18,7 +18,7 @@ pub fn all_command_fixtures() -> Array[Array[String]] {
     ["moon-pbt-gen", "analyze", "./src", "--format", "json"],
     ["moon-pbt-gen", "generate", "./src", "--dry-run", "--explain"],
     ["moon-pbt-gen", "generate", "./src", "--format", "json"],
-    ["moon-pbt-gen", "sync", "src/aletheia.pbt.mbt.md", "--dry-run"],
+    ["moon-pbt-gen", "sync", "src/aletheia.pbt.md", "--dry-run"],
     // Multiple options combined
     [
       "moon-pbt-gen", "analyze", "./src", "--dry-run", "--explain", "--format", "json",

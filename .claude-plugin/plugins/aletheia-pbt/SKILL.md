@@ -7,7 +7,7 @@ description: Sub skill for pbt-workflow-guide. Apply Aletheia to generate and sy
 
 ## Overview
 
-Apply Aletheia to a target MoonBit module or package to generate .pbt.mbt.md templates and sync them into per-package tests.
+Apply Aletheia to a target MoonBit module or package to generate .pbt.md templates and sync them into per-package tests.
 
 ## Role in the Root Workflow
 
@@ -56,7 +56,7 @@ If you already have the aletheia.mbt repo locally, you can also run `moon run sr
      - `--dry-run`: Preview without writing files
      - `--explain`: Output detection details
      - `--format <text|json>`: Output format (default: text)
-   - Output path is `<module>.pbt.mbt.md` in the target root (derived from moon.mod.json).
+   - Output path is `<module>.pbt.md` in the target root (derived from moon.mod.json).
 
 4. Refine templates
    - Keep manual edits outside `<!-- aletheia:begin -->` / `<!-- aletheia:end -->`.
@@ -64,7 +64,11 @@ If you already have the aletheia.mbt repo locally, you can also run `moon run sr
    - Use `@qc` (MoonBit QuickCheck) helpers for generators, shrinkers, and statistics.
 
 5. Sync tests
-   - `moon run src/aletheia -- sync [path]` (defaults to `<source>/<module>.pbt.mbt.md`).
+   - `moon run src/aletheia -- sync [path]` (defaults to `<source>/<module>.pbt.md`).
+
+Notes:
+- If you still have `.pbt.mbt.md`, rename to `.pbt.md` to avoid MoonBit treating it as source.
+- MoonBit-native `.mbt.md` is supported for sync when tests are in ` ```mbt test` / ` ```mbt check` blocks.
 
 6. Verify
    - `moon info && moon fmt`

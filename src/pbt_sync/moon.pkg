@@ -1,1 +1,5 @@
-import { "moonbitlang/x/fs" as @fs, "moonbitlang/x/path" as @path }
+import {
+  "moonbitlang/x/fs" as @fs,
+  "moonbitlang/x/path" as @path,
+  "f4ah6o/aletheia/parser" as @parser,
+}

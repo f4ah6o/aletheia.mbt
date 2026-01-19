@@ -20,7 +20,7 @@ pub fn default_pbt_markdown_path() -> String {
     None => "module"
     Some(name) => module_short_name(name)
   }
-  let filename = module_name + ".pbt.mbt.md"
+  let filename = module_name + ".pbt.md"
   join_path(source, filename)
 }
 
@@ -148,14 +148,22 @@ fn build_expected_outputs(
   if errors.length() > 0 {
     return Err(errors)
   }
-  let blocks_result = parse_markdown_blocks(markdown)
+  let source_root = resolve_source_root()
+  let blocks_result = if is_moonbit_markdown_path(markdown_path) &&
+    !is_pbt_markdown_path(markdown_path) {
+    match infer_package_name(markdown_path, source_root) {
+      Err(msg) => return Err([msg])
+      Ok(pkg_name) => parse_moonbit_markdown_blocks(markdown, pkg_name)
+    }
+  } else {
+    parse_markdown_blocks(markdown)
+  }
   let blocks = match blocks_result {
     Err(errs) => return Err(errs)
     Ok(found) => found
   }
   let grouped = group_blocks(blocks)
   grouped.sort_by((a, b) => String::compare(a.name, b.name))
-  let source_root = resolve_source_root()
   let outputs : Array[OutputFile] = []
   let mut i = 0
   while i < grouped.length() {
@@ -177,6 +185,32 @@ fn build_expected_outputs(
   } else {
     Ok({ source_root, outputs })
   }
+}
+
+///|
+fn is_pbt_markdown_path(path : String) -> Bool {
+  path.has_suffix(".pbt.md") || path.has_suffix(".pbt.mbt.md")
+}
+
+///|
+fn is_moonbit_markdown_path(path : String) -> Bool {
+  path.has_suffix(".mbt.md")
+}
+
+///|
+fn parse_moonbit_markdown_blocks(
+  markdown : String,
+  pkg : String,
+) -> Result[Array[ParsedBlock], SyncError] {
+  let blocks = @parser.extract_test_blocks(markdown)
+  let result : Array[ParsedBlock] = []
+  let mut i = 0
+  while i < blocks.length() {
+    let lines = split_lines(blocks[i].content)
+    Array::push(result, { pkg, lines })
+    i = i + 1
+  }
+  Ok(result)
 }
 
 ///|
@@ -386,6 +420,87 @@ fn trim_empty_lines(lines : Array[String]) -> Array[String] {
   let mut i = start
   while i < end {
     Array::push(result, lines[i])
+    i = i + 1
+  }
+  result
+}
+
+///|
+fn infer_package_name(
+  markdown_path : String,
+  source_root : String,
+) -> Result[String, String] {
+  let dir = @path.Path(markdown_path).dirname().to_string()
+  match find_package_dir(dir, source_root) {
+    None =>
+      Err(
+        "Failed to find package for markdown: " + normalize_path(markdown_path),
+      )
+    Some(pkg_dir) => relative_package_name(source_root, pkg_dir)
+  }
+}
+
+///|
+fn find_package_dir(start : String, source_root : String) -> String? {
+  let mut current = start
+  let normalized_root = normalize_path(source_root)
+  while true {
+    if has_moon_pkg(current) {
+      return Some(current)
+    }
+    if normalize_path(current) == normalized_root {
+      break
+    }
+    let parent = path_dirname(current)
+    if parent == current {
+      break
+    }
+    current = parent
+  }
+  None
+}
+
+///|
+fn has_moon_pkg(path : String) -> Bool {
+  let pkg_file_new = join_path(path, "moon.pkg")
+  let pkg_file_legacy = join_path(path, "moon.pkg.json")
+  @fs.path_exists(pkg_file_new) || @fs.path_exists(pkg_file_legacy)
+}
+
+///|
+fn path_dirname(path : String) -> String {
+  @path.Path(path).dirname().to_string()
+}
+
+///|
+fn relative_package_name(
+  source_root : String,
+  package_dir : String,
+) -> Result[String, String] {
+  let normalized_root = normalize_path(source_root)
+  let normalized_pkg = normalize_path(package_dir)
+  if normalized_root == normalized_pkg {
+    return Ok(".")
+  }
+  let prefix = if normalized_root.has_suffix("/") {
+    normalized_root
+  } else {
+    normalized_root + "/"
+  }
+  if normalized_pkg.has_prefix(prefix) {
+    Ok(substring_from(normalized_pkg, String::length(prefix)))
+  } else {
+    Err("Package is outside source root: " + normalized_pkg)
+  }
+}
+
+///|
+fn substring_from(s : String, start : Int) -> String {
+  let chars = s.to_array()
+  let mut i = start
+  let mut result = ""
+  while i < chars.length() {
+    result = result + chars[i].to_string()
     i = i + 1
   }
   result

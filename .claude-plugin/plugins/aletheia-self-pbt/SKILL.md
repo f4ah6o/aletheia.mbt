@@ -13,7 +13,7 @@ Self-dogfooding workflow for the f4ah6o/aletheia.mbt MoonBit repo. This skill co
 
 This is a sub skill of `pbt-workflow-guide`. Use it only when the target repository is `f4ah6o/aletheia.mbt` (this repo).
 
-Use this skill when changing Aletheia's analyzer/patterns/generator/cli pipeline or regenerating this repo's `.pbt.mbt.md` files. For using Aletheia on other repos, use `aletheia-pbt`. For PBT design guidance (patterns, generators, shrinking, state machines), use `pbt-workflow-guide`.
+Use this skill when changing Aletheia's analyzer/patterns/generator/cli pipeline or regenerating this repo's `.pbt.md` files. For using Aletheia on other repos, use `aletheia-pbt`. For PBT design guidance (patterns, generators, shrinking, state machines), use `pbt-workflow-guide`.
 
 ## v0.4.0 Enhancement Plan (Complete)
 
@@ -34,8 +34,9 @@ The comprehensive PBT enhancement plan has been completed across 6 phases:
    - **Sync existing files**: Run `moon run src/aletheia -- sync ./src`
 
 2. Review generated files
-   - Check `src/aletheia.pbt.mbt.md`, `src/cli/cli.pbt.mbt.md`, and `src/parser/parser.pbt.mbt.md` for template correctness.
+   - Check `src/aletheia.pbt.md`, `src/cli/cli.pbt.md`, and `src/parser/parser.pbt.md` for template correctness.
    - Keep templates as `mbt nocheck` until the property logic is valid; switch to `mbt check` only after validating semantics.
+   - If you still have `.pbt.mbt.md`, rename to `.pbt.md` to avoid MoonBit treating it as source.
 
 3. Update detection/template logic (as needed)
    - Pattern detection: `src/patterns/patterns.mbt`

@@ -195,7 +195,7 @@ pub fn command_to_args(cmd : Command) -> Array[String] {
 pub fn help_message() -> String {
   let lines = [
     "moon-pbt-gen - Property-Based Testing code generator", "", "Usage:", "  moon-pbt-gen <command> [arguments] [options]",
-    "", "Commands:", "  analyze <path>     Analyze MoonBit package or file", "  generate <path>   Collect PBT targets into <module>.pbt.mbt.md",
+    "", "Commands:", "  analyze <path>     Analyze MoonBit package or file", "  generate <path>   Collect PBT targets into <module>.pbt.md",
     "  sync [path]       Sync PBT markdown into per-package tests", "  help              Show this help message",
     "", "Options:", "  --dry-run          Do not write files (generate/sync)", "  --explain          Output detection details",
     "  --format <text|json>  Output format (default: text)", "", "Examples:", "  moon-pbt-gen analyze ./src --explain",
@@ -876,7 +876,7 @@ fn output_path_for_pbt(path : String, module_name : String) -> String {
   } else {
     @path.Path(path).dirname().to_string()
   }
-  let filename = module_name + ".pbt.mbt.md"
+  let filename = module_name + ".pbt.md"
   @path.Path(dir).join(@path.Path(filename)).to_string()
 }
 
@@ -1148,7 +1148,7 @@ fn push_arbitrary_impls(
 ///|
 /// PBTドキュメントのファイル名判定
 fn is_pbt_doc(name : String) -> Bool {
-  name.has_suffix(".pbt.mbt.md")
+  name.has_suffix(".pbt.md") || name.has_suffix(".pbt.mbt.md")
 }
 
 ///|
@@ -1943,7 +1943,7 @@ test "generate_tests_creates_pbt_file" {
   let mut has_pbt = false
   let mut i = 0
   while i < entries.length() {
-    if entries[i].has_suffix(".pbt.mbt.md") {
+    if is_pbt_doc(entries[i]) {
       has_pbt = true
     }
     i = i + 1
@@ -1956,7 +1956,7 @@ test "generate_tests_creates_pbt_file" {
     let mut i = 0
     while i < entries.length() {
       let entry = entries[i]
-      if entry.has_suffix(".pbt.mbt.md") {
+      if is_pbt_doc(entry) {
         @fs.remove_file(join_path(test_dir, entry))
       }
       i = i + 1
