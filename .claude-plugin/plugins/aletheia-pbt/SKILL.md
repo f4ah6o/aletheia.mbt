@@ -33,6 +33,23 @@ moon run f4ah6o/aletheia/aletheia -- sync /path/to/target
 
 If you already have the aletheia.mbt repo locally, you can also run `moon run src/aletheia` from that repo instead.
 
+## Install & Run (Quickstart)
+
+1. **Install**
+   - From the target repo (where `moon.mod.json` lives), run `moon add f4ah6o/aletheia` to add the dependency.
+
+2. **Run**
+   - Execute from the target repo (`<path>` is a module root or package directory).
+
+    ```bash
+    moon run f4ah6o/aletheia/aletheia -- analyze <path> --explain
+    moon run f4ah6o/aletheia/aletheia -- generate <path>
+    moon run f4ah6o/aletheia/aletheia -- sync <path>
+    ```
+
+3. **Local run (using a dev checkout)**
+   - In the aletheia.mbt repo, use `moon run src/aletheia -- <subcommand> <path>`.
+
 ## v0.4.0 Features
 
 - **5 Pattern Types**: Round-Trip, Idempotent, Producer-Consumer, Invariant, and Oracle

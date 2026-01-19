@@ -32,6 +32,32 @@ Use the matching mode for your task:
 3. Migration/Improvement (existing Aletheia usage, but templates/tests need refactor, expansion, or modernization)
 4. Expansion (add new coverage areas, patterns, or state-machine tests)
 
+## Default Behavior (No Extra User Instructions)
+
+If the user does not specify targets or depth, do the following instead of stopping after Aletheia CLI runs:
+
+1. Run Aletheia analyze/generate/sync for the module or the most central package.
+2. Pick 2-3 representative public, pure-ish functions (prefer stable behavior, small input domains).
+3. Convert at least 1-3 properties from `mbt nocheck` to `mbt check` with real generators.
+4. Ensure `sync` emits `pbt_generated_test.mbt` (or equivalent) in at least one package.
+5. Run `moon info && moon fmt`, then `moon test` (use `--update` if snapshots change).
+
+If Aletheia detects zero patterns for a package, either remove the empty template or add a small manual property, and note the reason.
+
+## Definition of Done (Minimum)
+
+- At least one non-trivial property is implemented in `mbt check` (not just template output).
+- Aletheia sync produces generated tests (e.g. `pbt_generated_test.mbt`).
+- Tests run (`moon test` or `moon test --update`), with results reported.
+
+## When to Ask Questions
+
+Ask for clarification if any of the following blocks progress:
+
+- Expected behavior is unclear (no docs or tests; ambiguous semantics).
+- All candidate functions are highly stateful or require external resources.
+- The repo lacks a runnable MoonBit toolchain or tests cannot be executed.
+
 ## Aletheia-Assisted Setup (Delegated to Sub Skill)
 
 Use the appropriate sub skill to detect patterns, generate `.pbt.md` templates, and sync them into package tests:
