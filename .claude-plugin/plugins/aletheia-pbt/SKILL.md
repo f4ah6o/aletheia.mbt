@@ -9,6 +9,24 @@ description: Apply Aletheia to generate and sync property-based tests for any Mo
 
 Apply Aletheia to a target MoonBit module or package to generate .pbt.mbt.md templates and sync them into per-package tests.
 
+## Prerequisites & Installation
+
+This skill assumes a working MoonBit toolchain. Aletheia is published on mooncakes.io, so you can install it directly:
+
+```bash
+moon add f4ah6o/aletheia
+```
+
+After installing, run the CLI from your target repo:
+
+```bash
+moon run f4ah6o/aletheia/aletheia -- analyze /path/to/target --explain
+moon run f4ah6o/aletheia/aletheia -- generate /path/to/target
+moon run f4ah6o/aletheia/aletheia -- sync /path/to/target
+```
+
+If you already have the aletheia.mbt repo locally, you can also run `moon run src/aletheia` from that repo instead.
+
 ## v0.4.0 Features
 
 - **5 Pattern Types**: Round-Trip, Idempotent, Producer-Consumer, Invariant, and Oracle
