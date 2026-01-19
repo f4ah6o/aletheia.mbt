@@ -41,6 +41,7 @@ If the user does not specify targets or depth, do the following instead of stopp
 3. Convert at least 1-3 properties from `mbt nocheck` to `mbt check` with real generators.
 4. Ensure `sync` emits `pbt_generated_test.mbt` (or equivalent) in at least one package.
 5. Run `moon info && moon fmt`, then `moon test` (use `--update` if snapshots change).
+6. If tests fail, fix the properties/generators/shrinkers and re-run until tests pass.
 
 If Aletheia detects zero patterns for a package, either remove the empty template or add a small manual property, and note the reason.
 
@@ -48,7 +49,7 @@ If Aletheia detects zero patterns for a package, either remove the empty templat
 
 - At least one non-trivial property is implemented in `mbt check` (not just template output).
 - Aletheia sync produces generated tests (e.g. `pbt_generated_test.mbt`).
-- Tests run (`moon test` or `moon test --update`), with results reported.
+- Tests pass (`moon test` or `moon test --update`), with failures fixed and re-run.
 
 ## When to Ask Questions
 
@@ -57,6 +58,15 @@ Ask for clarification if any of the following blocks progress:
 - Expected behavior is unclear (no docs or tests; ambiguous semantics).
 - All candidate functions are highly stateful or require external resources.
 - The repo lacks a runnable MoonBit toolchain or tests cannot be executed.
+- A test failure indicates ambiguous expected behavior that cannot be inferred from code or docs.
+
+## If User Instructions Are Ambiguous (Offer Options)
+
+When the user says "do PBT" without scope/stop conditions, propose 3 concrete options and ask them to pick one:
+
+1. **Outcome-driven**: "Cover core public APIs and ensure each applicable pattern type has at least one property; minimum 3; stop when further properties are redundant or time budget is reached."
+2. **Scope-driven**: "Target top 2-3 most-used modules; add the most meaningful property per module (more if cheap); minimum 3 total; stop when high-impact functions are covered."
+3. **Budget-driven**: "Aim for 3-6 properties; continue past 3 if low-effort wins exist; stop at 6 or when test runtime exceeds 2 minutes."
 
 ## Aletheia-Assisted Setup (Delegated to Sub Skill)
 
