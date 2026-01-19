@@ -6,9 +6,9 @@
   "plugins": [
     {
       "name": "aletheia-self-pbt",
-      "source": "./plugins/aletheia-self-pbt",
+      "source": "./.claude-plugin/plugins/aletheia-self-pbt",
       "description": "Self-dogfooding workflow for generating and validating Aletheia PBT templates.",
-      "version": "v2026.1.1",
+      "version": "v2026.1.2",
       "author": {
         "name": "f4ah6o"
       },
@@ -17,9 +17,9 @@
     },
     {
       "name": "aletheia-pbt",
-      "source": "./plugins/aletheia-pbt",
+      "source": "./.claude-plugin/plugins/aletheia-pbt",
       "description": "Generate and sync MoonBit property-based tests with Aletheia.",
-      "version": "v2026.1.1",
+      "version": "v2026.1.2",
       "author": {
         "name": "f4ah6o"
       },
@@ -28,13 +28,13 @@
     },
     {
       "name": "pbt-workflow-guide",
-      "source": "./plugins/pbt-workflow-guide",
+      "source": "./.claude-plugin/plugins/pbt-workflow-guide",
       "description": "Interactive guide for applying PBT patterns to MoonBit modules.",
-      "version": "v2026.1.1",
+      "version": "v2026.1.2",
       "author": {
         "name": "f4ah6o"
       },
-      "license": "Apache-2.0",
+      "license": "",
       "repository": "https://github.com/f4ah6o/aletheia.mbt.git"
     }
   ]
