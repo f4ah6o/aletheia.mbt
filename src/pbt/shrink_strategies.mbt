@@ -4,6 +4,7 @@
 
 ///|
 /// Shrink strategy for enumerated types
+#warnings("-unused_constructor")
 pub enum EnumShrinkStrategy {
   TryFirst(Array[String])
   RemoveVariants
@@ -12,6 +13,7 @@ pub enum EnumShrinkStrategy {
 
 ///|
 /// Shrink strategy for struct fields
+#warnings("-unused_constructor")
 pub enum FieldShrinkStrategy {
   PreferNil
   PreferZero

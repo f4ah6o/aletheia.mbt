@@ -59,6 +59,7 @@ pub struct CheckResult[T] {
   passed : Bool
   failure : Failure?
   stats : Statistics?
+  phantom : T?
 }
 pub impl[T : Show] Show for CheckResult[T]
 

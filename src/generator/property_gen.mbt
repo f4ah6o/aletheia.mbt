@@ -946,30 +946,6 @@ pub fn generate_shrink_examples() -> String {
 }
 
 ///|
-fn string_to_lower(s : String) -> String {
-  let chars = s.to_array()
-  let mut result = ""
-  let mut i = 0
-  while i < chars.length() {
-    let c = chars[i]
-    let code = c.to_int()
-    if code >= 65 && code <= 90 {
-      // A-Z -> a-z
-      result = result + Char::from_int(code + 32).to_string()
-    } else {
-      result = result + c.to_string()
-    }
-    i = i + 1
-  }
-  result
-}
-
-///|
-fn String::to_lower(self : String) -> String {
-  string_to_lower(self)
-}
-
-///|
 /// PatternCandidate を DetectedPattern に変換
 fn pattern_to_detected(pattern : @patterns.PatternCandidate) -> DetectedPattern {
   match pattern {

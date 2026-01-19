@@ -186,24 +186,6 @@ pub fn generate_shrink_template(
 }
 
 ///|
-fn string_to_lower(s : String) -> String {
-  let chars = s.to_array()
-  let mut result = ""
-  let mut i = 0
-  while i < chars.length() {
-    let c = chars[i]
-    let code = c.to_int()
-    if code >= 65 && code <= 90 {
-      result = result + Int::unsafe_to_char(code + 32).to_string()
-    } else {
-      result = result + c.to_string()
-    }
-    i = i + 1
-  }
-  result
-}
-
-///|
 test "shrink_string_empty" {
   let result = shrink_string("")
   inspect(result.count(), content="0")

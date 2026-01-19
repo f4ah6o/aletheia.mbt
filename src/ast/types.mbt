@@ -43,6 +43,7 @@ pub fn make_internal() -> Visibility {
 
 ///|
 /// 型メタデータ
+#warnings("-unused_constructor")
 pub enum TypeMeta {
   Primitive(String)
   Generic(String, Array[TypeMeta])
@@ -166,6 +167,7 @@ pub fn FunctionMeta::signature(self : FunctionMeta) -> String {
 
 ///|
 /// 型定義メタデータ（enum, struct）
+#warnings("-struct_never_constructed")
 pub struct TypeDefinition {
   name : String
   kind : TypeKind
@@ -174,6 +176,7 @@ pub struct TypeDefinition {
 }
 
 ///|
+#warnings("-unused_constructor")
 pub enum TypeKind {
   Struct(Array[StructField])
   Enum(Array[EnumVariant])
@@ -181,12 +184,14 @@ pub enum TypeKind {
 }
 
 ///|
+#warnings("-struct_never_constructed")
 pub struct StructField {
   name : String
   type_ : TypeMeta
 }
 
 ///|
+#warnings("-struct_never_constructed")
 pub struct EnumVariant {
   name : String
   data : TypeMeta?
@@ -263,6 +268,7 @@ pub fn ArbitraryImpl::user_defined(name : String, line : Int) -> ArbitraryImpl {
 
 ///|
 /// パターン候補
+#warnings("-unused_constructor")
 pub enum PatternCandidate {
   RoundTrip(String, String, TypeMeta)
   Idempotent(String)

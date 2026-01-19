@@ -100,7 +100,7 @@ pub fn infer_collection_operation(func_name : String) -> CollectionOperation {
 /// 操作から推奨される不変条件を生成
 pub fn suggest_invariants_for_operation(
   operation : CollectionOperation,
-  func_name : String,
+  _func_name : String,
 ) -> Array[String] {
   match operation {
     Map => ["LengthPreserving", "OrderPreserving", "ElementCountPreserving"]
@@ -310,54 +310,5 @@ test "enhanced_invariant_to_pattern_integration" {
         _ => inspect("fail", content="ok")
       }
     None => inspect("fail", content="ok")
-  }
-}
-
-///|
-fn String::to_lower(self : String) -> String {
-  let chars = self.to_array()
-  let mut result = ""
-  let mut i = 0
-  while i < chars.length() {
-    let c = chars[i]
-    let code = c.to_int()
-    if code >= 65 && code <= 90 {
-      // A-Z -> a-z
-      result = result + Char::from_int(code + 32).to_string()
-    } else {
-      result = result + c.to_string()
-    }
-    i = i + 1
-  }
-  result
-}
-
-///|
-fn String::contains(self : String, pattern : String) -> Bool {
-  let self_len = self.length()
-  let pat_len = pattern.length()
-  if self_len < pat_len {
-    false
-  } else if pat_len == 0 {
-    true
-  } else {
-    let mut i = 0
-    while i <= self_len - pat_len {
-      let mut j = 0
-      let mut found = true
-      while j < pat_len {
-        let self_chars = self.to_array()
-        let pat_chars = pattern.to_array()
-        if self_chars[i + j] != pat_chars[j] {
-          found = false
-        }
-        j = j + 1
-      }
-      if found {
-        return true
-      }
-      i = i + 1
-    }
-    false
   }
 }

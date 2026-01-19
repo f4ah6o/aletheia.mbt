@@ -222,6 +222,7 @@ pub struct CheckResult[T] {
   passed : Bool
   failure : Failure?
   stats : Statistics?
+  phantom : T?
 } derive(Show)
 
 ///|
@@ -314,13 +315,14 @@ pub fn[T : Show] check_with_stats(
             shrunk,
           }),
           stats: Some(stats),
+          phantom: None,
         }
       }
     }
     i = i + 1
   }
   stats.finalize()
-  { passed: true, failure: None, stats: Some(stats) }
+  { passed: true, failure: None, stats: Some(stats), phantom: None }
 }
 
 ///|

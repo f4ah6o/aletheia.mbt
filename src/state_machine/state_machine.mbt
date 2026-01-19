@@ -445,7 +445,10 @@ pub fn add_command(sm : StateMachine, cmd : Command) -> StateMachine {
 
 ///|
 /// コマンド列を実行（簡易版）
-pub fn execute_commands(sm : StateMachine, initial : String) -> ExecutionResult {
+pub fn execute_commands(
+  _sm : StateMachine,
+  initial : String,
+) -> ExecutionResult {
   { success: true, final_state: initial, error_message: "" }
 }
 
@@ -461,6 +464,9 @@ pub fn generate_state_machine_test(
     test_name +
     "\" {\n  // State machine test for " +
     sm.name +
+    " (" +
+    type_name +
+    ")" +
     "\n  // Commands: " +
     cmd_count +
     "\n  let ops : Array[Command] = @quickcheck.samples(100)\n  let _ = ops\n  // Execute command sequence and verify invariants\n}"
@@ -527,7 +533,6 @@ test "int_to_string_converts" {
 
 ///|
 test "passthrough_shim_wraps" {
-  let shim = PassthroughShim::new()
   let value = 42
   let result = shim_wrap(value, ())
   inspect(result, content="42")
@@ -554,19 +559,24 @@ test "recording_shim_records" {
 
 ///|
 test "state_m_construction" {
-  let sm = StateM::new("TestSM", 0, fn(s, _cmd) { s })
+  let sm : StateM[Int, Unit, Unit] = StateM::new("TestSM", 0, fn(
+    s : Int,
+    _cmd : Unit,
+  ) {
+    s
+  })
   inspect(sm.name, content="TestSM")
   inspect(sm.initial_state, content="0")
 }
 
 ///|
 test "state_m_with_precondition" {
-  let sm = StateM::new("TestSM", 0, fn(s, cmd) { s + cmd }).with_precondition(fn(
-    s,
-    cmd,
+  let sm : StateM[Int, Int, Unit] = StateM::new("TestSM", 0, fn(
+    s : Int,
+    cmd : Int,
   ) {
-    s + cmd < 10
-  })
+    s + cmd
+  }).with_precondition(fn(s : Int, cmd : Int) { s + cmd < 10 })
   // 事前条件が設定されていることを確認
   let ok = (sm.precondition)(5, 3)
   inspect(ok, content="true")
@@ -574,13 +584,12 @@ test "state_m_with_precondition" {
 
 ///|
 test "state_m_with_postcondition" {
-  let sm = StateM::new("TestSM", 0, fn(s, cmd) { s + cmd }).with_postcondition(fn(
-    _s,
-    _cmd,
-    _r,
+  let sm : StateM[Int, Int, Int] = StateM::new("TestSM", 0, fn(
+    s : Int,
+    cmd : Int,
   ) {
-    true
-  })
+    s + cmd
+  }).with_postcondition(fn(_s : Int, _cmd : Int, _r : Int) { true })
   // 事後条件が設定されていることを確認
   let ok = (sm.postcondition)(0, 1, 1)
   inspect(ok, content="true")

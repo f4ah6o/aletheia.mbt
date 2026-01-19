@@ -5,6 +5,7 @@
 
 ///|
 /// Oracleテストタイプ
+#warnings("-unused_constructor")
 pub enum OracleTestType {
   SameOutputOracle
   PropertyOracle
@@ -52,7 +53,7 @@ pub fn generate_oracle_test_with_guidance(
 /// Determine the best comparison strategy for the oracle pair
 pub fn determine_comparison_strategy(
   implementation : String,
-  oracle : String,
+  _oracle : String,
 ) -> String {
   // Based on naming patterns, suggest comparison strategy
   if has_prefix_str(implementation, "my_") ||
@@ -71,8 +72,8 @@ pub fn determine_comparison_strategy(
 ///|
 /// Generate detailed guidance for implementing Oracle tests
 pub fn generate_oracle_guidance(
-  implementation : String,
-  oracle : String,
+  _implementation : String,
+  _oracle : String,
   strategy : String,
 ) -> String {
   let mut result = "## Oracle Test Guidance\n\n"

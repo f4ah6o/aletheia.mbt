@@ -20,6 +20,7 @@ pub enum PatternCandidate {
 
 ///|
 /// 不変条件の種類
+#warnings("-unused_constructor")
 pub enum InvariantType {
   LengthPreserving
   LengthDecreasing
