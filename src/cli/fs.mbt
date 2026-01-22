@@ -74,6 +74,97 @@ fn extract_module_name_from_mod(content : String) -> String? {
 }
 
 ///|
+fn extract_json_string_value(content : String, key : String) -> String? {
+  let quoted = "\"" + key + "\""
+  match content.find(quoted) {
+    None => None
+    Some(pos) => {
+      let chars = content.to_array()
+      let mut i = pos + quoted.length()
+      while i < chars.length() && chars[i].is_whitespace() {
+        i = i + 1
+      }
+      if i >= chars.length() || chars[i] != ':' {
+        return None
+      }
+      i = i + 1
+      while i < chars.length() && chars[i].is_whitespace() {
+        i = i + 1
+      }
+      if i >= chars.length() || chars[i] != '"' {
+        return None
+      }
+      i = i + 1
+      let mut value = ""
+      while i < chars.length() && chars[i] != '"' {
+        value = value + chars[i].to_string()
+        i = i + 1
+      }
+      Some(value)
+    }
+  }
+}
+
+///|
+fn extract_json_int_value(content : String, key : String) -> Int? {
+  let quoted = "\"" + key + "\""
+  match content.find(quoted) {
+    None => None
+    Some(pos) => {
+      let chars = content.to_array()
+      let mut i = pos + quoted.length()
+      while i < chars.length() && chars[i].is_whitespace() {
+        i = i + 1
+      }
+      if i >= chars.length() || chars[i] != ':' {
+        return None
+      }
+      i = i + 1
+      while i < chars.length() && chars[i].is_whitespace() {
+        i = i + 1
+      }
+      let mut quoted_value = false
+      if i < chars.length() && chars[i] == '"' {
+        quoted_value = true
+        i = i + 1
+      }
+      let mut value = ""
+      while i < chars.length() {
+        let ch = chars[i]
+        if quoted_value && ch == '"' {
+          break
+        }
+        if !quoted_value && !(ch >= '0' && ch <= '9') {
+          break
+        }
+        value = value + ch.to_string()
+        i = i + 1
+      }
+      parse_int_from_string(value)
+    }
+  }
+}
+
+///|
+fn parse_int_from_string(value : String) -> Int? {
+  if value == "" {
+    return None
+  }
+  let chars = value.to_array()
+  let mut result = 0
+  let mut i = 0
+  while i < chars.length() {
+    let ch = chars[i]
+    if !(ch >= '0' && ch <= '9') {
+      return None
+    }
+    result = result * 10 + (ch.to_int() - '0'.to_int())
+    i = i + 1
+  }
+  Some(result)
+}
+
+///|
 fn module_short_name(name : String) -> String {
   let parts = name.split("/").to_array()
   if parts.length() == 0 {
@@ -204,4 +295,101 @@ fn extract_module_name_from_package(package_dir : String) -> String {
   } else {
     "module"
   }
+}
+
+///|
+fn is_generic_package_name(
+  name : String,
+  generic_names : Array[String],
+) -> Bool {
+  let mut i = 0
+  while i < generic_names.length() {
+    if name == generic_names[i] {
+      return true
+    }
+    i = i + 1
+  }
+  false
+}
+
+///|
+fn sanitize_package_name(
+  package_dir : String,
+  generic_names : Array[String],
+) -> String {
+  let raw = extract_module_name_from_package(package_dir)
+  if !is_generic_package_name(raw, generic_names) {
+    return raw
+  }
+  let parent_dir = @path.Path(package_dir).dirname().to_string()
+  let parent = extract_module_name_from_package(parent_dir)
+  if !is_generic_package_name(parent, generic_names) {
+    parent
+  } else {
+    extract_module_name()
+  }
+}
+
+///|
+fn parse_generic_names(value : String) -> Array[String]? {
+  let parts = value.split(",").to_array()
+  let result : Array[String] = []
+  let mut i = 0
+  while i < parts.length() {
+    let name = parts[i].trim().to_string()
+    if name != "" {
+      Array::push(result, name)
+    }
+    i = i + 1
+  }
+  if result.length() == 0 {
+    None
+  } else {
+    Some(result)
+  }
+}
+
+///|
+fn read_pbt_generic_names_from_mod() -> Array[String]? {
+  let content = read_file_content("moon.mod.json")
+  match extract_json_string_value(content, "pbt_generic_names") {
+    None => None
+    Some(value) => parse_generic_names(value)
+  }
+}
+
+///|
+fn read_pbt_min_cases_from_mod() -> Int? {
+  let content = read_file_content("moon.mod.json")
+  extract_json_int_value(content, "pbt_min_cases")
+}
+
+///|
+fn read_pbt_min_roundtrip_from_mod() -> Int? {
+  let content = read_file_content("moon.mod.json")
+  extract_json_int_value(content, "pbt_min_roundtrip")
+}
+
+///|
+fn read_pbt_min_idempotent_from_mod() -> Int? {
+  let content = read_file_content("moon.mod.json")
+  extract_json_int_value(content, "pbt_min_idempotent")
+}
+
+///|
+fn read_pbt_min_pipeline_from_mod() -> Int? {
+  let content = read_file_content("moon.mod.json")
+  extract_json_int_value(content, "pbt_min_pipeline")
+}
+
+///|
+fn read_pbt_min_invariant_from_mod() -> Int? {
+  let content = read_file_content("moon.mod.json")
+  extract_json_int_value(content, "pbt_min_invariant")
+}
+
+///|
+fn read_pbt_min_oracle_from_mod() -> Int? {
+  let content = read_file_content("moon.mod.json")
+  extract_json_int_value(content, "pbt_min_oracle")
 }

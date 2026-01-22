@@ -13,6 +13,13 @@ priv struct GenerateReport {
 }
 
 ///|
+priv struct SkippedReport {
+  path : String
+  module_name : String
+  reason : String
+}
+
+///|
 fn build_generate_report(
   path : String,
   options : CommandOptions,
@@ -187,6 +194,25 @@ fn format_generate_reports_text(
 }
 
 ///|
+fn format_skipped_reports_text(skipped : Array[SkippedReport]) -> String {
+  let mut result = "Skipped packages:\n"
+  let mut i = 0
+  while i < skipped.length() {
+    let entry = skipped[i]
+    result = result +
+      "  - " +
+      entry.module_name +
+      " (" +
+      entry.path +
+      "): " +
+      entry.reason +
+      "\n"
+    i = i + 1
+  }
+  result
+}
+
+///|
 fn format_generate_reports_json(
   reports : Array[GenerateReport],
   explain : Bool,
@@ -205,6 +231,45 @@ fn format_generate_reports_json(
 }
 
 ///|
+fn format_generate_reports_json_with_skipped(
+  reports : Array[GenerateReport],
+  skipped : Array[SkippedReport],
+  explain : Bool,
+) -> String {
+  let reports_json : Array[String] = []
+  let mut i = 0
+  while i < reports.length() {
+    Array::push(reports_json, format_generate_json(reports[i], explain))
+    i = i + 1
+  }
+  json_object([
+    ("ok", json_bool(true)),
+    ("command", json_string("generate")),
+    ("reports", json_array(reports_json)),
+    ("skipped", format_skipped_reports_json(skipped)),
+  ])
+}
+
+///|
+fn format_skipped_reports_json(skipped : Array[SkippedReport]) -> String {
+  let skipped_json : Array[String] = []
+  let mut i = 0
+  while i < skipped.length() {
+    let entry = skipped[i]
+    Array::push(
+      skipped_json,
+      json_object([
+        ("path", json_string(entry.path)),
+        ("module", json_string(entry.module_name)),
+        ("reason", json_string(entry.reason)),
+      ]),
+    )
+    i = i + 1
+  }
+  json_array(skipped_json)
+}
+
+///|
 /// テストを生成
 #warnings("-unused_value")
 fn generate_tests(path : String) -> String {
@@ -219,12 +284,13 @@ fn generate_tests(path : String) -> String {
 fn build_per_package_reports(
   path : String,
   options : CommandOptions,
-) -> Result[Array[GenerateReport], String] {
+) -> Result[(Array[GenerateReport], Array[SkippedReport]), String] {
   let package_dirs = resolve_package_dirs(path)
   if package_dirs.length() == 0 {
     return Err("No MoonBit package found under: " + path)
   }
   let reports : Array[GenerateReport] = []
+  let skipped : Array[SkippedReport] = []
   let mut i = 0
   while i < package_dirs.length() {
     let pkg_dir = package_dirs[i]
@@ -271,14 +337,21 @@ fn build_per_package_reports(
     // パッケージ単位でArbitrary実装を収集
     let known_impls = collect_arbitrary_impls_from_package(pkg_dir)
     let default_type = infer_default_type(functions, all_patterns, known_impls)
-
-    // パッケージ名を抽出
-    let module_name = extract_module_name_from_package(pkg_dir)
+    // パッケージ名を抽出（汎用名を避ける）
+    let module_name = sanitize_package_name(pkg_dir, options.generic_names)
 
     // ドキュメントを生成
     let doc = @generator.build_pbt_document(
       module_name, pkg_dir, all_patterns, default_type,
     )
+    match skip_reason(doc, all_patterns, options) {
+      Some(reason) => {
+        Array::push(skipped, { path: pkg_dir, module_name, reason })
+        i = i + 1
+        continue
+      }
+      None => ()
+    }
     let content = @generator.generate_pbt_targets_md(doc, true)
     let output_path = output_path_for_pbt(pkg_dir, module_name)
     let mut write_error : String? = None
@@ -309,5 +382,135 @@ fn build_per_package_reports(
     })
     i = i + 1
   }
-  Ok(reports)
+  Ok((reports, skipped))
+}
+
+///|
+fn count_roundtrip(patterns : Array[@patterns.PatternCandidate]) -> Int {
+  let mut count = 0
+  let mut i = 0
+  while i < patterns.length() {
+    match patterns[i] {
+      @patterns.RoundTrip(_, _) => count = count + 1
+      _ => ()
+    }
+    i = i + 1
+  }
+  count
+}
+
+///|
+fn count_idempotent(patterns : Array[@patterns.PatternCandidate]) -> Int {
+  let mut count = 0
+  let mut i = 0
+  while i < patterns.length() {
+    match patterns[i] {
+      @patterns.Idempotent(_) => count = count + 1
+      _ => ()
+    }
+    i = i + 1
+  }
+  count
+}
+
+///|
+fn count_pipeline(patterns : Array[@patterns.PatternCandidate]) -> Int {
+  let mut count = 0
+  let mut i = 0
+  while i < patterns.length() {
+    match patterns[i] {
+      @patterns.ProducerConsumer(_, _) => count = count + 1
+      _ => ()
+    }
+    i = i + 1
+  }
+  count
+}
+
+///|
+fn count_invariant(patterns : Array[@patterns.PatternCandidate]) -> Int {
+  let mut count = 0
+  let mut i = 0
+  while i < patterns.length() {
+    match patterns[i] {
+      @patterns.Invariant(_, _) => count = count + 1
+      _ => ()
+    }
+    i = i + 1
+  }
+  count
+}
+
+///|
+fn count_oracle(patterns : Array[@patterns.PatternCandidate]) -> Int {
+  let mut count = 0
+  let mut i = 0
+  while i < patterns.length() {
+    match patterns[i] {
+      @patterns.Oracle(_, _) => count = count + 1
+      _ => ()
+    }
+    i = i + 1
+  }
+  count
+}
+
+///|
+fn skip_reason(
+  doc : @generator.PbtDocument,
+  patterns : Array[@patterns.PatternCandidate],
+  options : CommandOptions,
+) -> String? {
+  if doc.test_cases.length() < options.min_cases {
+    return Some(
+      "test cases " +
+      doc.test_cases.length().to_string() +
+      " < min_cases " +
+      options.min_cases.to_string(),
+    )
+  }
+  if options.min_roundtrip > 0 &&
+    count_roundtrip(patterns) < options.min_roundtrip {
+    return Some(
+      "roundtrip " +
+      count_roundtrip(patterns).to_string() +
+      " < min_roundtrip " +
+      options.min_roundtrip.to_string(),
+    )
+  }
+  if options.min_idempotent > 0 &&
+    count_idempotent(patterns) < options.min_idempotent {
+    return Some(
+      "idempotent " +
+      count_idempotent(patterns).to_string() +
+      " < min_idempotent " +
+      options.min_idempotent.to_string(),
+    )
+  }
+  if options.min_pipeline > 0 && count_pipeline(patterns) < options.min_pipeline {
+    return Some(
+      "pipeline " +
+      count_pipeline(patterns).to_string() +
+      " < min_pipeline " +
+      options.min_pipeline.to_string(),
+    )
+  }
+  if options.min_invariant > 0 &&
+    count_invariant(patterns) < options.min_invariant {
+    return Some(
+      "invariant " +
+      count_invariant(patterns).to_string() +
+      " < min_invariant " +
+      options.min_invariant.to_string(),
+    )
+  }
+  if options.min_oracle > 0 && count_oracle(patterns) < options.min_oracle {
+    return Some(
+      "oracle " +
+      count_oracle(patterns).to_string() +
+      " < min_oracle " +
+      options.min_oracle.to_string(),
+    )
+  }
+  None
 }

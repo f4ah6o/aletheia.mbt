@@ -18,6 +18,9 @@ test "parse_args_analyze" {
       inspect(p, content="./src")
       inspect(options.dry_run, content="false")
       inspect(options.explain, content="false")
+      inspect(options.generic_names.length(), content="3")
+      inspect(options.min_cases, content="1")
+      inspect(options.min_roundtrip, content="0")
     }
     _ => inspect("fail", content="fail")
   }
@@ -32,6 +35,9 @@ test "parse_args_generate" {
       inspect(p, content="./src")
       inspect(options.dry_run, content="false")
       inspect(options.explain, content="false")
+      inspect(options.generic_names.length(), content="3")
+      inspect(options.min_cases, content="1")
+      inspect(options.min_roundtrip, content="0")
     }
     _ => inspect("fail", content="fail")
   }
@@ -47,6 +53,8 @@ test "parse_args_sync_default" {
       inspect(p, content=expected)
       inspect(options.dry_run, content="false")
       inspect(options.explain, content="false")
+      inspect(options.generic_names.length(), content="3")
+      inspect(options.min_cases, content="1")
     }
     _ => inspect("fail", content="fail")
   }
@@ -55,7 +63,8 @@ test "parse_args_sync_default" {
 ///|
 test "parse_args_generate_options" {
   let args = [
-    "prog", "generate", "./src", "--dry-run", "--format", "json", "--explain",
+    "prog", "generate", "./src", "--dry-run", "--format", "json", "--explain", "--generic-names",
+    "src,main",
   ]
   let result = parse_args(args)
   match result {
@@ -63,6 +72,8 @@ test "parse_args_generate_options" {
       inspect(p, content="./src")
       inspect(options.dry_run, content="true")
       inspect(options.explain, content="true")
+      inspect(options.generic_names.length(), content="2")
+      inspect(options.min_cases, content="1")
       match options.format {
         Json => inspect("json", content="json")
         _ => inspect("fail", content="json")
@@ -94,6 +105,7 @@ test "help_message_contains_commands" {
   inspect(msg.contains("sync"), content="true")
   inspect(msg.contains("--dry-run"), content="true")
   inspect(msg.contains("--format"), content="true")
+  inspect(msg.contains("--generic-names"), content="true")
 }
 
 ///|
@@ -108,6 +120,17 @@ test "extract_module_name_from_mod" {
 ///|
 test "module_short_name" {
   inspect(module_short_name("org/sample"), content="sample")
+}
+
+///|
+test "sanitize_package_name_avoids_generic" {
+  let generic = ["src", "main", "module"]
+  inspect(sanitize_package_name("/tmp/project/src", generic), content="project")
+  inspect(
+    sanitize_package_name("/tmp/project/main", generic),
+    content="project",
+  )
+  inspect(sanitize_package_name("/tmp/project/lib", generic), content="lib")
 }
 
 ///|

@@ -37,6 +37,11 @@ The comprehensive PBT enhancement plan has been completed across 6 phases:
    - Check `src/aletheia.pbt.md`, `src/cli/cli.pbt.md`, and `src/parser/parser.pbt.md` for template correctness.
    - Keep templates as `mbt nocheck` until the property logic is valid; switch to `mbt check` only after validating semantics.
    - If you still have `.pbt.mbt.md`, rename to `.pbt.md` to avoid MoonBit treating it as source.
+   - For generation filtering, you can configure `moon.mod.json`:
+     - `pbt_generic_names`: comma-separated generic package names to avoid in output names (default `src,main,module`).
+     - `pbt_min_cases`: minimum test case count to generate (default `1`).
+     - `pbt_min_roundtrip`, `pbt_min_idempotent`, `pbt_min_pipeline`, `pbt_min_invariant`, `pbt_min_oracle`: per-pattern minimums (default `0`).
+   - Use `moon run src/aletheia -- generate ./src --explain` to see skipped packages and reasons.
 
 3. Update detection/template logic (as needed)
    - Pattern detection: `src/patterns/patterns.mbt`

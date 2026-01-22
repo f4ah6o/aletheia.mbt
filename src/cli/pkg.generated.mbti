@@ -30,6 +30,13 @@ pub struct CommandOptions {
   dry_run : Bool
   explain : Bool
   format : OutputFormat
+  generic_names : Array[String]
+  min_cases : Int
+  min_roundtrip : Int
+  min_idempotent : Int
+  min_pipeline : Int
+  min_invariant : Int
+  min_oracle : Int
 }
 
 pub enum OutputFormat {

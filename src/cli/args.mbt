@@ -25,11 +25,101 @@ pub struct CommandOptions {
   dry_run : Bool
   explain : Bool
   format : OutputFormat
+  generic_names : Array[String]
+  min_cases : Int
+  min_roundtrip : Int
+  min_idempotent : Int
+  min_pipeline : Int
+  min_invariant : Int
+  min_oracle : Int
 }
 
 ///|
 pub fn default_options() -> CommandOptions {
-  { dry_run: false, explain: false, format: Text }
+  {
+    dry_run: false,
+    explain: false,
+    format: Text,
+    generic_names: default_generic_names(),
+    min_cases: default_min_cases(),
+    min_roundtrip: default_min_roundtrip(),
+    min_idempotent: default_min_idempotent(),
+    min_pipeline: default_min_pipeline(),
+    min_invariant: default_min_invariant(),
+    min_oracle: default_min_oracle(),
+  }
+}
+
+///|
+fn default_generic_names() -> Array[String] {
+  match read_pbt_generic_names_from_mod() {
+    Some(names) => names
+    None => ["src", "main", "module"]
+  }
+}
+
+///|
+fn is_default_generic_names(names : Array[String]) -> Bool {
+  let defaults = default_generic_names()
+  if names.length() != defaults.length() {
+    return false
+  }
+  let mut i = 0
+  while i < names.length() {
+    if names[i] != defaults[i] {
+      return false
+    }
+    i = i + 1
+  }
+  true
+}
+
+///|
+fn default_min_cases() -> Int {
+  match read_pbt_min_cases_from_mod() {
+    Some(v) => v
+    None => 1
+  }
+}
+
+///|
+fn default_min_roundtrip() -> Int {
+  match read_pbt_min_roundtrip_from_mod() {
+    Some(v) => v
+    None => 0
+  }
+}
+
+///|
+fn default_min_idempotent() -> Int {
+  match read_pbt_min_idempotent_from_mod() {
+    Some(v) => v
+    None => 0
+  }
+}
+
+///|
+fn default_min_pipeline() -> Int {
+  match read_pbt_min_pipeline_from_mod() {
+    Some(v) => v
+    None => 0
+  }
+}
+
+///|
+fn default_min_invariant() -> Int {
+  match read_pbt_min_invariant_from_mod() {
+    Some(v) => v
+    None => 0
+  }
+}
+
+///|
+fn default_min_oracle() -> Int {
+  match read_pbt_min_oracle_from_mod() {
+    Some(v) => v
+    None => 0
+  }
 }
 
 ///|
@@ -101,6 +191,13 @@ fn parse_options(args : Array[String], start : Int) -> CommandOptions? {
         dry_run: true,
         explain: options.explain,
         format: options.format,
+        generic_names: options.generic_names,
+        min_cases: options.min_cases,
+        min_roundtrip: options.min_roundtrip,
+        min_idempotent: options.min_idempotent,
+        min_pipeline: options.min_pipeline,
+        min_invariant: options.min_invariant,
+        min_oracle: options.min_oracle,
       }
       i = i + 1
     } else if arg == "--explain" {
@@ -108,6 +205,13 @@ fn parse_options(args : Array[String], start : Int) -> CommandOptions? {
         dry_run: options.dry_run,
         explain: true,
         format: options.format,
+        generic_names: options.generic_names,
+        min_cases: options.min_cases,
+        min_roundtrip: options.min_roundtrip,
+        min_idempotent: options.min_idempotent,
+        min_pipeline: options.min_pipeline,
+        min_invariant: options.min_invariant,
+        min_oracle: options.min_oracle,
       }
       i = i + 1
     } else if arg == "--format" {
@@ -120,6 +224,13 @@ fn parse_options(args : Array[String], start : Int) -> CommandOptions? {
             dry_run: options.dry_run,
             explain: options.explain,
             format: fmt,
+            generic_names: options.generic_names,
+            min_cases: options.min_cases,
+            min_roundtrip: options.min_roundtrip,
+            min_idempotent: options.min_idempotent,
+            min_pipeline: options.min_pipeline,
+            min_invariant: options.min_invariant,
+            min_oracle: options.min_oracle,
           }
           i = i + 2
         }
@@ -137,6 +248,59 @@ fn parse_options(args : Array[String], start : Int) -> CommandOptions? {
             dry_run: options.dry_run,
             explain: options.explain,
             format: fmt,
+            generic_names: options.generic_names,
+            min_cases: options.min_cases,
+            min_roundtrip: options.min_roundtrip,
+            min_idempotent: options.min_idempotent,
+            min_pipeline: options.min_pipeline,
+            min_invariant: options.min_invariant,
+            min_oracle: options.min_oracle,
+          }
+          i = i + 1
+        }
+        None => return None
+      }
+    } else if arg == "--generic-names" {
+      if i + 1 >= args.length() {
+        return None
+      }
+      match parse_generic_names(args[i + 1]) {
+        Some(names) => {
+          options = {
+            dry_run: options.dry_run,
+            explain: options.explain,
+            format: options.format,
+            generic_names: names,
+            min_cases: options.min_cases,
+            min_roundtrip: options.min_roundtrip,
+            min_idempotent: options.min_idempotent,
+            min_pipeline: options.min_pipeline,
+            min_invariant: options.min_invariant,
+            min_oracle: options.min_oracle,
+          }
+          i = i + 2
+        }
+        None => return None
+      }
+    } else if arg.has_prefix("--generic-names=") {
+      let parts = arg.split("=").to_array()
+      if parts.length() < 2 {
+        return None
+      }
+      let value = parts[1].to_string()
+      match parse_generic_names(value) {
+        Some(names) => {
+          options = {
+            dry_run: options.dry_run,
+            explain: options.explain,
+            format: options.format,
+            generic_names: names,
+            min_cases: options.min_cases,
+            min_roundtrip: options.min_roundtrip,
+            min_idempotent: options.min_idempotent,
+            min_pipeline: options.min_pipeline,
+            min_invariant: options.min_invariant,
+            min_oracle: options.min_oracle,
           }
           i = i + 1
         }
@@ -173,6 +337,10 @@ fn append_option_args(
       Array::push(result, "json")
     }
   }
+  if !is_default_generic_names(options.generic_names) {
+    Array::push(result, "--generic-names")
+    Array::push(result, options.generic_names.join(","))
+  }
   result
 }
 
@@ -198,8 +366,11 @@ pub fn help_message() -> String {
     "", "Commands:", "  analyze <path>     Analyze MoonBit package or file", "  generate <path>   Collect PBT targets into <module>.pbt.md",
     "  sync [path]       Sync PBT markdown into per-package tests", "  help              Show this help message",
     "", "Options:", "  --dry-run          Do not write files (generate/sync)", "  --explain          Output detection details",
-    "  --format <text|json>  Output format (default: text)", "", "Examples:", "  moon-pbt-gen analyze ./src --explain",
-    "  moon-pbt-gen generate ./src --dry-run --format json", "  moon-pbt-gen sync",
+    "  --format <text|json>  Output format (default: text)", "  --generic-names <list>  Comma-separated generic package names (default: src,main,module)",
+    "  (config) moon.mod.json: pbt_generic_names, pbt_min_cases, pbt_min_roundtrip,",
+    "           pbt_min_idempotent, pbt_min_pipeline, pbt_min_invariant, pbt_min_oracle",
+    "", "Examples:", "  moon-pbt-gen analyze ./src --explain", "  moon-pbt-gen generate ./src --dry-run --format json",
+    "  moon-pbt-gen sync",
   ]
   let mut result = ""
   let mut i = 0

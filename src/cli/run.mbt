@@ -37,10 +37,27 @@ fn run_generate(path : String, options : CommandOptions) -> String {
             ("error", json_string(msg)),
           ])
       }
-    Ok(reports) =>
+    Ok((reports, skipped)) =>
       match options.format {
-        Text => prefix + format_generate_reports_text(reports, options.explain)
-        Json => format_generate_reports_json(reports, options.explain)
+        Text => {
+          let mut result = prefix
+          if reports.length() == 0 {
+            result = result + "No PBT targets detected.\n"
+          } else {
+            result = result +
+              format_generate_reports_text(reports, options.explain)
+          }
+          if options.explain && skipped.length() > 0 {
+            result = result + "\n" + format_skipped_reports_text(skipped)
+          }
+          result
+        }
+        Json =>
+          if options.explain {
+            format_generate_reports_json_with_skipped(reports, skipped, true)
+          } else {
+            format_generate_reports_json(reports, false)
+          }
       }
   }
 }
