@@ -31,7 +31,7 @@ moon run f4ah6o/aletheia/aletheia -- generate /path/to/target
 moon run f4ah6o/aletheia/aletheia -- sync /path/to/target
 ```
 
-If you already have the aletheia.mbt repo locally, you can also run `moon run src/aletheia` from that repo instead.
+If you already have the aletheia.mbt repo locally, you can also run it from that repo with `moon run src/aletheia -- <subcommand> <path>`.
 
 ## Install & Run (Quickstart)
 
