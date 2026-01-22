@@ -6,6 +6,7 @@ import {
   "f4ah6o/aletheia/analyzer" as @analyzer,
   "f4ah6o/aletheia/pbt" as @pbt,
   "f4ah6o/aletheia/ast" as @ast,
+  "moonbitlang/core/quickcheck/splitmix" as @quickcheck/splitmix,
 }
 
 options(

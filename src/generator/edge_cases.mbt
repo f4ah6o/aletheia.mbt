@@ -5,21 +5,21 @@
 
 ///|
 /// エッジケース定義
-pub struct EdgeCase {
+priv struct EdgeCase {
   value_expr : String
   description : String
 }
 
 ///|
 /// Frequency distribution entry
-pub struct FrequencyEntry {
+priv struct FrequencyEntry {
   weight : Int
   generator_expr : String
 }
 
 ///|
 /// 型に応じたエッジケースを生成
-pub fn edge_cases_for_type(type_name : String) -> Array[EdgeCase] {
+fn edge_cases_for_type(type_name : String) -> Array[EdgeCase] {
   match type_name {
     "Int" => int_edge_cases()
     "Int64" => int64_edge_cases()
@@ -275,7 +275,7 @@ test "edge_cases_for_unknown_type" {
 ///|
 /// Convert edge cases to frequency distribution
 /// Returns: [(weight, generator_expr)]
-pub fn edge_cases_to_frequency(
+fn edge_cases_to_frequency(
   edge_cases : Array[EdgeCase],
 ) -> Array[FrequencyEntry] {
   let result : Array[FrequencyEntry] = []
@@ -293,7 +293,7 @@ pub fn edge_cases_to_frequency(
 
 ///|
 /// Build frequency distribution from type using edge cases
-pub fn build_frequency_for_type(type_name : String) -> String {
+fn build_frequency_for_type(type_name : String) -> String {
   let edge_cases = edge_cases_for_type(type_name)
   let mut result = "@pbt.frequency([\n"
   // Add normal case with high weight

@@ -1,14 +1,12 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "f4ah6o/aletheia/analyzer"
 
-import(
-  "f4ah6o/aletheia/ast"
-)
+import {
+  "f4ah6o/aletheia/ast",
+}
 
 // Values
 pub fn build_call_graph_ast(String, String) -> Result[@ast.CallGraph, String]
-
-pub fn check_container_arbitrary(String, Array[String], Array[@ast.ArbitraryImpl]) -> @ast.Testability
 
 pub fn check_function_testability(@ast.FunctionMeta, Array[@ast.ArbitraryImpl]) -> @ast.Testability
 
@@ -17,10 +15,6 @@ pub fn check_type_testability(String, Array[@ast.ArbitraryImpl]) -> @ast.Testabi
 pub fn container_patterns() -> Array[String]
 
 pub fn detect_arbitrary_impls(String) -> Array[@ast.ArbitraryImpl]
-
-pub fn detect_arbitrary_impls_ast(String) -> Result[Array[@ast.ArbitraryImpl], String]
-
-pub fn extract_from_source_ast(String, String) -> Result[Array[@ast.FunctionMeta], String]
 
 pub fn extract_function_names(String) -> Array[String]
 
@@ -31,8 +25,6 @@ pub fn extract_with_testability(String, String) -> @ast.ExtractionResult
 pub fn has_arbitrary(String, Array[@ast.ArbitraryImpl]) -> Bool
 
 pub fn primitive_types() -> Array[String]
-
-pub fn string_array_contains(Array[String], String) -> Bool
 
 // Errors
 

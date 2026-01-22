@@ -5,7 +5,7 @@
 
 ///|
 /// 型に応じたQuickCheckジェネレータ式を生成
-pub fn generator_expression_for_type(type_name : String) -> String {
+fn generator_expression_for_type(type_name : String) -> String {
   match type_name {
     "Int" => "@pbt.Gen::choose_int(-100, 100)"
     "Int64" =>
@@ -76,7 +76,7 @@ fn substring_range(s : String, start : Int, end : Int) -> String {
 
 ///|
 /// 型がプリミティブ型か判定
-pub fn is_primitive_type(type_name : String) -> Bool {
+fn is_primitive_type(type_name : String) -> Bool {
   let primitives = [
     "Int", "Int64", "UInt", "UInt64", "Float", "Double", "Bool", "Char", "String",
     "Byte",
@@ -93,7 +93,7 @@ pub fn is_primitive_type(type_name : String) -> Bool {
 
 ///|
 /// 型がコンテナ型か判定
-pub fn is_container_type(type_name : String) -> Bool {
+fn is_container_type(type_name : String) -> Bool {
   type_name.has_prefix("Array[") ||
   type_name.has_prefix("List[") ||
   type_name.has_prefix("Option[") ||
@@ -104,7 +104,7 @@ pub fn is_container_type(type_name : String) -> Bool {
 ///|
 /// Generate frequency-based generator expression with edge case emphasis
 /// Distribution: 70% normal, 15% empty/zero, 15% boundary values
-pub fn frequency_generator_for_type(type_name : String) -> String {
+fn frequency_generator_for_type(type_name : String) -> String {
   match type_name {
     "Int" => {
       let mut r = "@pbt.frequency([\n"
@@ -267,7 +267,7 @@ pub fn frequency_generator_for_type(type_name : String) -> String {
 
 ///|
 /// Detect if type is potentially recursive (needs size control)
-pub fn is_recursive_type(type_name : String) -> Bool {
+fn is_recursive_type(type_name : String) -> Bool {
   // Known recursive types
   let recursive_keywords = [
     "Tree", "Node", "Graph", "LinkedList", "Nested", "Recursive",
@@ -293,7 +293,7 @@ pub fn is_recursive_type(type_name : String) -> Bool {
 ///|
 /// Generate size-controlled generator expression for complex types
 /// Distribution: Uses @pbt.sized to control generation depth/size
-pub fn sized_generator_for_type(type_name : String) -> String {
+fn sized_generator_for_type(type_name : String) -> String {
   if is_recursive_type(type_name) {
     let mut r = "@pbt.sized(fn(size : Int) -> @pbt.Gen["
     r = r + type_name
@@ -356,7 +356,7 @@ fn generate_sized_variant(type_name : String, size_var : String) -> String {
 
 ///|
 /// Calculate safe nesting depth for type
-pub fn safe_nesting_depth(type_name : String) -> Int {
+fn safe_nesting_depth(type_name : String) -> Int {
   if has_substring(type_name, "Array[Array[") {
     2 // Limit nested arrays
   } else if has_substring(type_name, "List[List[") {

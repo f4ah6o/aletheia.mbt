@@ -1,9 +1,9 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "f4ah6o/aletheia/parser"
 
-import(
-  "f4ah6o/aletheia/markdown"
-)
+import {
+  "f4ah6o/aletheia/markdown",
+}
 
 // Values
 pub fn all_markdown_fixtures() -> Array[String]

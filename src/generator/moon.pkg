@@ -1,1 +1,3 @@
-import { "f4ah6o/aletheia/patterns" as @patterns }
+import {
+  "f4ah6o/aletheia/patterns" as @patterns,
+}

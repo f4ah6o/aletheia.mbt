@@ -1,1 +1,4 @@
-import { "f4ah6o/aletheia/markdown" }
+import {
+  "f4ah6o/aletheia/markdown",
+  "moonbitlang/core/strconv",
+}

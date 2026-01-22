@@ -153,8 +153,7 @@ pub fn Statistics::new() -> Statistics {
 ///|
 pub fn Statistics::add_label(self : Statistics, label : String) -> Unit {
   // 既存のラベルを探す
-  let mut i = 0
-  while i < self.entries.length() {
+  for i in 0..<self.entries.length() {
     if self.entries[i].label == label {
       self.entries[i] = {
         label: self.entries[i].label,
@@ -163,7 +162,6 @@ pub fn Statistics::add_label(self : Statistics, label : String) -> Unit {
       }
       return
     }
-    i = i + 1
   }
   // 新しいラベルを追加
   self.entries.push({ label, count: 1, percentage: 0.0 })
@@ -175,15 +173,13 @@ pub fn Statistics::finalize(self : Statistics) -> Unit {
   if total == 0 {
     return
   }
-  let mut i = 0
-  while i < self.entries.length() {
+  for i in 0..<self.entries.length() {
     let entry = self.entries[i]
     self.entries[i] = {
       label: entry.label,
       count: entry.count,
       percentage: entry.count.to_double() / total.to_double() * 100.0,
     }
-    i = i + 1
   }
 }
 
@@ -193,8 +189,7 @@ pub fn Statistics::to_string(self : Statistics) -> String {
     return "No statistics collected"
   }
   let mut result = "Statistics (total: " + self.total.to_string() + "):\n"
-  let mut i = 0
-  while i < self.entries.length() {
+  for i in 0..<self.entries.length() {
     let entry = self.entries[i]
     result = result +
       "  " +
@@ -204,7 +199,6 @@ pub fn Statistics::to_string(self : Statistics) -> String {
       " (" +
       format_percentage(entry.percentage) +
       "%)\n"
-    i = i + 1
   }
   result
 }
@@ -269,8 +263,7 @@ pub fn[T : Show] check_with_stats(
   let max_size = if config.max_size < 0 { 0 } else { config.max_size }
   let rs = @quickcheck/splitmix.new(seed=config.seed)
   let stats = Statistics::new()
-  let mut i = 0
-  while i < cases {
+  for i in 0..<cases {
     let size = if i < max_size { i } else { max_size }
     let value = (gen.run)(size, rs)
     let (result, label_opt) = prop(value)
@@ -319,7 +312,6 @@ pub fn[T : Show] check_with_stats(
         }
       }
     }
-    i = i + 1
   }
   stats.finalize()
   { passed: true, failure: None, stats: Some(stats), phantom: None }

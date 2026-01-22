@@ -1,24 +1,14 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "f4ah6o/aletheia/generator"
 
-import(
-  "f4ah6o/aletheia/patterns"
-)
+import {
+  "f4ah6o/aletheia/patterns",
+}
 
 // Values
 pub fn build_classification_for_type(String, String) -> String
 
-pub fn build_frequency_for_type(String) -> String
-
 pub fn build_pbt_document(String, String, Array[@patterns.PatternCandidate], String) -> PbtDocument
-
-pub fn determine_comparison_strategy(String, String) -> String
-
-pub fn edge_cases_for_type(String) -> Array[EdgeCase]
-
-pub fn edge_cases_to_frequency(Array[EdgeCase]) -> Array[FrequencyEntry]
-
-pub fn frequency_generator_for_type(String) -> String
 
 pub fn generate_counterexample_analysis_template() -> String
 
@@ -35,10 +25,6 @@ pub fn generate_idempotent_test(String, String) -> GeneratedTest
 pub fn generate_invariant_test(String, String, String) -> GeneratedTest
 
 pub fn generate_mbt_md_section(Array[GeneratedTest]) -> String
-
-pub fn generate_oracle_examples(String, String, String) -> Array[String]
-
-pub fn generate_oracle_guidance(String, String, String) -> String
 
 pub fn generate_oracle_guidance_section() -> String
 
@@ -72,23 +58,9 @@ pub fn generated_block_end() -> String
 
 pub fn generated_block_start() -> String
 
-pub fn generator_expression_for_type(String) -> String
-
-pub fn has_prefix_str(String, String) -> Bool
-
-pub fn is_container_type(String) -> Bool
-
-pub fn is_primitive_type(String) -> Bool
-
-pub fn is_recursive_type(String) -> Bool
-
 pub fn merge_generated_markdown(String, String) -> String
 
 pub fn pattern_to_test(@patterns.PatternCandidate, String) -> GeneratedTest
-
-pub fn safe_nesting_depth(String) -> Int
-
-pub fn sized_generator_for_type(String) -> String
 
 pub fn wrap_generated_block(String) -> String
 
@@ -99,16 +71,6 @@ pub struct DetectedPattern {
   kind : PatternKind
   functions : Array[String]
   type_info : String
-}
-
-pub struct EdgeCase {
-  value_expr : String
-  description : String
-}
-
-pub struct FrequencyEntry {
-  weight : Int
-  generator_expr : String
 }
 
 pub struct GeneratedTest {

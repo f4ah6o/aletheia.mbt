@@ -81,11 +81,6 @@ pub enum CallType {
   ChainCall
 }
 
-pub struct EnumVariant {
-  name : String
-  data : TypeMeta?
-}
-
 pub struct ExtractionResult {
   source_file : String
   functions : Array[FunctionMeta]
@@ -122,43 +117,10 @@ pub struct Location {
 }
 pub fn Location::unknown(String) -> Self
 
-pub enum PatternCandidate {
-  RoundTrip(String, String, TypeMeta)
-  Idempotent(String)
-  ProducerConsumer(String, String)
-}
-
-pub struct PropertyDef {
-  name : String
-  description : String
-  target_functions : Array[String]
-  body : String
-  pattern : PatternCandidate
-}
-pub fn PropertyDef::new(String, PatternCandidate) -> Self
-
-pub struct StructField {
-  name : String
-  type_ : TypeMeta
-}
-
 pub enum Testability {
   Testable
   NeedsUserArbitrary(Array[String])
   NotTestable(String)
-}
-
-pub struct TypeDefinition {
-  name : String
-  kind : TypeKind
-  type_params : Array[String]
-  location : Location
-}
-
-pub enum TypeKind {
-  Struct(Array[StructField])
-  Enum(Array[EnumVariant])
-  Opaque
 }
 
 pub enum TypeMeta {

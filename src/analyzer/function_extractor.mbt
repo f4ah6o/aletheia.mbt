@@ -49,7 +49,7 @@ pub fn extract_function_names(source : String) -> Array[String] {
 
 ///|
 /// ソースコードから関数メタデータを抽出（詳細版）
-pub fn extract_from_source_ast(
+fn extract_from_source_ast(
   source : String,
   source_file : String,
 ) -> Result[Array[@ast.FunctionMeta], String] {

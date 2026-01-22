@@ -392,8 +392,7 @@ pub fn generate_deterministic_model_section() -> String {
 fn string_to_lower(s : String) -> String {
   let chars = s.to_array()
   let mut result = ""
-  let mut i = 0
-  while i < chars.length() {
+  for i in 0..<chars.length() {
     let c = chars[i]
     let code = c.to_int()
     if code >= 65 && code <= 90 {
@@ -401,7 +400,6 @@ fn string_to_lower(s : String) -> String {
     } else {
       result = result + c.to_string()
     }
-    i = i + 1
   }
   result
 }

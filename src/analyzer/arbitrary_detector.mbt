@@ -20,7 +20,7 @@ pub fn container_patterns() -> Array[String] {
 
 ///|
 /// コンテナ型の内部型をチェック
-pub fn check_container_arbitrary(
+fn check_container_arbitrary(
   container_type : String,
   inner_types : Array[String],
   known_impls : Array[@ast.ArbitraryImpl],
@@ -272,7 +272,7 @@ fn trim_string_line(s : String) -> String {
 
 ///|
 /// ASTを使ってソースコードからArbitrary実装を検出（詳細版）
-pub fn detect_arbitrary_impls_ast(
+fn detect_arbitrary_impls_ast(
   source : String,
 ) -> Result[Array[@ast.ArbitraryImpl], String] {
   let (impls, errors) = @mb_parser.parse_string(source)
@@ -536,7 +536,7 @@ fn dedupe_strings(strings : Array[String]) -> Array[String] {
 
 ///|
 /// 文字列配列に要素が含まれるか判定
-pub fn string_array_contains(arr : Array[String], item : String) -> Bool {
+fn string_array_contains(arr : Array[String], item : String) -> Bool {
   let mut i = 0
   while i < arr.length() {
     if arr[i] == item {

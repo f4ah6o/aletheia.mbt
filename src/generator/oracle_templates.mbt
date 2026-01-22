@@ -51,7 +51,7 @@ pub fn generate_oracle_test_with_guidance(
 
 ///|
 /// Determine the best comparison strategy for the oracle pair
-pub fn determine_comparison_strategy(
+fn determine_comparison_strategy(
   implementation : String,
   _oracle : String,
 ) -> String {
@@ -71,7 +71,7 @@ pub fn determine_comparison_strategy(
 
 ///|
 /// Generate detailed guidance for implementing Oracle tests
-pub fn generate_oracle_guidance(
+fn generate_oracle_guidance(
   _implementation : String,
   _oracle : String,
   strategy : String,
@@ -152,7 +152,7 @@ pub fn generate_oracle_guidance(
 
 ///|
 /// Generate examples for Oracle tests
-pub fn generate_oracle_examples(
+fn generate_oracle_examples(
   implementation : String,
   oracle : String,
   type_name : String,
@@ -288,7 +288,7 @@ pub fn generate_oracle_guidance_section() -> String {
 
 ///|
 /// String utility functions
-pub fn has_prefix_str(s : String, prefix : String) -> Bool {
+fn has_prefix_str(s : String, prefix : String) -> Bool {
   if s.length() < prefix.length() {
     false
   } else {

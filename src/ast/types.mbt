@@ -166,38 +166,6 @@ pub fn FunctionMeta::signature(self : FunctionMeta) -> String {
 }
 
 ///|
-/// 型定義メタデータ（enum, struct）
-#warnings("-struct_never_constructed")
-pub struct TypeDefinition {
-  name : String
-  kind : TypeKind
-  type_params : Array[String]
-  location : Location
-}
-
-///|
-#warnings("-unused_constructor")
-pub enum TypeKind {
-  Struct(Array[StructField])
-  Enum(Array[EnumVariant])
-  Opaque
-}
-
-///|
-#warnings("-struct_never_constructed")
-pub struct StructField {
-  name : String
-  type_ : TypeMeta
-}
-
-///|
-#warnings("-struct_never_constructed")
-pub struct EnumVariant {
-  name : String
-  data : TypeMeta?
-}
-
-///|
 /// PBTテスト可能性判定結果
 pub enum Testability {
   Testable
@@ -264,38 +232,6 @@ pub fn ArbitraryImpl::user_defined(name : String, line : Int) -> ArbitraryImpl {
     inner_types: [],
     impl_line: Some(line),
   }
-}
-
-///|
-/// パターン候補
-#warnings("-unused_constructor")
-pub enum PatternCandidate {
-  RoundTrip(String, String, TypeMeta)
-  Idempotent(String)
-  ProducerConsumer(String, String)
-}
-
-///|
-/// プロパティテスト定義
-pub struct PropertyDef {
-  name : String
-  description : String
-  target_functions : Array[String]
-  body : String
-  pattern : PatternCandidate
-}
-
-///|
-pub fn PropertyDef::new(
-  name : String,
-  pattern : PatternCandidate,
-) -> PropertyDef {
-  let targets = match pattern {
-    RoundTrip(encoder, decoder, _) => [encoder, decoder]
-    Idempotent(function) => [function]
-    ProducerConsumer(producer, consumer) => [producer, consumer]
-  }
-  { name, description: "", target_functions: targets, body: "", pattern }
 }
 
 ///|

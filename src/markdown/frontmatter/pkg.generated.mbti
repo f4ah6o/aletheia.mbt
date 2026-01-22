@@ -1,9 +1,9 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "f4ah6o/aletheia/markdown/frontmatter"
 
-import(
-  "f4ah6o/aletheia/markdown"
-)
+import {
+  "f4ah6o/aletheia/markdown",
+}
 
 // Values
 pub fn get_bool(@markdown.Frontmatter, String) -> Bool?
